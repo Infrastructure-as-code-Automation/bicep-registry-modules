@@ -2,7 +2,7 @@ metadata name = '<Add module name>'
 metadata description = '<Add description>'
 metadata owner = 'Azure/module-maintainers'
 
-@description('Required. Name of the resource to create.')
+@description('The name of the Azure Arc connected cluster.')
 param name string
 
 @description('Optional. Location for all Resources.')
@@ -63,3 +63,69 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
 //
 // Add your User-defined-types here, if any
 //
+
+@description('The identity type for the cluster. Allowed values: "SystemAssigned", "None"')
+@allowed([
+  'SystemAssigned'
+  'None'
+])
+param identityType string = 'SystemAssigned'
+
+@description('Tags for the cluster resource')
+param tags object = {}
+
+@description('Optional. The Azure AD tenant ID')
+param aadTenantId string = ''
+
+@description('Optional. The Azure AD admin group object IDs')
+param aadAdminGroupObjectIds array = []
+
+@description('Optional. Enable Azure RBAC')
+param enableAzureRBAC bool = false
+
+@description('Optional. Enable automatic agent upgrades')
+@allowed([
+  'Enabled'
+  'Disabled'
+])
+param agentAutoUpgrade string = 'Enabled'
+
+@description('Optional. Enable OIDC issuer')
+param oidcIssuerEnabled bool = false
+
+@description('Optional. Enable workload identity')
+param workloadIdentityEnabled bool = false
+
+// Resource definition
+resource connectedCluster 'Microsoft.Kubernetes/connectedClusters@2024-12-01-preview' = {
+  name: name
+  location: location
+  identity: {
+    type: identityType
+  }
+  tags: tags
+  properties: {
+    aadProfile: !empty(aadTenantId)
+      ? {
+          tenantID: aadTenantId
+          adminGroupObjectIDs: aadAdminGroupObjectIds
+          enableAzureRBAC: enableAzureRBAC
+        }
+      : null
+    agentPublicKeyCertificate: ''
+    arcAgentProfile: {
+      agentAutoUpgrade: agentAutoUpgrade
+    }
+    distribution: null
+    infrastructure: null
+    oidcIssuerProfile: {
+      enabled: oidcIssuerEnabled
+    }
+    securityProfile: {
+      workloadIdentity: {
+        enabled: workloadIdentityEnabled
+      }
+    }
+    azureHybridBenefit: null
+  }
+}
