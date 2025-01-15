@@ -1,6 +1,6 @@
-# <Add module name> `[Microsoft.Kubernetes/connectedClusters]`
+# Kubernetes Connected Clusters `[Microsoft.Kubernetes/connectedClusters]`
 
-<Add description>
+Deploy an Azure Arc connected cluster.
 
 ## Navigation
 
@@ -12,7 +12,9 @@
 
 ## Resource Types
 
-_None_
+| Resource Type | API Version |
+| :-- | :-- |
+| `Microsoft.Kubernetes/connectedClusters` | [2024-12-01-preview](https://learn.microsoft.com/en-us/azure/templates/Microsoft.Kubernetes/2024-12-01-preview/connectedClusters) |
 
 ## Usage examples
 
@@ -121,21 +123,68 @@ module connectedClusters 'br/public:avm/res/kubernetes/connected-clusters:<versi
 
 | Parameter | Type | Description |
 | :-- | :-- | :-- |
-| [`name`](#parameter-name) | string | Name of the resource to create. |
+| [`name`](#parameter-name) | string | The name of the Azure Arc connected cluster. |
 
 **Optional parameters**
 
 | Parameter | Type | Description |
 | :-- | :-- | :-- |
+| [`aadAdminGroupObjectIds`](#parameter-aadadmingroupobjectids) | array | The Azure AD admin group object IDs |
+| [`aadTenantId`](#parameter-aadtenantid) | string | Optional. The Azure AD tenant ID |
+| [`agentAutoUpgrade`](#parameter-agentautoupgrade) | string | Enable automatic agent upgrades |
+| [`enableAzureRBAC`](#parameter-enableazurerbac) | bool | Enable Azure RBAC |
 | [`enableTelemetry`](#parameter-enabletelemetry) | bool | Enable/Disable usage telemetry for module. |
+| [`identityType`](#parameter-identitytype) | string | The identity type for the cluster. Allowed values: "SystemAssigned", "None" |
 | [`location`](#parameter-location) | string | Location for all Resources. |
+| [`oidcIssuerEnabled`](#parameter-oidcissuerenabled) | bool | Enable OIDC issuer |
+| [`tags`](#parameter-tags) | object | Tags for the cluster resource |
+| [`workloadIdentityEnabled`](#parameter-workloadidentityenabled) | bool | Enable workload identity |
 
 ### Parameter: `name`
 
-Name of the resource to create.
+The name of the Azure Arc connected cluster.
 
 - Required: Yes
 - Type: string
+
+### Parameter: `aadAdminGroupObjectIds`
+
+The Azure AD admin group object IDs
+
+- Required: No
+- Type: array
+- Default: `[]`
+
+### Parameter: `aadTenantId`
+
+Optional. The Azure AD tenant ID
+
+- Required: No
+- Type: string
+- Default: `''`
+
+### Parameter: `agentAutoUpgrade`
+
+Enable automatic agent upgrades
+
+- Required: No
+- Type: string
+- Default: `'Enabled'`
+- Allowed:
+  ```Bicep
+  [
+    'Disabled'
+    'Enabled'
+  ]
+  ```
+
+### Parameter: `enableAzureRBAC`
+
+Enable Azure RBAC
+
+- Required: No
+- Type: bool
+- Default: `False`
 
 ### Parameter: `enableTelemetry`
 
@@ -145,6 +194,21 @@ Enable/Disable usage telemetry for module.
 - Type: bool
 - Default: `True`
 
+### Parameter: `identityType`
+
+The identity type for the cluster. Allowed values: "SystemAssigned", "None"
+
+- Required: No
+- Type: string
+- Default: `'SystemAssigned'`
+- Allowed:
+  ```Bicep
+  [
+    'None'
+    'SystemAssigned'
+  ]
+  ```
+
 ### Parameter: `location`
 
 Location for all Resources.
@@ -152,6 +216,30 @@ Location for all Resources.
 - Required: No
 - Type: string
 - Default: `[resourceGroup().location]`
+
+### Parameter: `oidcIssuerEnabled`
+
+Enable OIDC issuer
+
+- Required: No
+- Type: bool
+- Default: `False`
+
+### Parameter: `tags`
+
+Tags for the cluster resource
+
+- Required: No
+- Type: object
+- Default: `{}`
+
+### Parameter: `workloadIdentityEnabled`
+
+Enable workload identity
+
+- Required: No
+- Type: bool
+- Default: `False`
 
 ## Outputs
 

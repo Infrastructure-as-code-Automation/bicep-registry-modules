@@ -1,8 +1,8 @@
-metadata name = '<Add module name>'
-metadata description = '<Add description>'
+metadata name = 'Kubernetes Connected Clusters'
+metadata description = 'Deploy an Azure Arc connected cluster.'
 metadata owner = 'Azure/module-maintainers'
 
-@description('The name of the Azure Arc connected cluster.')
+@description('Required. The name of the Azure Arc connected cluster.')
 param name string
 
 @description('Optional. Location for all Resources.')
@@ -64,17 +64,17 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
 // Add your User-defined-types here, if any
 //
 
-@description('The identity type for the cluster. Allowed values: "SystemAssigned", "None"')
+@description('Optional. The identity type for the cluster. Allowed values: "SystemAssigned", "None"')
 @allowed([
   'SystemAssigned'
   'None'
 ])
 param identityType string = 'SystemAssigned'
 
-@description('Tags for the cluster resource')
+@description('Optional. Tags for the cluster resource')
 param tags object = {}
 
-@description('Optional. The Azure AD tenant ID')
+@description('Optional. Optional. The Azure AD tenant ID')
 param aadTenantId string = ''
 
 @description('Optional. The Azure AD admin group object IDs')

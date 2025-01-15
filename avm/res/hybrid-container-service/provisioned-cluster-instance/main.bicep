@@ -1,8 +1,8 @@
-metadata name = '<Add module name>'
-metadata description = '<Add description>'
+metadata name = 'Hybrid Container Service Provisioned Cluster Instance'
+metadata description = 'Deploy a provisioned cluster instance.'
 metadata owner = 'Azure/module-maintainers'
 
-@description('The name of the provisioned cluster instance.')
+@description('Required. The name of the provisioned cluster instance.')
 param name string
 
 @description('Optional. Location for all Resources.')
@@ -64,16 +64,16 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
 // Add your User-defined-types here, if any
 //
 
-@description('The name of the secret in the key vault that contains the SSH private key PEM.')
+@description('Optional. The name of the secret in the key vault that contains the SSH private key PEM.')
 param sshPrivateKeyPemSecretName string = 'AksArcAgentSshPrivateKeyPem'
 
-@description('The name of the secret in the key vault that contains the SSH public key.')
+@description('Optional. The name of the secret in the key vault that contains the SSH public key.')
 param sshPublicKeySecretName string = 'AksArcAgentSshPublicKey'
 
-@description('The key vault name.')
-param keyVaultName string
+@description('Conditional. The key vault name.')
+param keyVaultName string = ''
 
-@description('The SSH public key that will be used to access the kubernetes cluster nodes. If not specified, a new SSH key pair will be generated.')
+@description('Conditional. The SSH public key that will be used to access the kubernetes cluster nodes. If not specified, a new SSH key pair will be generated.')
 param sshPublicKey string = ''
 
 resource kv 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
@@ -128,19 +128,19 @@ resource sshPrivateKeyPem 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = if (e
 
 var sshPublicKeyData = empty(sshPublicKey) ? generateSSHKey.properties.outputs.publicKey : sshPublicKey
 
-@description('The extended location name.')
+@description('Required. The extended location name.')
 param extendedLocationName string
 
-@description('The id of the Custom location that used to create hybrid aks.')
+@description('Required. The id of the Custom location that used to create hybrid aks.')
 param customLocationId string
 
-@description('Indicates whether the resource is exported.')
+@description('Optional. Indicates whether the resource is exported.')
 param isExported bool = false
 
-@description('The Kubernetes version for the cluster.')
+@description('Optional. The Kubernetes version for the cluster.')
 param kubernetesVersion string = ''
 
-@description('Agent pool configuration.')
+@description('Optional. Agent pool configuration.')
 param agentPoolProfiles array = [
   {
     name: '${name}-nodepool1'
@@ -157,29 +157,78 @@ param agentPoolProfiles array = [
   }
 ]
 
-@description('The id of the logical network that the AKS nodes will be connected to.')
+@description('Required. The id of the logical network that the AKS nodes will be connected to.')
 param logicalNetworkId string
 
-@description('The number of control plane nodes.')
+@description('Optional. The number of control plane nodes.')
 param controlPlaneCount int = 1
 
-@description('The VM size for control plane nodes.')
+@description('Optional. The VM size for control plane nodes.')
 param controlPlaneVmSize string = 'Standard_A4_v2'
 
-@description('The host IP for control plane endpoint.')
+@description('Optional. The host IP for control plane endpoint.')
 param controlPlaneIP string = ''
 
-@description('The CIDR range for the pods in the kubernetes cluster.')
+@description('Optional. The CIDR range for the pods in the kubernetes cluster.')
 param podCidr string = '10.244.0.0/16'
 
-@description('Azure Hybrid Benefit configuration.')
+@description('Optional. Azure Hybrid Benefit configuration.')
 param azureHybridBenefit string = ''
 
-@description('Enable or disable NFS CSI driver')
+@description('Optional. Enable or disable NFS CSI driver')
 param nfsCsiDriverEnabled bool = true
 
-@description('Enable or disable SMB CSI driver')
+@description('Optional. Enable or disable SMB CSI driver')
 param smbCsiDriverEnabled bool = true
+
+@description('Optional. The identity type for the cluster. Allowed values: "SystemAssigned", "None"')
+@allowed([
+  'SystemAssigned'
+  'None'
+])
+param identityType string = 'SystemAssigned'
+
+@description('Optional. Tags for the cluster resource')
+param connectClustersTags object = {}
+
+@description('Optional. The Azure AD tenant ID')
+param aadTenantId string = ''
+
+@description('Optional. The Azure AD admin group object IDs')
+param aadAdminGroupObjectIds array = []
+
+@description('Optional. Enable Azure RBAC')
+param enableAzureRBAC bool = false
+
+@description('Optional. Enable automatic agent upgrades')
+@allowed([
+  'Enabled'
+  'Disabled'
+])
+param agentAutoUpgrade string = 'Enabled'
+
+@description('Optional. Enable OIDC issuer')
+param oidcIssuerEnabled bool = false
+
+@description('Optional. Enable workload identity')
+param workloadIdentityEnabled bool = false
+
+module connectedCluster '../../kubernetes/connected-clusters/main.bicep' = {
+  name: 'connectedCluster'
+  params: {
+    name: name
+    location: location
+    enableTelemetry: enableTelemetry
+    identityType: identityType
+    tags: connectClustersTags
+    aadTenantId: aadTenantId
+    aadAdminGroupObjectIds: aadAdminGroupObjectIds
+    enableAzureRBAC: enableAzureRBAC
+    agentAutoUpgrade: agentAutoUpgrade
+    oidcIssuerEnabled: oidcIssuerEnabled
+    workloadIdentityEnabled: workloadIdentityEnabled
+  }
+}
 
 resource waitAksVhdReady 'Microsoft.Resources/deploymentScripts@2020-10-01' = if (!isExported) {
   name: 'waitAksVhdReady'
