@@ -8,7 +8,7 @@ param name string
 @description('Optional. Location for all Resources.')
 param location string = resourceGroup().location
 
-param gatewayType string
+param gatewayType 'Public' = 'Public'
 
 param allowedFeatures array = []
 
