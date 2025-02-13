@@ -8,8 +8,10 @@ param name string
 @description('Optional. Location for all Resources.')
 param location string = resourceGroup().location
 
+@description('Optional. Type of gateway to create, the only allowed value is Public.')
 param gatewayType 'Public' = 'Public'
 
+@description('Optional. List of features allowed on the gateway. Allowed values are: [\'RemoteApp\', \'RemoteDesktop\', \'RemotePowerShell\', \'RemoteSSH\', \'RemoteSFTP\', \'RemoteVNC\', \'RemoteWinRM\']')
 param allowedFeatures array = []
 
 @description('Optional. Tags of the resource.')
