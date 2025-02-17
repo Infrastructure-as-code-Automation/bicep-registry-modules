@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.33.93.31351",
-      "templateHash": "6430521090288881808"
+      "templateHash": "2491671005508066601"
     },
     "name": "Hybrid Compute Gateways",
     "description": "<Add description>",
@@ -40,7 +40,7 @@
       "type": "array",
       "defaultValue": [],
       "metadata": {
-        "description": "Optional. List of features allowed on the gateway. Allowed values are: ['RemoteApp', 'RemoteDesktop', 'RemotePowerShell', 'RemoteSSH', 'RemoteSFTP', 'RemoteVNC', 'RemoteWinRM']"
+        "description": "Optional. List of features allowed on the gateway. Allowed values are: ['RemoteApp', 'RemoteDesktop', 'RemotePowerShell', 'RemoteSSH', 'RemoteSFTP', 'RemoteVNC', 'RemoteWinRM']."
       }
     },
     "tags": {
