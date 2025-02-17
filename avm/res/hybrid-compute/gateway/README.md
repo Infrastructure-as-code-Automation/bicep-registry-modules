@@ -108,6 +108,11 @@ module gateway 'br/public:avm/res/hybrid-compute/gateway:<version>' = {
     name: 'arcgwciwaf001'
     // Non-required parameters
     location: '<location>'
+    tags: {
+      Environment: 'Non-Prod'
+      'hidden-title': 'This is visible in the resource name'
+      Role: 'DeploymentValidation'
+    }
   }
 }
 ```
@@ -131,6 +136,13 @@ module gateway 'br/public:avm/res/hybrid-compute/gateway:<version>' = {
     // Non-required parameters
     "location": {
       "value": "<location>"
+    },
+    "tags": {
+      "value": {
+        "Environment": "Non-Prod",
+        "hidden-title": "This is visible in the resource name",
+        "Role": "DeploymentValidation"
+      }
     }
   }
 }
@@ -150,6 +162,11 @@ using 'br/public:avm/res/hybrid-compute/gateway:<version>'
 param name = 'arcgwciwaf001'
 // Non-required parameters
 param location = '<location>'
+param tags = {
+  Environment: 'Non-Prod'
+  'hidden-title': 'This is visible in the resource name'
+  Role: 'DeploymentValidation'
+}
 ```
 
 </details>
