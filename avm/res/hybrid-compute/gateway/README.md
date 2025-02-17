@@ -184,7 +184,7 @@ param tags = {
 
 | Parameter | Type | Description |
 | :-- | :-- | :-- |
-| [`allowedFeatures`](#parameter-allowedfeatures) | array | List of features allowed on the gateway. Allowed values are: ['RemoteApp', 'RemoteDesktop', 'RemotePowerShell', 'RemoteSSH', 'RemoteSFTP', 'RemoteVNC', 'RemoteWinRM']. |
+| [`allowedFeatures`](#parameter-allowedfeatures) | array | List of features allowed on the gateway. Allowed values are: ['*']. |
 | [`enableTelemetry`](#parameter-enabletelemetry) | bool | Enable/Disable usage telemetry for module. |
 | [`gatewayType`](#parameter-gatewaytype) | string | Type of gateway to create, the only allowed value is Public. |
 | [`location`](#parameter-location) | string | Location for all Resources. |
@@ -199,11 +199,16 @@ Name of the gateway to create.
 
 ### Parameter: `allowedFeatures`
 
-List of features allowed on the gateway. Allowed values are: ['RemoteApp', 'RemoteDesktop', 'RemotePowerShell', 'RemoteSSH', 'RemoteSFTP', 'RemoteVNC', 'RemoteWinRM'].
+List of features allowed on the gateway. Allowed values are: ['*'].
 
 - Required: No
 - Type: array
-- Default: `[]`
+- Default:
+  ```Bicep
+  [
+    '*'
+  ]
+  ```
 
 ### Parameter: `enableTelemetry`
 
