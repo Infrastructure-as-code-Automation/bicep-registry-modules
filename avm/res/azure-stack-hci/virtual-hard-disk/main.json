@@ -1,0 +1,106 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "languageVersion": "2.0",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.33.93.31351",
+      "templateHash": "7280955635626761581"
+    },
+    "name": "Azure Stack HCI Virtual Hard Disk",
+    "description": "This module deploys an Azure Stack HCI virtual hard disk."
+  },
+  "parameters": {
+    "name": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. Name of the resource to create."
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Optional. Location for all Resources."
+      }
+    },
+    "tags": {
+      "type": "object",
+      "nullable": true,
+      "metadata": {
+        "description": "Optional. Tags of the resource."
+      }
+    },
+    "customLocationId": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. Resource ID of the associated custom location."
+      }
+    },
+    "enableTelemetry": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Optional. Enable/Disable usage telemetry for module."
+      }
+    },
+    "diskSizeGB": {
+      "type": "int",
+      "metadata": {
+        "description": "Required. The size of the disk in GB."
+      }
+    },
+    "dynamic": {
+      "type": "bool",
+      "metadata": {
+        "description": "Required. The disk type."
+      }
+    },
+    "containerId": {
+      "type": "string",
+      "nullable": true,
+      "metadata": {
+        "description": "Optional. The container ID."
+      }
+    }
+  },
+  "resources": {
+    "avmTelemetry": {
+      "condition": "[parameters('enableTelemetry')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2024-03-01",
+      "name": "[format('46d3xbcp.res.azurestackhci-virtualharddisk.{0}.{1}', replace('-..--..-', '.', '-'), substring(uniqueString(deployment().name, parameters('location')), 0, 4))]",
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": [],
+          "outputs": {
+            "telemetry": {
+              "type": "String",
+              "value": "For more information, see https://aka.ms/avm/TelemetryInfo"
+            }
+          }
+        }
+      }
+    },
+    "virtualHardDisk": {
+      "type": "Microsoft.AzureStackHCI/virtualHardDisks",
+      "apiVersion": "2025-02-01-preview",
+      "name": "[parameters('name')]",
+      "tags": "[parameters('tags')]",
+      "extendedLocation": {
+        "type": "CustomLocation",
+        "name": "[parameters('customLocationId')]"
+      },
+      "location": "[parameters('location')]",
+      "properties": {
+        "diskSizeGB": "[parameters('diskSizeGB')]",
+        "dynamic": "[parameters('dynamic')]",
+        "containerId": "[parameters('containerId')]"
+      }
+    }
+  }
+}

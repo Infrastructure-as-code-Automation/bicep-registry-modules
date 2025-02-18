@@ -185,8 +185,9 @@ module testDeployment '../../../main.bicep' = {
   scope: resourceGroup
   params: {
     name: '${namePrefix}${serviceShort}vhd'
+    location: enforcedLocation
     diskSizeGB: 4
-    dynamic: true
-    customLocation: customLocation.id
+    dynamic: false
+    customLocationId: customLocation.id
   }
 }

@@ -5,10 +5,10 @@ metadata description = 'This instance deploys the module in alignment with the b
 
 @description('Optional. The name of the resource group to deploy for testing purposes.')
 @maxLength(90)
-param resourceGroupName string = 'dep-${namePrefix}-azurestackhci.logicalnetworks-${serviceShort}-rg'
+param resourceGroupName string = 'dep-${namePrefix}-azurestackhci.virtualharddisk-${serviceShort}-rg'
 
 @description('Optional. A short identifier for the kind of deployment. Should be kept short to not run into resource-name length-constraints.')
-param serviceShort string = 'ashlnwaf'
+param serviceShort string = 'ashvhdwaf'
 
 @description('Optional. A token to inject into the name of each resource. This value can be automatically injected by the CI.')
 param namePrefix string = '#_namePrefix_#'
@@ -192,21 +192,14 @@ resource customLocation 'Microsoft.ExtendedLocation/customLocations@2021-08-31-p
 }
 
 module testDeployment '../../../main.bicep' = {
-  name: '${uniqueString(deployment().name, enforcedLocation)}-logicalNetwork-${serviceShort}'
+  name: '${uniqueString(deployment().name, enforcedLocation)}-virtualharddisk-${serviceShort}'
   scope: resourceGroup
   params: {
-    name: '${namePrefix}${serviceShort}logicalnetwork'
+    name: '${namePrefix}${serviceShort}vhd'
     location: enforcedLocation
     customLocationId: customLocation.id
-    vmSwitchName: 'ConvergedSwitch(managementcompute)'
-    ipAllocationMethod: 'Static'
-    addressPrefix: '172.20.0.1/24'
-    startingAddress: '172.20.0.171'
-    endingAddress: '172.20.0.190'
-    defaultGateway: '172.20.0.1'
-    dnsServers: ['172.20.0.1']
-    routeName: 'default'
-    vlanId: null
+    diskSizeGB: 4
+    dynamic: true
     tags: {
       'hidden-title': 'This is visible in the resource name'
       Environment: 'Non-Prod'
