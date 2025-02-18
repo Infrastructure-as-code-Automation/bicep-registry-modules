@@ -25,6 +25,40 @@ param dynamic bool
 @description('Optional. The container ID.')
 param containerId string?
 
+import { roleAssignmentType } from 'br/public:avm/utl/types/avm-common-types:0.2.1'
+@description('Optional. Array of role assignments to create.')
+param roleAssignments roleAssignmentType[]?
+
+var builtInRoleNames = {
+  // Add other relevant built-in roles here for your resource as per BCPNFR5
+  Contributor: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')
+  Owner: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')
+  Reader: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')
+  'Azure Stack HCI VM Contributor': subscriptionResourceId(
+    'Microsoft.Authorization/roleDefinitions',
+    '874d1c73-6003-4e60-a13a-cb31ea190a85'
+  )
+  'Azure Stack HCI VM Reader': subscriptionResourceId(
+    'Microsoft.Authorization/roleDefinitions',
+    '4b3fe76c-f777-4d24-a2d7-b027b0f7b273'
+  )
+  'Azure Stack HCI Administrator': subscriptionResourceId(
+    'Microsoft.Authorization/roleDefinitions',
+    'bda0d508-adf1-4af0-9c28-88919fc3ae06'
+  )
+}
+
+var formattedRoleAssignments = [
+  for (roleAssignment, index) in (roleAssignments ?? []): union(roleAssignment, {
+    roleDefinitionId: builtInRoleNames[?roleAssignment.roleDefinitionIdOrName] ?? (contains(
+        roleAssignment.roleDefinitionIdOrName,
+        '/providers/Microsoft.Authorization/roleDefinitions/'
+      )
+      ? roleAssignment.roleDefinitionIdOrName
+      : subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleAssignment.roleDefinitionIdOrName))
+  })
+]
+
 // ============== //
 // Resources      //
 // ============== //
@@ -63,6 +97,22 @@ resource virtualHardDisk 'Microsoft.AzureStackHCI/virtualHardDisks@2025-02-01-pr
   }
   scope: resourceGroup()
 }
+
+resource virtualHardDisk_roleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for (roleAssignment, index) in (formattedRoleAssignments ?? []): {
+    name: roleAssignment.?name ?? guid(virtualHardDisk.id, roleAssignment.principalId, roleAssignment.roleDefinitionId)
+    properties: {
+      roleDefinitionId: roleAssignment.roleDefinitionId
+      principalId: roleAssignment.principalId
+      description: roleAssignment.?description
+      principalType: roleAssignment.?principalType
+      condition: roleAssignment.?condition
+      conditionVersion: !empty(roleAssignment.?condition) ? (roleAssignment.?conditionVersion ?? '2.0') : null // Must only be set if condtion is set
+      delegatedManagedIdentityResourceId: roleAssignment.?delegatedManagedIdentityResourceId
+    }
+    scope: virtualHardDisk
+  }
+]
 
 // ============ //
 // Outputs      //
