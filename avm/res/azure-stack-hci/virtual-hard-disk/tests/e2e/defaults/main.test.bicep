@@ -1,14 +1,14 @@
 targetScope = 'subscription'
 
-metadata name = 'Deploy azure stack hci logical network in default configuration'
-metadata description = 'This test deploys an azure stack hci logical network.'
+metadata name = 'Using only defaults'
+metadata description = 'This instance deploys the module with the minimum set of required parameters.'
 
 @description('Optional. The name of the resource group to deploy for testing purposes.')
 @maxLength(90)
-param resourceGroupName string = 'dep-${namePrefix}-azurestackhci.logicalnetworks-${serviceShort}-rg'
+param resourceGroupName string = 'dep-${namePrefix}-azurestackhci.virtualharddisk-${serviceShort}-rg'
 
 @description('Optional. A short identifier for the kind of deployment. Should be kept short to not run into resource-name length-constraints.')
-param serviceShort string = 'ashlnmin'
+param serviceShort string = 'ashvhdmin'
 
 @description('Optional. A token to inject into the name of each resource. This value can be automatically injected by the CI.')
 param namePrefix string = '#_namePrefix_#'
@@ -184,6 +184,9 @@ module testDeployment '../../../main.bicep' = {
   name: '${uniqueString(deployment().name, enforcedLocation)}-virtualharddisk-${serviceShort}'
   scope: resourceGroup
   params: {
-    name: '${namePrefix}${serviceShort}virtualharddisk'
+    name: '${namePrefix}${serviceShort}vhd'
+    diskSizeGB: 4
+    dynamic: true
+    customLocation: customLocation.id
   }
 }
