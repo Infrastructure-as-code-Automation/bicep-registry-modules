@@ -282,7 +282,12 @@ Tags of the resource.
 
 ## Outputs
 
-_None_
+| Output | Type | Description |
+| :-- | :-- | :-- |
+| `location` | string | The location of the virtual hard disk. |
+| `name` | string | The name of the virtual hard disk. |
+| `resourceGroupName` | string | The resource group of the virtual hard disk. |
+| `resourceId` | string | The resource ID of the virtual hard disk. |
 
 ## Data Collection
 

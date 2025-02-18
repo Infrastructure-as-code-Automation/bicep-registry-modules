@@ -68,20 +68,14 @@ resource virtualHardDisk 'Microsoft.AzureStackHCI/virtualHardDisks@2025-02-01-pr
 // Outputs      //
 // ============ //
 
-// Add your outputs here
+@description('The name of the virtual hard disk.')
+output name string = virtualHardDisk.name
 
-// @description('The resource ID of the resource.')
-// output resourceId string = <Resource>.id
+@description('The resource ID of the virtual hard disk.')
+output resourceId string = virtualHardDisk.id
 
-// @description('The name of the resource.')
-// output name string = <Resource>.name
+@description('The resource group of the virtual hard disk.')
+output resourceGroupName string = resourceGroup().name
 
-// @description('The location the resource was deployed into.')
-// output location string = <Resource>.location
-
-// ================ //
-// Definitions      //
-// ================ //
-//
-// Add your User-defined-types here, if any
-//
+@description('The location of the virtual hard disk.')
+output location string = virtualHardDisk.location

@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.33.93.31351",
-      "templateHash": "7280955635626761581"
+      "templateHash": "7316992313499471971"
     },
     "name": "Azure Stack HCI Virtual Hard Disk",
     "description": "This module deploys an Azure Stack HCI virtual hard disk."
@@ -101,6 +101,36 @@
         "dynamic": "[parameters('dynamic')]",
         "containerId": "[parameters('containerId')]"
       }
+    }
+  },
+  "outputs": {
+    "name": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the virtual hard disk."
+      },
+      "value": "[parameters('name')]"
+    },
+    "resourceId": {
+      "type": "string",
+      "metadata": {
+        "description": "The resource ID of the virtual hard disk."
+      },
+      "value": "[resourceId('Microsoft.AzureStackHCI/virtualHardDisks', parameters('name'))]"
+    },
+    "resourceGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "The resource group of the virtual hard disk."
+      },
+      "value": "[resourceGroup().name]"
+    },
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "The location of the virtual hard disk."
+      },
+      "value": "[reference('virtualHardDisk', '2025-02-01-preview', 'full').location]"
     }
   }
 }
