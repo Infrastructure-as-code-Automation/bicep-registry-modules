@@ -25,7 +25,7 @@ param dynamic bool
 @description('Optional. The container ID.')
 param containerId string?
 
-import { roleAssignmentType } from 'br/public:avm/utl/types/avm-common-types:0.2.1'
+import { roleAssignmentType } from 'br/public:avm/utl/types/avm-common-types:0.5.1'
 @description('Optional. Array of role assignments to create.')
 param roleAssignments roleAssignmentType[]?
 
@@ -34,17 +34,13 @@ var builtInRoleNames = {
   Contributor: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')
   Owner: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')
   Reader: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')
-  'Azure Stack HCI VM Contributor': subscriptionResourceId(
+  'User Access Administrator': subscriptionResourceId(
     'Microsoft.Authorization/roleDefinitions',
-    '874d1c73-6003-4e60-a13a-cb31ea190a85'
+    '18d7d88d-d35e-4fb5-a5c3-7773c20a72d9'
   )
-  'Azure Stack HCI VM Reader': subscriptionResourceId(
+  'Role Based Access Control Administrator (Preview)': subscriptionResourceId(
     'Microsoft.Authorization/roleDefinitions',
-    '4b3fe76c-f777-4d24-a2d7-b027b0f7b273'
-  )
-  'Azure Stack HCI Administrator': subscriptionResourceId(
-    'Microsoft.Authorization/roleDefinitions',
-    'bda0d508-adf1-4af0-9c28-88919fc3ae06'
+    'f58310d9-a9f6-439a-9e8d-f62e7b41a168'
   )
 }
 
