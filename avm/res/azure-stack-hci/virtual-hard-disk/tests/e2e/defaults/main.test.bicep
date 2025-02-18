@@ -45,7 +45,7 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   location: enforcedLocation
 }
 
-module nestedDependencies '../../../../cluster/tests/e2e/waf-aligned/dependencies.bicep' = {
+module nestedDependencies '../../../../cluster/tests/e2e/defaults/dependencies.bicep' = {
   name: '${uniqueString(deployment().name, enforcedLocation)}-test-nestedDependencies-${serviceShort}'
   scope: resourceGroup
   params: {
@@ -181,20 +181,9 @@ resource customLocation 'Microsoft.ExtendedLocation/customLocations@2021-08-31-p
 }
 
 module testDeployment '../../../main.bicep' = {
-  name: '${uniqueString(deployment().name, enforcedLocation)}-logicalNetwork-${serviceShort}'
+  name: '${uniqueString(deployment().name, enforcedLocation)}-virtualharddisk-${serviceShort}'
   scope: resourceGroup
   params: {
-    name: '${namePrefix}${serviceShort}logicalnetwork'
-    location: enforcedLocation
-    customLocationId: customLocation.id
-    vmSwitchName: 'ConvergedSwitch(managementcompute)'
-    ipAllocationMethod: 'Static'
-    addressPrefix: '172.20.0.1/24'
-    startingAddress: '172.20.0.171'
-    endingAddress: '172.20.0.190'
-    defaultGateway: '172.20.0.1'
-    dnsServers: ['172.20.0.1']
-    routeName: 'default'
-    vlanId: null
+    name: '${namePrefix}${serviceShort}virtualharddisk'
   }
 }
