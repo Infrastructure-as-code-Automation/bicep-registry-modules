@@ -10,14 +10,14 @@ metadata description = 'This instance deploys the module with the minimum set of
 @description('Optional. The name of the resource group to deploy for testing purposes.')
 @maxLength(90)
 // e.g., for a module 'network/private-endpoint' you could use 'dep-dev-network.privateendpoints-${serviceShort}-rg'
-param resourceGroupName string = 'dep-${namePrefix}-azurestackhci-networkinterface-${serviceShort}-rg'
+param resourceGroupName string = 'dep-${namePrefix}-azurestackhci.vmi-${serviceShort}-rg'
 
 @description('Optional. The location to deploy resources to.')
 param resourceLocation string = deployment().location
 
 @description('Optional. A short identifier for the kind of deployment. Should be kept short to not run into resource-name length-constraints.')
 // e.g., for a module 'network/private-endpoint' you could use 'npe' as a prefix and then 'waf' as a suffix for the waf-aligned test
-param serviceShort string = 'asnicmin'
+param serviceShort string = 'ashvmimin'
 
 @description('Optional. A token to inject into the name of each resource. This value can be automatically injected by the CI.')
 param namePrefix string = '#_namePrefix_#'
@@ -202,26 +202,13 @@ resource customLocation 'Microsoft.ExtendedLocation/customLocations@2021-08-31-p
 // Test Execution //
 // ============== //
 
-@batchSize(1)
-module testDeployment '../../../main.bicep' = [
-  for iteration in ['init', 'idem']: {
-    scope: resourceGroup
-    name: '${uniqueString(deployment().name, enforcedLocation)}-test-${serviceShort}-${iteration}'
-    params: {
-      // You parameters go here
-      name: '${namePrefix}${serviceShort}001'
-      location: enforcedLocation
-      customLocation: customLocation.id
-      ipConfigurations: [
-        {
-          name: 'ipConfig1'
-          properties: {
-            subnet: {
-              id: nestedDependencies.outputs.subnetId
-            }
-          }
-        }
-      ]
-    }
+module testDeployment '../../../main.bicep' = {
+  name: '${uniqueString(deployment().name, enforcedLocation)}-vm-${serviceShort}'
+  scope: resourceGroup
+  params: {
+    name: '${namePrefix}${serviceShort}vhd'
+    location: enforcedLocation
+    customLocation: customLocation.id
+    arcMachineResourceName: ''
   }
-]
+}

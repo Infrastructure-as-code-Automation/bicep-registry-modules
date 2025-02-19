@@ -13,15 +13,11 @@ param tags object?
 @description('Required. Resource ID of the associated custom location.')
 param customLocation string
 
-@description('Required. Arc Machine resource id.')
-param arcMachineResourceId string
+@description('Required. Arc Machine resource name.')
+param arcMachineResourceName string
 
 @description('Optional. Enable/Disable usage telemetry for module.')
 param enableTelemetry bool = true
-
-//
-// Add your parameters here
-//
 
 // ============== //
 // Resources      //
@@ -46,7 +42,11 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
   }
 }
 
-resource virtualMachineInstance 'Microsoft.AzureStackHCI/virtualMachineInstances@2024-01-01' = {
+resource existingMachine 'Microsoft.HybridCompute/machines@2024-07-10' existing = {
+  name: arcMachineResourceName
+}
+
+resource virtualMachineInstance 'Microsoft.AzureStackHCI/virtualMachineInstances@2024-08-01-preview' = {
   name: name
   tags: tags
   extendedLocation: {
@@ -56,7 +56,7 @@ resource virtualMachineInstance 'Microsoft.AzureStackHCI/virtualMachineInstances
   properties: {
     // Add your properties here
   }
-  scope: resourceGroup()
+  scope: existingMachine
 }
 
 // ============ //
