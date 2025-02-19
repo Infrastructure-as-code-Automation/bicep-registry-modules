@@ -175,6 +175,25 @@ module azlocal 'br/public:avm/res/azure-stack-hci/cluster:0.1.0' = {
   }
 }
 
+module logicalNetwork '../../../../logical-network/main.bicep' = {
+  name: '${uniqueString(deployment().name, enforcedLocation)}-logicalNetwork-${serviceShort}'
+  scope: resourceGroup
+  params: {
+    name: '${namePrefix}${serviceShort}logicalnetwork'
+    location: enforcedLocation
+    customLocationId: customLocation.id
+    vmSwitchName: 'ConvergedSwitch(management)'
+    ipAllocationMethod: 'Static'
+    addressPrefix: '172.20.0.1/24'
+    startingAddress: '172.20.0.171'
+    endingAddress: '172.20.0.190'
+    defaultGateway: '172.20.0.1'
+    dnsServers: ['172.20.0.1']
+    routeName: 'default'
+    vlanId: null
+  }
+}
+
 resource customLocation 'Microsoft.ExtendedLocation/customLocations@2021-08-31-preview' existing = {
   scope: resourceGroup
   name: '${namePrefix}${serviceShort}-location'
@@ -191,7 +210,7 @@ module testDeployment '../../../main.bicep' = {
       {
         properties: {
           subnet: {
-            id: '/subscriptions/00000000-0000-000ubnets/subnet1'
+            id: logicalNetwork.outputs.resourceId
           }
         }
       }

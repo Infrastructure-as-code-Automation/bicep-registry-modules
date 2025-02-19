@@ -191,6 +191,30 @@ resource customLocation 'Microsoft.ExtendedLocation/customLocations@2021-08-31-p
   name: '${namePrefix}${serviceShort}-location'
 }
 
+module logicalNetwork '../../../../logical-network/main.bicep' = {
+  name: '${uniqueString(deployment().name, enforcedLocation)}-logicalNetwork-${serviceShort}'
+  scope: resourceGroup
+  params: {
+    name: '${namePrefix}${serviceShort}logicalnetwork'
+    location: enforcedLocation
+    customLocationId: customLocation.id
+    vmSwitchName: 'ConvergedSwitch(management)'
+    ipAllocationMethod: 'Static'
+    addressPrefix: '172.20.0.1/24'
+    startingAddress: '172.20.0.171'
+    endingAddress: '172.20.0.190'
+    defaultGateway: '172.20.0.1'
+    dnsServers: ['172.20.0.1']
+    routeName: 'default'
+    vlanId: null
+    tags: {
+      'hidden-title': 'This is visible in the resource name'
+      Environment: 'Non-Prod'
+      Role: 'DeploymentValidation'
+    }
+  }
+}
+
 module testDeployment '../../../main.bicep' = {
   name: '${uniqueString(deployment().name, enforcedLocation)}-networkinterface-${serviceShort}'
   scope: resourceGroup
@@ -198,6 +222,15 @@ module testDeployment '../../../main.bicep' = {
     name: '${namePrefix}${serviceShort}networkinterface'
     location: enforcedLocation
     customLocationId: customLocation.id
+    ipConfigurations: [
+      {
+        properties: {
+          subnet: {
+            id: logicalNetwork.outputs.resourceId
+          }
+        }
+      }
+    ]
     tags: {
       'hidden-title': 'This is visible in the resource name'
       Environment: 'Non-Prod'
