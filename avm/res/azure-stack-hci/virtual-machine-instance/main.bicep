@@ -63,20 +63,11 @@ resource virtualMachineInstance 'Microsoft.AzureStackHCI/virtualMachineInstances
 // Outputs      //
 // ============ //
 
-// Add your outputs here
+@description('The name of the virtual machine instance.')
+output name string = virtualMachineInstance.name
 
-// @description('The resource ID of the resource.')
-// output resourceId string = <Resource>.id
+@description('The resource ID of the virtual machine instance.')
+output resourceId string = virtualMachineInstance.id
 
-// @description('The name of the resource.')
-// output name string = <Resource>.name
-
-// @description('The location the resource was deployed into.')
-// output location string = <Resource>.location
-
-// ================ //
-// Definitions      //
-// ================ //
-//
-// Add your User-defined-types here, if any
-//
+@description('The resource group of the virtual machine instance.')
+output resourceGroupName string = resourceGroup().name
