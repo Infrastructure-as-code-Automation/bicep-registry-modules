@@ -197,6 +197,9 @@ module logicalNetwork '../../../../logical-network/main.bicep' = {
 resource customLocation 'Microsoft.ExtendedLocation/customLocations@2021-08-31-preview' existing = {
   scope: resourceGroup
   name: '${namePrefix}${serviceShort}-location'
+  dependsOn: [
+    azlocal
+  ]
 }
 
 module testDeployment '../../../main.bicep' = {
