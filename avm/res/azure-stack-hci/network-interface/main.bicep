@@ -131,7 +131,7 @@ output location string = networkInterface.location
 //
 
 type ipConfigurationType = {
-  name: string
+  name: string?
   properties: {
     privateIPAddress: string?
     subnet: {

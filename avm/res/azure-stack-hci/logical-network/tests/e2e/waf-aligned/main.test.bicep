@@ -1,14 +1,14 @@
 targetScope = 'subscription'
 
-metadata name = 'Using only defaults'
-metadata description = 'This instance deploys the module with the minimum set of required parameters.'
+metadata name = 'WAF-aligned'
+metadata description = 'This instance deploys the module in alignment with the best-practices of the Azure Well-Architected Framework.'
 
 @description('Optional. The name of the resource group to deploy for testing purposes.')
 @maxLength(90)
-param resourceGroupName string = 'dep-${namePrefix}-azurestackhci.networkinterface-${serviceShort}-rg'
+param resourceGroupName string = 'dep-${namePrefix}-azurestackhci.logicalnetwork-${serviceShort}-rg'
 
 @description('Optional. A short identifier for the kind of deployment. Should be kept short to not run into resource-name length-constraints.')
-param serviceShort string = 'ashnimin'
+param serviceShort string = 'ashlnwaf'
 
 @description('Optional. A token to inject into the name of each resource. This value can be automatically injected by the CI.')
 param namePrefix string = '#_namePrefix_#'
@@ -45,7 +45,7 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   location: enforcedLocation
 }
 
-module nestedDependencies '../../../../cluster/tests/e2e/defaults/dependencies.bicep' = {
+module nestedDependencies '../../../../cluster/tests/e2e/waf-aligned/dependencies.bicep' = {
   name: '${uniqueString(deployment().name, enforcedLocation)}-test-nestedDependencies-${serviceShort}'
   scope: resourceGroup
   params: {
@@ -171,6 +171,17 @@ module azlocal 'br/public:avm/res/azure-stack-hci/cluster:0.1.0' = {
         }
       ]
       subnetMask: '255.255.255.0'
+      driftControlEnforced: true
+      smbSigningEnforced: true
+      smbClusterEncryption: true
+      sideChannelMitigationEnforced: true
+      bitlockerBootVolume: true
+      bitlockerDataVolumes: true
+    }
+    tags: {
+      'hidden-title': 'This is visible in the resource name'
+      Environment: 'Non-Prod'
+      Role: 'DeploymentValidation'
     }
   }
 }
@@ -181,20 +192,25 @@ resource customLocation 'Microsoft.ExtendedLocation/customLocations@2021-08-31-p
 }
 
 module testDeployment '../../../main.bicep' = {
-  name: '${uniqueString(deployment().name, enforcedLocation)}-networkinterface-${serviceShort}'
+  name: '${uniqueString(deployment().name, enforcedLocation)}-logicalNetwork-${serviceShort}'
   scope: resourceGroup
   params: {
-    name: '${namePrefix}${serviceShort}networkinterface'
+    name: '${namePrefix}${serviceShort}logicalnetwork'
     location: enforcedLocation
     customLocationId: customLocation.id
-    ipConfigurations: [
-      {
-        properties: {
-          subnet: {
-            id: '/subscriptions/00000000-0000-000ubnets/subnet1'
-          }
-        }
-      }
-    ]
+    vmSwitchName: 'ConvergedSwitch(management)'
+    ipAllocationMethod: 'Static'
+    addressPrefix: '172.20.0.1/24'
+    startingAddress: '172.20.0.171'
+    endingAddress: '172.20.0.190'
+    defaultGateway: '172.20.0.1'
+    dnsServers: ['172.20.0.1']
+    routeName: 'default'
+    vlanId: null
+    tags: {
+      'hidden-title': 'This is visible in the resource name'
+      Environment: 'Non-Prod'
+      Role: 'DeploymentValidation'
+    }
   }
 }
