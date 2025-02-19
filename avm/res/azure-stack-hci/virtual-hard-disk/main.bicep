@@ -78,7 +78,7 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
   }
 }
 
-resource virtualHardDisk 'Microsoft.AzureStackHCI/virtualHardDisks@2025-02-01-preview' = {
+resource virtualHardDisk 'Microsoft.AzureStackHCI/virtualHardDisks@2024-05-01-preview' = {
   name: name
   tags: tags
   extendedLocation: {
@@ -91,7 +91,6 @@ resource virtualHardDisk 'Microsoft.AzureStackHCI/virtualHardDisks@2025-02-01-pr
     dynamic: dynamic
     containerId: containerId
   }
-  scope: resourceGroup()
 }
 
 resource virtualHardDisk_roleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
