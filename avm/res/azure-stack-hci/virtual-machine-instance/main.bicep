@@ -159,45 +159,45 @@ type httpProxyConfigType = {
 @export()
 @description('Type definition for network interface.')
 type networkInterfaceType = {
-  @description('ID of the network interface')
+  @description('Required.  ID of the network interface')
   id: string
 }
 
 @export()
 @description('Type definition for network profile.')
 type networkProfileType = {
-  @description('List of network interfaces.')
+  @description('Required. List of network interfaces.')
   networkInterfaces: networkInterfaceType[]
 }
 
 @export()
 @description('Type definition for SSH public key.')
 type sshPublicKeyType = {
-  @description('SSH public key data.')
+  @description('Required. SSH public key data.')
   keyData: string
 
-  @description('Path for the SSH public key.')
+  @description('Required. Path for the SSH public key.')
   path: string
 }
 
 @export()
 @description('Type definition for SSH configuration.')
 type sshConfigType = {
-  @description('List of SSH public keys.')
+  @description('Required. List of SSH public keys.')
   publicKeys: sshPublicKeyType[]
 }
 
 @export()
 @description('Type definition for Linux configuration.')
 type linuxConfigurationType = {
-  @description('Whether to disable password authentication.')
-  disablePasswordAuthentication: bool
+  @description('Optional. Whether to disable password authentication.')
+  disablePasswordAuthentication: bool?
 
-  @description('Whether to provision VM agent.')
-  provisionVMAgent: bool
+  @description('Optional. Whether to provision VM agent.')
+  provisionVMAgent: bool?
 
-  @description('Whether to provision VM config agent.')
-  provisionVMConfigAgent: bool
+  @description('Optional. Whether to provision VM config agent.')
+  provisionVMConfigAgent: bool?
 
   @description('Optional. SSH configuration')
   ssh: sshConfigType?
@@ -206,13 +206,13 @@ type linuxConfigurationType = {
 @export()
 @description('Type definition for Windows configuration.')
 type windowsConfigurationType = {
-  @description('Whether to enable automatic updates.')
-  enableAutomaticUpdates: bool
+  @description('Optional. Whether to enable automatic updates.')
+  enableAutomaticUpdates: bool?
 
-  @description('Whether to provision VM agent.')
+  @description('Required. Whether to provision VM agent.')
   provisionVMAgent: bool
 
-  @description('Whether to provision VM config agent.')
+  @description('Required. Whether to provision VM config agent.')
   provisionVMConfigAgent: bool
 
   @description('Optional. SSH configuration.')
@@ -225,20 +225,20 @@ type windowsConfigurationType = {
 @export()
 @description('Type definition for OS profile.')
 type osProfileType = {
-  @description('Admin password.')
+  @description('Required. Admin password.')
   adminPassword: string
 
-  @description('Admin username.')
+  @description('Required. Admin username.')
   adminUsername: string
 
-  @description('Computer name.')
+  @description('Required. Computer name.')
   computerName: string
 
-  @description('Optional. Linux configuration.')
-  linuxConfiguration: linuxConfigurationType?
+  @description('Required. Linux configuration.')
+  linuxConfiguration: linuxConfigurationType
 
-  @description('Optional. Windows configuration.')
-  windowsConfiguration: windowsConfigurationType?
+  @description('Required. Windows configuration.')
+  windowsConfiguration: windowsConfigurationType
 }
 
 @export()
@@ -251,10 +251,10 @@ type uefiSettingsType = {
 @export()
 @description('Type definition for security profile.')
 type securityProfileType = {
-  @description('Whether TPM is enabled.')
+  @description('Optional. Whether TPM is enabled.')
   enableTPM: bool?
 
-  @description('Security type.')
+  @description('Optional. Security type.')
   securityType: string?
 
   @description('Required. UEFI settings.')
@@ -264,24 +264,24 @@ type securityProfileType = {
 @export()
 @description('Type definition for data disk.')
 type dataDiskType = {
-  @description('ID of the data disk.')
+  @description('Required. ID of the data disk.')
   id: string
 }
 
 @export()
 @description('Type definition for image reference.')
 type imageReferenceType = {
-  @description('ID of the image.')
+  @description('Required. ID of the image.')
   id: string
 }
 
 @export()
 @description('Type definition for OS disk.')
 type osDiskType = {
-  @description('ID of the OS disk.')
-  id: string
+  @description('Optional. ID of the OS disk.')
+  id: string?
 
-  @description('OS type.')
+  @description('Required. OS type.')
   osType: string
 }
 
@@ -291,10 +291,10 @@ type storageProfileType = {
   @description('Optional. List of data disks.')
   dataDisks: dataDiskType[]?
 
-  @description('Optional. Image reference.')
-  imageReference: imageReferenceType?
+  @description('Required. Image reference.')
+  imageReference: imageReferenceType
 
-  @description('OS disk.')
+  @description('Required. OS disk.')
   osDisk: osDiskType
 
   @description('Optional. VM config storage path ID.')
