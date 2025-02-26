@@ -198,7 +198,7 @@ resource hciWinImage 'Microsoft.AzureStackHCI/marketplaceGalleryImages@2025-02-0
   name: 'winServer2022-01'
   location: resourceLocation
   extendedLocation: {
-    name: '${namePrefix}${serviceShort}-location'
+    name: customLocation.name
     type: 'CustomLocation'
   }
   properties: {
