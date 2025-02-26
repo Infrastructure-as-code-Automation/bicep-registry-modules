@@ -198,30 +198,12 @@ resource customLocation 'Microsoft.ExtendedLocation/customLocations@2021-08-31-p
   name: '${namePrefix}${serviceShort}-location'
 }
 
-resource hciWinImage 'Microsoft.AzureStackHCI/marketplaceGalleryImages@2025-02-01-preview' = {
-  name: 'winServer2022-01'
-  location: resourceLocation
-  extendedLocation: {
-    name: customLocation.name
-    type: 'CustomLocation'
-  }
-  properties: {
-    containerId: null
-    osType: 'Windows'
-    hyperVGeneration: 'V2'
-    identifier: {
-      publisher: 'MicrosoftWindowsServer'
-      offer: 'WindowsServer'
-      sku: '2022-datacenter-azure-edition'
-    }
-    version: {
-      name: '20348.2113.231109'
-      properties: {
-        storageProfile: {
-          osDiskImage: {}
-        }
-      }
-    }
+module hciImage 'dependencies.bicep' = {
+  name: 'hciResourcesDeployment'
+  scope: resourceGroup
+  params: {
+    resourceLocation: enforcedLocation
+    customLocationName: customLocation.name
   }
 }
 
@@ -268,7 +250,7 @@ module testDeployment '../../../main.bicep' = {
       adminPassword: localAdminAndDeploymentUserPass
     }
     storageProfile: {
-      imageReference: { id: hciWinImage.id }
+      imageReference: { id: hciImage.outputs.resourceId }
       osDisk: {
         osType: 'Windows'
       }
