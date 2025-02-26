@@ -7,9 +7,6 @@ param name string
 @description('Optional. Location for all Resources.')
 param location string = resourceGroup().location
 
-@description('Optional. Tags of the resource.')
-param tags object?
-
 @description('Required. Resource ID of the associated custom location.')
 param customLocation string
 
@@ -19,26 +16,23 @@ param arcMachineResourceName string
 @description('Optional. Enable/Disable usage telemetry for module.')
 param enableTelemetry bool = true
 
-@description('Hardware profile configuration')
+@description('Required. Hardware profile configuration.')
 param hardwareProfile hardwareProfileType
 
-@description('HTTP proxy configuration')
+@description('Optional. HTTP proxy configuration.')
 param httpProxyConfig httpProxyConfigType = {}
 
-@description('Network profile configuration')
+@description('Required. Network profile configuration.')
 param networkProfile networkProfileType
 
-@description('OS profile configuration')
+@description('Required. OS profile configuration.')
 param osProfile osProfileType
 
-@description('Security profile configuration')
+@description('Optional. Security profile configuration.')
 param securityProfile securityProfileType = { uefiSettings: { secureBootEnabled: true } }
 
-@description('Storage profile configuration')
+@description('Required. Storage profile configuration.')
 param storageProfile storageProfileType
-
-@description('Resource UID')
-param resourceUid string = ''
 
 // ============== //
 // Resources      //
@@ -69,7 +63,6 @@ resource existingMachine 'Microsoft.HybridCompute/machines@2024-07-10' existing 
 
 resource virtualMachineInstance 'Microsoft.AzureStackHCI/virtualMachineInstances@2024-08-01-preview' = {
   name: name
-  tags: tags
   extendedLocation: {
     type: 'CustomLocation'
     name: customLocation
@@ -87,7 +80,6 @@ resource virtualMachineInstance 'Microsoft.AzureStackHCI/virtualMachineInstances
     httpProxyConfig: empty(httpProxyConfig) ? null : httpProxyConfig
     networkProfile: networkProfile
     osProfile: osProfile
-    resourceUid: empty(resourceUid) ? null : resourceUid
     securityProfile: empty(securityProfile) ? null : securityProfile
     storageProfile: storageProfile
   }

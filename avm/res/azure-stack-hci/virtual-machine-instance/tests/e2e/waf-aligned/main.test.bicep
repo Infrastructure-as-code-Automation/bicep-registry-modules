@@ -7,6 +7,9 @@ metadata description = 'This instance deploys the module in alignment with the b
 @maxLength(90)
 param resourceGroupName string = 'dep-${namePrefix}-azurestackhci.vmi-${serviceShort}-rg'
 
+@description('Optional. The location to deploy resources to.')
+param resourceLocation string = deployment().location
+
 @description('Optional. A short identifier for the kind of deployment. Should be kept short to not run into resource-name length-constraints.')
 param serviceShort string = 'ashvmiwaf'
 
@@ -191,6 +194,33 @@ resource customLocation 'Microsoft.ExtendedLocation/customLocations@2021-08-31-p
   name: '${namePrefix}${serviceShort}-location'
 }
 
+resource hciWinImage 'Microsoft.AzureStackHCI/marketplaceGalleryImages@2025-02-01-preview' = {
+  name: 'winServer2022-01'
+  location: resourceLocation
+  extendedLocation: {
+    name: '${namePrefix}${serviceShort}-location'
+    type: 'CustomLocation'
+  }
+  properties: {
+    containerId: null
+    osType: 'Windows'
+    hyperVGeneration: 'V2'
+    identifier: {
+      publisher: 'MicrosoftWindowsServer'
+      offer: 'WindowsServer'
+      sku: '2022-datacenter-azure-edition'
+    }
+    version: {
+      name: '20348.2113.231109'
+      properties: {
+        storageProfile: {
+          osDiskImage: {}
+        }
+      }
+    }
+  }
+}
+
 module hybridCompute 'br/public:avm/res/hybrid-compute/machine:0.1.0' = {
   name: '${uniqueString(deployment().name, enforcedLocation)}-test-hybridCompute-${serviceShort}'
   scope: resourceGroup
@@ -206,18 +236,46 @@ module hybridCompute 'br/public:avm/res/hybrid-compute/machine:0.1.0' = {
   }
 }
 
+// ============== //
+// Test Execution //
+// ============== //
+
 module testDeployment '../../../main.bicep' = {
   name: '${uniqueString(deployment().name, enforcedLocation)}-vm-${serviceShort}'
   scope: resourceGroup
   params: {
-    name: '${namePrefix}${serviceShort}vhd'
+    name: '${namePrefix}${serviceShort}vm'
     location: enforcedLocation
     customLocation: customLocation.id
     arcMachineResourceName: hybridCompute.outputs.name
-    tags: {
-      'hidden-title': 'This is visible in the resource name'
-      Environment: 'Non-Prod'
-      Role: 'DeploymentValidation'
+    hardwareProfile: {
+      vmSize: 'Custom'
+      memoryMB: 4096
+      processors: 2
+      dynamicMemoryConfig: {
+        maximumMemoryMB: 8192
+        minimumMemoryMB: 512
+        targetMemoryBuffer: 20
+      }
+    }
+    networkProfile: { networkInterfaces: [] }
+    osProfile: {
+      computerName: '${uniqueString(deployment().name, enforcedLocation)}-vm-${serviceShort}'
+      linuxConfiguration: {}
+      windowsConfiguration: {
+        enableAutomaticUpdates: true
+        provisionVMAgent: true
+        provisionVMConfigAgent: true
+        ssh: { publicKeys: [] }
+      }
+      adminUsername: 'Administator'
+      adminPassword: localAdminAndDeploymentUserPass
+    }
+    storageProfile: {
+      imageReference: { id: hciWinImage.id }
+      osDisk: {
+        osType: 'Windows'
+      }
     }
   }
 }

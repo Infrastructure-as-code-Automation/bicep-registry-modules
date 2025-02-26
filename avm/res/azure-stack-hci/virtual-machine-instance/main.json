@@ -5,8 +5,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.32.4.45862",
-      "templateHash": "14491513693071177649"
+      "version": "0.33.93.31351",
+      "templateHash": "4131524905254846148"
     },
     "name": "Azure Stack HCI Virtual Machine Instance",
     "description": "This module deploys an Azure Stack HCI virtual machine."
@@ -453,13 +453,6 @@
         "description": "Optional. Location for all Resources."
       }
     },
-    "tags": {
-      "type": "object",
-      "nullable": true,
-      "metadata": {
-        "description": "Optional. Tags of the resource."
-      }
-    },
     "customLocation": {
       "type": "string",
       "metadata": {
@@ -482,26 +475,26 @@
     "hardwareProfile": {
       "$ref": "#/definitions/hardwareProfileType",
       "metadata": {
-        "description": "Hardware profile configuration"
+        "description": "Required. Hardware profile configuration."
       }
     },
     "httpProxyConfig": {
       "$ref": "#/definitions/httpProxyConfigType",
       "defaultValue": {},
       "metadata": {
-        "description": "HTTP proxy configuration"
+        "description": "Optional. HTTP proxy configuration."
       }
     },
     "networkProfile": {
       "$ref": "#/definitions/networkProfileType",
       "metadata": {
-        "description": "Network profile configuration"
+        "description": "Required. Network profile configuration."
       }
     },
     "osProfile": {
       "$ref": "#/definitions/osProfileType",
       "metadata": {
-        "description": "OS profile configuration"
+        "description": "Required. OS profile configuration."
       }
     },
     "securityProfile": {
@@ -512,20 +505,13 @@
         }
       },
       "metadata": {
-        "description": "Security profile configuration"
+        "description": "Optional. Security profile configuration."
       }
     },
     "storageProfile": {
       "$ref": "#/definitions/storageProfileType",
       "metadata": {
-        "description": "Storage profile configuration"
-      }
-    },
-    "resourceUid": {
-      "type": "string",
-      "defaultValue": "",
-      "metadata": {
-        "description": "Resource UID"
+        "description": "Required. Storage profile configuration."
       }
     }
   },
@@ -561,7 +547,6 @@
       "apiVersion": "2024-08-01-preview",
       "scope": "[format('Microsoft.HybridCompute/machines/{0}', parameters('arcMachineResourceName'))]",
       "name": "[parameters('name')]",
-      "tags": "[parameters('tags')]",
       "extendedLocation": {
         "type": "CustomLocation",
         "name": "[parameters('customLocation')]"
@@ -579,7 +564,6 @@
         "httpProxyConfig": "[if(empty(parameters('httpProxyConfig')), null(), parameters('httpProxyConfig'))]",
         "networkProfile": "[parameters('networkProfile')]",
         "osProfile": "[parameters('osProfile')]",
-        "resourceUid": "[if(empty(parameters('resourceUid')), null(), parameters('resourceUid'))]",
         "securityProfile": "[if(empty(parameters('securityProfile')), null(), parameters('securityProfile'))]",
         "storageProfile": "[parameters('storageProfile')]"
       }

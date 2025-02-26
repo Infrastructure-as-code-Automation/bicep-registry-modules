@@ -198,6 +198,48 @@ resource customLocation 'Microsoft.ExtendedLocation/customLocations@2021-08-31-p
   name: '${namePrefix}${serviceShort}-location'
 }
 
+resource hciWinImage 'Microsoft.AzureStackHCI/marketplaceGalleryImages@2025-02-01-preview' = {
+  name: 'winServer2022-01'
+  location: resourceLocation
+  extendedLocation: {
+    name: '${namePrefix}${serviceShort}-location'
+    type: 'CustomLocation'
+  }
+  properties: {
+    containerId: null
+    osType: 'Windows'
+    hyperVGeneration: 'V2'
+    identifier: {
+      publisher: 'MicrosoftWindowsServer'
+      offer: 'WindowsServer'
+      sku: '2022-datacenter-azure-edition'
+    }
+    version: {
+      name: '20348.2113.231109'
+      properties: {
+        storageProfile: {
+          osDiskImage: {}
+        }
+      }
+    }
+  }
+}
+
+module hybridCompute 'br/public:avm/res/hybrid-compute/machine:0.1.0' = {
+  name: '${uniqueString(deployment().name, enforcedLocation)}-test-hybridCompute-${serviceShort}'
+  scope: resourceGroup
+  params: {
+    name: '${uniqueString(deployment().name, enforcedLocation)}-vm-${serviceShort}'
+    location: enforcedLocation
+    kind: 'HCI'
+    tags: {
+      'hidden-title': 'This is visible in the resource name'
+      Environment: 'Non-Prod'
+      Role: 'DeploymentValidation'
+    }
+  }
+}
+
 // ============== //
 // Test Execution //
 // ============== //
@@ -206,9 +248,30 @@ module testDeployment '../../../main.bicep' = {
   name: '${uniqueString(deployment().name, enforcedLocation)}-vm-${serviceShort}'
   scope: resourceGroup
   params: {
-    name: '${namePrefix}${serviceShort}vhd'
+    name: '${namePrefix}${serviceShort}vm'
     location: enforcedLocation
     customLocation: customLocation.id
-    arcMachineResourceName: ''
+    arcMachineResourceName: hybridCompute.outputs.name
+    hardwareProfile: {
+      memoryMB: 4096
+      processors: 2
+    }
+    networkProfile: { networkInterfaces: [] }
+    osProfile: {
+      computerName: '${uniqueString(deployment().name, enforcedLocation)}-vm-${serviceShort}'
+      linuxConfiguration: {}
+      windowsConfiguration: {
+        provisionVMAgent: true
+        provisionVMConfigAgent: true
+      }
+      adminUsername: 'Administator'
+      adminPassword: localAdminAndDeploymentUserPass
+    }
+    storageProfile: {
+      imageReference: { id: hciWinImage.id }
+      osDisk: {
+        osType: 'Windows'
+      }
+    }
   }
 }
