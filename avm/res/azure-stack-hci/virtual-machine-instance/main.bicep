@@ -151,7 +151,7 @@ type httpProxyConfigType = {
 @export()
 @description('Type definition for network interface.')
 type networkInterfaceType = {
-  @description('Required.  ID of the network interface')
+  @description('Required. ID of the network interface.')
   id: string
 }
 
@@ -191,7 +191,7 @@ type linuxConfigurationType = {
   @description('Optional. Whether to provision VM config agent.')
   provisionVMConfigAgent: bool?
 
-  @description('Optional. SSH configuration')
+  @description('Optional. SSH configuration.')
   ssh: sshConfigType?
 }
 

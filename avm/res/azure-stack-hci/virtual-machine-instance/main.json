@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.33.93.31351",
-      "templateHash": "4131524905254846148"
+      "templateHash": "8580380500147953641"
     },
     "name": "Azure Stack HCI Virtual Machine Instance",
     "description": "This module deploys an Azure Stack HCI virtual machine."
@@ -120,7 +120,7 @@
         "id": {
           "type": "string",
           "metadata": {
-            "description": "Required.  ID of the network interface"
+            "description": "Required. ID of the network interface."
           }
         }
       },
@@ -214,7 +214,7 @@
           "$ref": "#/definitions/sshConfigType",
           "nullable": true,
           "metadata": {
-            "description": "Optional. SSH configuration"
+            "description": "Optional. SSH configuration."
           }
         }
       },

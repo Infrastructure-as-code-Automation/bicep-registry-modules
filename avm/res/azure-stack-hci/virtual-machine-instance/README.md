@@ -505,11 +505,11 @@ List of network interfaces.
 
 | Parameter | Type | Description |
 | :-- | :-- | :-- |
-| [`id`](#parameter-networkprofilenetworkinterfacesid) | string |  ID of the network interface |
+| [`id`](#parameter-networkprofilenetworkinterfacesid) | string | ID of the network interface. |
 
 ### Parameter: `networkProfile.networkInterfaces.id`
 
- ID of the network interface
+ID of the network interface.
 
 - Required: Yes
 - Type: string
@@ -566,7 +566,7 @@ Linux configuration.
 | [`disablePasswordAuthentication`](#parameter-osprofilelinuxconfigurationdisablepasswordauthentication) | bool | Whether to disable password authentication. |
 | [`provisionVMAgent`](#parameter-osprofilelinuxconfigurationprovisionvmagent) | bool | Whether to provision VM agent. |
 | [`provisionVMConfigAgent`](#parameter-osprofilelinuxconfigurationprovisionvmconfigagent) | bool | Whether to provision VM config agent. |
-| [`ssh`](#parameter-osprofilelinuxconfigurationssh) | object | SSH configuration |
+| [`ssh`](#parameter-osprofilelinuxconfigurationssh) | object | SSH configuration. |
 
 ### Parameter: `osProfile.linuxConfiguration.disablePasswordAuthentication`
 
@@ -591,7 +591,7 @@ Whether to provision VM config agent.
 
 ### Parameter: `osProfile.linuxConfiguration.ssh`
 
-SSH configuration
+SSH configuration.
 
 - Required: No
 - Type: object
