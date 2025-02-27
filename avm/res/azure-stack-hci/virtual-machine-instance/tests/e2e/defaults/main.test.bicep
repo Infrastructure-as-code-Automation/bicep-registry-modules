@@ -203,7 +203,7 @@ module hciImage 'dependencies.bicep' = {
   scope: resourceGroup
   params: {
     resourceLocation: enforcedLocation
-    customLocationName: customLocation.name
+    customLocation: customLocation.id
   }
 }
 

@@ -10,8 +10,8 @@ metadata description = 'This instance deploys the module with WAF aligned parame
 @description('Required. The location to deploy resources to.')
 param resourceLocation string
 
-@description('Required. The name of the Custom Location associated with the Arc Resource Bridge for this cluster. This value should reflect the physical location and identifier of the HCI cluster. Example: cl-hci-den-clu01.')
-param customLocationName string
+@description('Required. Resource ID of the associated custom location.')
+param customLocation string
 
 // ============ //
 // Dependencies //
@@ -21,7 +21,7 @@ resource hciWinImage 'Microsoft.AzureStackHCI/marketplaceGalleryImages@2024-01-0
   name: 'winServer2022-01'
   location: resourceLocation
   extendedLocation: {
-    name: customLocationName
+    name: customLocation
     type: 'CustomLocation'
   }
   properties: {
