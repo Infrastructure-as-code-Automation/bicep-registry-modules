@@ -183,12 +183,14 @@ param oidcIssuerEnabled bool = false
 @description('Optional. Enable workload identity.')
 param workloadIdentityEnabled bool = false
 
+var enableReferencedModulesTelemetry = enableTelemetry
+
 module connectedCluster '../../kubernetes/connected-cluster/main.bicep' = {
   name: 'connectedCluster'
   params: {
     name: name
     location: location
-    enableTelemetry: enableTelemetry
+    enableTelemetry: enableReferencedModulesTelemetry
     tags: connectClustersTags
     tenantId: tenantId
     aadAdminGroupObjectIds: aadAdminGroupObjectIds

@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.33.93.31351",
-      "templateHash": "13917978982719996914"
+      "templateHash": "10119053110752804170"
     },
     "name": "Hybrid Container Service Provisioned Cluster Instance",
     "description": "Deploy a provisioned cluster instance."
@@ -208,6 +208,9 @@
       }
     }
   },
+  "variables": {
+    "enableReferencedModulesTelemetry": "[parameters('enableTelemetry')]"
+  },
   "resources": {
     "avmTelemetry": {
       "condition": "[parameters('enableTelemetry')]",
@@ -372,7 +375,7 @@
             "value": "[parameters('location')]"
           },
           "enableTelemetry": {
-            "value": "[parameters('enableTelemetry')]"
+            "value": "[variables('enableReferencedModulesTelemetry')]"
           },
           "tags": {
             "value": "[parameters('connectClustersTags')]"
