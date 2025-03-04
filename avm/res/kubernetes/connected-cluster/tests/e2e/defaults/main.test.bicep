@@ -1,7 +1,7 @@
 targetScope = 'subscription'
 
-metadata name = 'Deploy connected clusters in default configuration'
-metadata description = 'This test deploys a connected clusters.'
+metadata name = 'Using only defaults'
+metadata description = 'This instance deploys the module with the minimum set of required parameters.'
 
 @description('Optional. The name of the resource group to deploy for testing purposes.')
 @maxLength(90)
@@ -26,6 +26,5 @@ module testDeployment '../../../main.bicep' = {
   name: '${uniqueString(deployment().name, enforcedLocation)}-test-${serviceShort}'
   params: {
     name: '${namePrefix}${serviceShort}001'
-    location: enforcedLocation
   }
 }

@@ -45,7 +45,7 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   location: enforcedLocation
 }
 
-module nestedDependencies '../../../../../azure-stack-hci/cluster/tests/e2e/waf-aligned/dependencies.bicep' = {
+module nestedDependencies '../../../../../../../utilities/e2e-template-assets/module-specific/azure-stack-hci/dependencies/defaults-dependencies.bicep' = {
   name: '${uniqueString(deployment().name, enforcedLocation)}-test-nestedDependencies-${serviceShort}'
   scope: resourceGroup
   params: {
@@ -73,7 +73,7 @@ module nestedDependencies '../../../../../azure-stack-hci/cluster/tests/e2e/waf-
   }
 }
 
-module azlocal '../../../../../azure-stack-hci/cluster/main.bicep' = {
+module azlocal 'br/public:avm/res/azure-stack-hci/cluster:0.1.0' = {
   name: '${uniqueString(deployment().name, enforcedLocation)}-test-clustermodule-${serviceShort}'
   scope: resourceGroup
   params: {
@@ -177,10 +177,10 @@ module azlocal '../../../../../azure-stack-hci/cluster/main.bicep' = {
 
 resource customLocation 'Microsoft.ExtendedLocation/customLocations@2021-08-31-preview' existing = {
   scope: resourceGroup
-  name: azlocal.outputs.customLocationName
+  name: '${namePrefix}${serviceShort}-location'
 }
 
-module logicalNetwork '../../../../../azure-stack-hci/logical-network/main.bicep' = {
+module logicalNetwork 'br/public:avm/res/azure-stack-hci/logical-network:0.1.0' = {
   name: '${uniqueString(deployment().name, enforcedLocation)}-logicalNetwork-${serviceShort}'
   scope: resourceGroup
   params: {
@@ -204,8 +204,7 @@ module testDeployment '../../../main.bicep' = {
   name: '${uniqueString(deployment().name, enforcedLocation)}-test-${serviceShort}'
   params: {
     name: '${namePrefix}${serviceShort}001'
-    location: enforcedLocation
     customLocationId: customLocation.id
-    logicalNetworkId: logicalNetwork.outputs.logicalNetworkId
+    logicalNetworkId: logicalNetwork.outputs.resourceId
   }
 }

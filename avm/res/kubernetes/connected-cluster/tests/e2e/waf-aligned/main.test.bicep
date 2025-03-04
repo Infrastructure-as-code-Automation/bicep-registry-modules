@@ -1,7 +1,7 @@
 targetScope = 'subscription'
 
-metadata name = 'Deploy connected clusters in WAF aligned configuration'
-metadata description = 'This test deploys a connected clusters.'
+metadata name = 'WAF-aligned'
+metadata description = 'This instance deploys the module in alignment with the best-practices of the Azure Well-Architected Framework.'
 
 @description('Optional. The name of the resource group to deploy for testing purposes.')
 @maxLength(90)
@@ -27,7 +27,14 @@ module testDeployment '../../../main.bicep' = {
   params: {
     name: '${namePrefix}${serviceShort}001'
     location: enforcedLocation
+    tenantId: tenant().tenantId
     oidcIssuerEnabled: true
     workloadIdentityEnabled: true
+    enableAzureRBAC: true
+    tags: {
+      'hidden-title': 'This is visible in the resource name'
+      Environment: 'Non-Prod'
+      Role: 'DeploymentValidation'
+    }
   }
 }

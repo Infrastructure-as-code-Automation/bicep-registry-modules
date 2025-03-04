@@ -1,11 +1,12 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "languageVersion": "2.0",
   "contentVersion": "1.0.0.0",
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.32.4.45862",
-      "templateHash": "6608423374289101796"
+      "version": "0.33.93.31351",
+      "templateHash": "13917978982719996914"
     },
     "name": "Hybrid Container Service Provisioned Cluster Instance",
     "description": "Deploy a provisioned cluster instance."
@@ -47,14 +48,14 @@
     },
     "sshPublicKey": {
       "type": "string",
-      "defaultValue": "",
+      "nullable": true,
       "metadata": {
         "description": "Conditional. The SSH public key that will be used to access the kubernetes cluster nodes. If not specified, a new SSH key pair will be generated. Required if no existing SSH keys."
       }
     },
     "keyVaultName": {
       "type": "string",
-      "defaultValue": "",
+      "nullable": true,
       "metadata": {
         "description": "Conditional. The name of the key vault. The key vault name. Required if no existing SSH keys."
       }
@@ -67,7 +68,7 @@
     },
     "kubernetesVersion": {
       "type": "string",
-      "defaultValue": "",
+      "nullable": true,
       "metadata": {
         "description": "Optional. The Kubernetes version for the cluster."
       }
@@ -115,7 +116,7 @@
     },
     "controlPlaneIP": {
       "type": "string",
-      "defaultValue": "",
+      "nullable": true,
       "metadata": {
         "description": "Optional. The host IP for control plane endpoint."
       }
@@ -129,7 +130,12 @@
     },
     "azureHybridBenefit": {
       "type": "string",
-      "defaultValue": "",
+      "defaultValue": "False",
+      "allowedValues": [
+        "False",
+        "NotApplicable",
+        "True"
+      ],
       "metadata": {
         "description": "Optional. Azure Hybrid Benefit configuration."
       }
@@ -148,17 +154,6 @@
         "description": "Optional. Enable or disable SMB CSI driver."
       }
     },
-    "identityType": {
-      "type": "string",
-      "defaultValue": "SystemAssigned",
-      "allowedValues": [
-        "SystemAssigned",
-        "None"
-      ],
-      "metadata": {
-        "description": "Optional. The identity type for the cluster. Allowed values: \"SystemAssigned\", \"None\"."
-      }
-    },
     "connectClustersTags": {
       "type": "object",
       "defaultValue": {},
@@ -166,9 +161,9 @@
         "description": "Optional. Tags for the cluster resource."
       }
     },
-    "aadTenantId": {
+    "tenantId": {
       "type": "string",
-      "defaultValue": "",
+      "nullable": true,
       "metadata": {
         "description": "Optional. The Azure AD tenant ID."
       }
@@ -213,8 +208,8 @@
       }
     }
   },
-  "resources": [
-    {
+  "resources": {
+    "avmTelemetry": {
       "condition": "[parameters('enableTelemetry')]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2024-03-01",
@@ -234,13 +229,20 @@
         }
       }
     },
-    {
+    "kv": {
+      "condition": "[and(empty(parameters('sshPublicKey')), not(empty(parameters('keyVaultName'))))]",
+      "existing": true,
+      "type": "Microsoft.KeyVault/vaults",
+      "apiVersion": "2023-07-01",
+      "name": "[parameters('keyVaultName')]"
+    },
+    "managedIdentity": {
       "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
       "apiVersion": "2018-11-30",
-      "name": "hxtest",
+      "name": "temp",
       "location": "[parameters('location')]"
     },
-    {
+    "generateSSHKey": {
       "condition": "[empty(parameters('sshPublicKey'))]",
       "type": "Microsoft.Resources/deploymentScripts",
       "apiVersion": "2020-10-01",
@@ -250,7 +252,7 @@
       "identity": {
         "type": "UserAssigned",
         "userAssignedIdentities": {
-          "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'hxtest'))]": {}
+          "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'temp'))]": {}
         }
       },
       "properties": {
@@ -259,34 +261,40 @@
         "scriptContent": "      # Create temp directory in a known location\n      $tempDir = \"/tmp/sshkeys\"\n      New-Item -ItemType Directory -Path $tempDir -Force\n      Set-Location $tempDir\n\n      # Generate SSH key pair using ssh-keygen\n      ssh-keygen -t rsa -b 4096 -f ./key -N '\"\"' -q\n\n      # Read the generated keys\n      $publicKey = Get-Content -Path \"./key.pub\" -Raw\n      $privateKey = Get-Content -Path \"./key\" -Raw\n\n      # Clean up temp files\n      Remove-Item -Path \"./key*\" -Force\n      Remove-Item -Path $tempDir -Force -Recurse\n\n      # Set output\n      $DeploymentScriptOutputs = @{}\n      $DeploymentScriptOutputs['publicKey'] = $publicKey\n      $DeploymentScriptOutputs['privateKey'] = $privateKey\n    "
       },
       "dependsOn": [
-        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'hxtest')]"
+        "managedIdentity"
       ]
     },
-    {
+    "sshPublicKeyPem": {
       "condition": "[empty(parameters('sshPublicKey'))]",
       "type": "Microsoft.KeyVault/vaults/secrets",
       "apiVersion": "2023-07-01",
       "name": "[format('{0}/{1}', parameters('keyVaultName'), parameters('sshPublicKeySecretName'))]",
       "properties": {
-        "value": "[reference(resourceId('Microsoft.Resources/deploymentScripts', 'generateSSHKey'), '2020-10-01').outputs.publicKey]"
+        "value": "[reference('generateSSHKey').outputs.publicKey]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Resources/deploymentScripts', 'generateSSHKey')]"
+        "generateSSHKey"
       ]
     },
-    {
+    "sshPrivateKeyPem": {
       "condition": "[empty(parameters('sshPublicKey'))]",
       "type": "Microsoft.KeyVault/vaults/secrets",
       "apiVersion": "2023-07-01",
       "name": "[format('{0}/{1}', parameters('keyVaultName'), parameters('sshPrivateKeyPemSecretName'))]",
       "properties": {
-        "value": "[reference(resourceId('Microsoft.Resources/deploymentScripts', 'generateSSHKey'), '2020-10-01').outputs.privateKey]"
+        "value": "[reference('generateSSHKey').outputs.privateKey]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Resources/deploymentScripts', 'generateSSHKey')]"
+        "generateSSHKey"
       ]
     },
-    {
+    "existingCluster": {
+      "existing": true,
+      "type": "Microsoft.Kubernetes/connectedClusters",
+      "apiVersion": "2024-07-15-preview",
+      "name": "[parameters('name')]"
+    },
+    "provisionedCluster": {
       "type": "Microsoft.HybridContainerService/provisionedClusterInstances",
       "apiVersion": "2024-01-01",
       "scope": "[format('Microsoft.Kubernetes/connectedClusters/{0}', parameters('name'))]",
@@ -312,7 +320,7 @@
             "hostIP": "[parameters('controlPlaneIP')]"
           }
         },
-        "kubernetesVersion": "[parameters('kubernetesVersion')]",
+        "kubernetesVersion": "[coalesce(parameters('kubernetesVersion'), '')]",
         "licenseProfile": {
           "azureHybridBenefit": "[parameters('azureHybridBenefit')]"
         },
@@ -320,7 +328,7 @@
           "ssh": {
             "publicKeys": [
               {
-                "keyData": "[if(empty(parameters('sshPublicKey')), reference(resourceId('Microsoft.Resources/deploymentScripts', 'generateSSHKey'), '2020-10-01').outputs.publicKey, parameters('sshPublicKey'))]"
+                "keyData": "[if(empty(parameters('sshPublicKey')), reference('generateSSHKey').outputs.publicKey, parameters('sshPublicKey'))]"
               }
             ]
           }
@@ -342,12 +350,12 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'connectedCluster')]",
-        "[resourceId('Microsoft.Resources/deploymentScripts', 'generateSSHKey')]",
-        "[resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), parameters('sshPublicKeySecretName'))]"
+        "connectedCluster",
+        "generateSSHKey",
+        "sshPublicKeyPem"
       ]
     },
-    {
+    "connectedCluster": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2022-09-01",
       "name": "connectedCluster",
@@ -366,14 +374,11 @@
           "enableTelemetry": {
             "value": "[parameters('enableTelemetry')]"
           },
-          "identityType": {
-            "value": "[parameters('identityType')]"
-          },
           "tags": {
             "value": "[parameters('connectClustersTags')]"
           },
-          "aadTenantId": {
-            "value": "[parameters('aadTenantId')]"
+          "tenantId": {
+            "value": "[parameters('tenantId')]"
           },
           "aadAdminGroupObjectIds": {
             "value": "[parameters('aadAdminGroupObjectIds')]"
@@ -398,11 +403,88 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.32.4.45862",
-              "templateHash": "15406540205079791461"
+              "version": "0.33.93.31351",
+              "templateHash": "13180712657215340322"
             },
-            "name": "Kubernetes Connected Clusters",
-            "description": "Deploy an Azure Arc connected cluster."
+            "name": "Kubernetes Connected Cluster",
+            "description": "This module deploys an Azure Arc connected cluster."
+          },
+          "definitions": {
+            "roleAssignmentType": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. The name (as GUID) of the role assignment. If not provided, a GUID will be generated."
+                  }
+                },
+                "roleDefinitionIdOrName": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Required. The role to assign. You can provide either the display name of the role definition, the role definition GUID, or its fully qualified ID in the following format: '/providers/Microsoft.Authorization/roleDefinitions/c2f4ef07-c644-48eb-af81-4b1b4947fb11'."
+                  }
+                },
+                "principalId": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Required. The principal ID of the principal (user/group/identity) to assign the role to."
+                  }
+                },
+                "principalType": {
+                  "type": "string",
+                  "allowedValues": [
+                    "Device",
+                    "ForeignGroup",
+                    "Group",
+                    "ServicePrincipal",
+                    "User"
+                  ],
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. The principal type of the assigned principal ID."
+                  }
+                },
+                "description": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. The description of the role assignment."
+                  }
+                },
+                "condition": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. The conditions on the role assignment. This limits the resources it can be assigned to. e.g.: @Resource[Microsoft.Storage/storageAccounts/blobServices/containers:ContainerName] StringEqualsIgnoreCase \"foo_storage_container\"."
+                  }
+                },
+                "conditionVersion": {
+                  "type": "string",
+                  "allowedValues": [
+                    "2.0"
+                  ],
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. Version of the condition."
+                  }
+                },
+                "delegatedManagedIdentityResourceId": {
+                  "type": "string",
+                  "nullable": true,
+                  "metadata": {
+                    "description": "Optional. The Resource Id of the delegated managed identity resource."
+                  }
+                }
+              },
+              "metadata": {
+                "description": "An AVM-aligned type for a role assignment.",
+                "__bicep_imported_from!": {
+                  "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.5.1"
+                }
+              }
+            }
           },
           "parameters": {
             "name": {
@@ -425,17 +507,6 @@
                 "description": "Optional. Enable/Disable usage telemetry for module."
               }
             },
-            "identityType": {
-              "type": "string",
-              "defaultValue": "SystemAssigned",
-              "allowedValues": [
-                "SystemAssigned",
-                "None"
-              ],
-              "metadata": {
-                "description": "Optional. The identity type for the cluster. Allowed values: \"SystemAssigned\", \"None\"."
-              }
-            },
             "tags": {
               "type": "object",
               "nullable": true,
@@ -443,16 +514,16 @@
                 "description": "Optional. Tags for the cluster resource."
               }
             },
-            "aadTenantId": {
+            "tenantId": {
               "type": "string",
-              "defaultValue": "",
+              "nullable": true,
               "metadata": {
-                "description": "Optional. Optional. The Azure AD tenant ID."
+                "description": "Optional. The Azure AD tenant ID."
               }
             },
             "aadAdminGroupObjectIds": {
               "type": "array",
-              "defaultValue": [],
+              "nullable": true,
               "metadata": {
                 "description": "Optional. The Azure AD admin group object IDs."
               }
@@ -488,6 +559,32 @@
               "metadata": {
                 "description": "Optional. Enable workload identity."
               }
+            },
+            "roleAssignments": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/roleAssignmentType"
+              },
+              "nullable": true,
+              "metadata": {
+                "description": "Optional. Array of role assignments to create."
+              }
+            }
+          },
+          "variables": {
+            "copy": [
+              {
+                "name": "formattedRoleAssignments",
+                "count": "[length(coalesce(parameters('roleAssignments'), createArray()))]",
+                "input": "[union(coalesce(parameters('roleAssignments'), createArray())[copyIndex('formattedRoleAssignments')], createObject('roleDefinitionId', coalesce(tryGet(variables('builtInRoleNames'), coalesce(parameters('roleAssignments'), createArray())[copyIndex('formattedRoleAssignments')].roleDefinitionIdOrName), if(contains(coalesce(parameters('roleAssignments'), createArray())[copyIndex('formattedRoleAssignments')].roleDefinitionIdOrName, '/providers/Microsoft.Authorization/roleDefinitions/'), coalesce(parameters('roleAssignments'), createArray())[copyIndex('formattedRoleAssignments')].roleDefinitionIdOrName, subscriptionResourceId('Microsoft.Authorization/roleDefinitions', coalesce(parameters('roleAssignments'), createArray())[copyIndex('formattedRoleAssignments')].roleDefinitionIdOrName)))))]"
+              }
+            ],
+            "builtInRoleNames": {
+              "Contributor": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+              "Owner": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
+              "Reader": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
+              "User Access Administrator": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '18d7d88d-d35e-4fb5-a5c3-7773c20a72d9')]",
+              "Role Based Access Control Administrator": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'f58310d9-a9f6-439a-9e8d-f62e7b41a168')]"
             }
           },
           "resources": {
@@ -518,11 +615,11 @@
               "kind": "ProvisionedCluster",
               "location": "[parameters('location')]",
               "identity": {
-                "type": "[parameters('identityType')]"
+                "type": "SystemAssigned"
               },
               "tags": "[parameters('tags')]",
               "properties": {
-                "aadProfile": "[if(not(empty(parameters('aadTenantId'))), createObject('tenantID', parameters('aadTenantId'), 'adminGroupObjectIDs', parameters('aadAdminGroupObjectIds'), 'enableAzureRBAC', parameters('enableAzureRBAC')), null())]",
+                "aadProfile": "[if(parameters('enableAzureRBAC'), createObject('tenantID', if(not(empty(parameters('tenantId'))), parameters('tenantId'), tenant().tenantId), 'adminGroupObjectIDs', coalesce(parameters('aadAdminGroupObjectIds'), createArray()), 'enableAzureRBAC', parameters('enableAzureRBAC')), null())]",
                 "agentPublicKeyCertificate": "",
                 "arcAgentProfile": {
                   "agentAutoUpgrade": "[parameters('agentAutoUpgrade')]"
@@ -539,6 +636,28 @@
                 },
                 "azureHybridBenefit": null
               }
+            },
+            "connectedCluster_roleAssignments": {
+              "copy": {
+                "name": "connectedCluster_roleAssignments",
+                "count": "[length(coalesce(variables('formattedRoleAssignments'), createArray()))]"
+              },
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "scope": "[format('Microsoft.Kubernetes/connectedClusters/{0}', parameters('name'))]",
+              "name": "[coalesce(tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'name'), guid(resourceId('Microsoft.Kubernetes/connectedClusters', parameters('name')), coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].principalId, coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].roleDefinitionId))]",
+              "properties": {
+                "roleDefinitionId": "[coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].roleDefinitionId]",
+                "principalId": "[coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].principalId]",
+                "description": "[tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'description')]",
+                "principalType": "[tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'principalType')]",
+                "condition": "[tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'condition')]",
+                "conditionVersion": "[if(not(empty(tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'condition'))), coalesce(tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'conditionVersion'), '2.0'), null())]",
+                "delegatedManagedIdentityResourceId": "[tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'delegatedManagedIdentityResourceId')]"
+              },
+              "dependsOn": [
+                "connectedCluster"
+              ]
             }
           },
           "outputs": {
@@ -552,7 +671,7 @@
             "resourceId": {
               "type": "string",
               "metadata": {
-                "description": "The ID of the connected cluster."
+                "description": "The resource ID of the connected cluster."
               },
               "value": "[resourceId('Microsoft.Kubernetes/connectedClusters', parameters('name'))]"
             },
@@ -570,18 +689,19 @@
               },
               "value": "[reference('connectedCluster', '2024-07-15-preview', 'full').location]"
             },
-            "connectedClusterId": {
+            "systemAssignedMIPrincipalId": {
               "type": "string",
+              "nullable": true,
               "metadata": {
-                "description": "The resource ID of the connected cluster."
+                "description": "The principalId of the connected cluster identity."
               },
-              "value": "[resourceId('Microsoft.Kubernetes/connectedClusters', parameters('name'))]"
+              "value": "[reference('connectedCluster', '2024-07-15-preview', 'full').identity.principalId]"
             }
           }
         }
       }
     }
-  ],
+  },
   "outputs": {
     "name": {
       "type": "string",

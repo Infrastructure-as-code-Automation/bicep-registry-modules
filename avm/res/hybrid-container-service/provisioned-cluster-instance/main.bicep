@@ -36,17 +36,17 @@ param sshPrivateKeyPemSecretName string = 'AksArcAgentSshPrivateKeyPem'
 param sshPublicKeySecretName string = 'AksArcAgentSshPublicKey'
 
 @description('Conditional. The SSH public key that will be used to access the kubernetes cluster nodes. If not specified, a new SSH key pair will be generated. Required if no existing SSH keys.')
-param sshPublicKey string = ''
+param sshPublicKey string?
 
 @description('Conditional. The name of the key vault. The key vault name. Required if no existing SSH keys.')
-param keyVaultName string = ''
+param keyVaultName string?
 
-resource kv 'Microsoft.KeyVault/vaults@2023-07-01' existing = if (empty(sshPublicKey)) {
-  name: keyVaultName
+resource kv 'Microsoft.KeyVault/vaults@2023-07-01' existing = if (empty(sshPublicKey) && !empty(keyVaultName)) {
+  name: keyVaultName!
 }
 
 resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
-  name: 'hxtest'
+  name: 'temp'
   location: location
 }
 
@@ -110,7 +110,7 @@ var sshPublicKeyData = empty(sshPublicKey) ? generateSSHKey.properties.outputs.p
 param customLocationId string
 
 @description('Optional. The Kubernetes version for the cluster.')
-param kubernetesVersion string = ''
+param kubernetesVersion string?
 
 @description('Optional. Agent pool configuration.')
 param agentPoolProfiles array = [
@@ -139,13 +139,18 @@ param controlPlaneCount int = 1
 param controlPlaneVmSize string = 'Standard_A4_v2'
 
 @description('Optional. The host IP for control plane endpoint.')
-param controlPlaneIP string = ''
+param controlPlaneIP string?
 
 @description('Optional. The CIDR range for the pods in the kubernetes cluster.')
 param podCidr string = '10.244.0.0/16'
 
 @description('Optional. Azure Hybrid Benefit configuration.')
-param azureHybridBenefit string = ''
+@allowed([
+  'False'
+  'NotApplicable'
+  'True'
+])
+param azureHybridBenefit string = 'False'
 
 @description('Optional. Enable or disable NFS CSI driver.')
 param nfsCsiDriverEnabled bool = true
@@ -153,18 +158,11 @@ param nfsCsiDriverEnabled bool = true
 @description('Optional. Enable or disable SMB CSI driver.')
 param smbCsiDriverEnabled bool = true
 
-@description('Optional. The identity type for the cluster. Allowed values: "SystemAssigned", "None".')
-@allowed([
-  'SystemAssigned'
-  'None'
-])
-param identityType string = 'SystemAssigned'
-
 @description('Optional. Tags for the cluster resource.')
 param connectClustersTags object = {}
 
 @description('Optional. The Azure AD tenant ID.')
-param aadTenantId string = ''
+param tenantId string?
 
 @description('Optional. The Azure AD admin group object IDs.')
 param aadAdminGroupObjectIds array = []
@@ -185,15 +183,14 @@ param oidcIssuerEnabled bool = false
 @description('Optional. Enable workload identity.')
 param workloadIdentityEnabled bool = false
 
-module connectedCluster '../../kubernetes/connected-clusters/main.bicep' = {
+module connectedCluster '../../kubernetes/connected-cluster/main.bicep' = {
   name: 'connectedCluster'
   params: {
     name: name
     location: location
     enableTelemetry: enableTelemetry
-    identityType: identityType
     tags: connectClustersTags
-    aadTenantId: aadTenantId
+    tenantId: tenantId
     aadAdminGroupObjectIds: aadAdminGroupObjectIds
     enableAzureRBAC: enableAzureRBAC
     agentAutoUpgrade: agentAutoUpgrade
@@ -234,7 +231,7 @@ resource provisionedCluster 'Microsoft.HybridContainerService/provisionedCluster
         hostIP: controlPlaneIP
       }
     }
-    kubernetesVersion: kubernetesVersion
+    kubernetesVersion: kubernetesVersion ?? ''
     licenseProfile: {
       azureHybridBenefit: azureHybridBenefit
     }

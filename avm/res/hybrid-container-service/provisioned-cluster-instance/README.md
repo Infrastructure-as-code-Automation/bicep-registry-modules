@@ -15,6 +15,7 @@ Deploy a provisioned cluster instance.
 
 | Resource Type | API Version |
 | :-- | :-- |
+| `Microsoft.Authorization/roleAssignments` | [2022-04-01](https://learn.microsoft.com/en-us/azure/templates/Microsoft.Authorization/2022-04-01/roleAssignments) |
 | `Microsoft.HybridContainerService/provisionedClusterInstances` | [2024-01-01](https://learn.microsoft.com/en-us/azure/templates/Microsoft.HybridContainerService/2024-01-01/provisionedClusterInstances) |
 | `Microsoft.KeyVault/vaults/secrets` | [2023-07-01](https://learn.microsoft.com/en-us/azure/templates/Microsoft.KeyVault/2023-07-01/vaults/secrets) |
 | `Microsoft.Kubernetes/connectedClusters` | [2024-07-15-preview](https://learn.microsoft.com/en-us/azure/templates/Microsoft.Kubernetes/2024-07-15-preview/connectedClusters) |
@@ -49,8 +50,6 @@ module provisionedClusterInstance 'br/public:avm/res/hybrid-container-service/pr
     customLocationId: '<customLocationId>'
     logicalNetworkId: '<logicalNetworkId>'
     name: 'hcspcimin001'
-    // Non-required parameters
-    location: '<location>'
   }
 }
 ```
@@ -76,10 +75,6 @@ module provisionedClusterInstance 'br/public:avm/res/hybrid-container-service/pr
     },
     "name": {
       "value": "hcspcimin001"
-    },
-    // Non-required parameters
-    "location": {
-      "value": "<location>"
     }
   }
 }
@@ -99,8 +94,6 @@ using 'br/public:avm/res/hybrid-container-service/provisioned-cluster-instance:<
 param customLocationId = '<customLocationId>'
 param logicalNetworkId = '<logicalNetworkId>'
 param name = 'hcspcimin001'
-// Non-required parameters
-param location = '<location>'
 ```
 
 </details>
@@ -124,6 +117,22 @@ module provisionedClusterInstance 'br/public:avm/res/hybrid-container-service/pr
     logicalNetworkId: '<logicalNetworkId>'
     name: 'hcspciwaf001'
     // Non-required parameters
+    agentPoolProfiles: [
+      {
+        count: 2
+        enableAutoScaling: false
+        maxCount: 5
+        maxPods: 110
+        minCount: 1
+        name: 'nodepool1'
+        nodeLabels: {}
+        nodeTaints: []
+        osSKU: 'CBLMariner'
+        osType: 'Linux'
+        vmSize: 'Standard_A4_v2'
+      }
+    ]
+    controlPlaneCount: 2
     location: '<location>'
   }
 }
@@ -152,6 +161,26 @@ module provisionedClusterInstance 'br/public:avm/res/hybrid-container-service/pr
       "value": "hcspciwaf001"
     },
     // Non-required parameters
+    "agentPoolProfiles": {
+      "value": [
+        {
+          "count": 2,
+          "enableAutoScaling": false,
+          "maxCount": 5,
+          "maxPods": 110,
+          "minCount": 1,
+          "name": "nodepool1",
+          "nodeLabels": {},
+          "nodeTaints": [],
+          "osSKU": "CBLMariner",
+          "osType": "Linux",
+          "vmSize": "Standard_A4_v2"
+        }
+      ]
+    },
+    "controlPlaneCount": {
+      "value": 2
+    },
     "location": {
       "value": "<location>"
     }
@@ -174,6 +203,22 @@ param customLocationId = '<customLocationId>'
 param logicalNetworkId = '<logicalNetworkId>'
 param name = 'hcspciwaf001'
 // Non-required parameters
+param agentPoolProfiles = [
+  {
+    count: 2
+    enableAutoScaling: false
+    maxCount: 5
+    maxPods: 110
+    minCount: 1
+    name: 'nodepool1'
+    nodeLabels: {}
+    nodeTaints: []
+    osSKU: 'CBLMariner'
+    osType: 'Linux'
+    vmSize: 'Standard_A4_v2'
+  }
+]
+param controlPlaneCount = 2
 param location = '<location>'
 ```
 
@@ -202,7 +247,6 @@ param location = '<location>'
 | Parameter | Type | Description |
 | :-- | :-- | :-- |
 | [`aadAdminGroupObjectIds`](#parameter-aadadmingroupobjectids) | array | The Azure AD admin group object IDs. |
-| [`aadTenantId`](#parameter-aadtenantid) | string | The Azure AD tenant ID. |
 | [`agentAutoUpgrade`](#parameter-agentautoupgrade) | string | Enable automatic agent upgrades. |
 | [`agentPoolProfiles`](#parameter-agentpoolprofiles) | array | Agent pool configuration. |
 | [`azureHybridBenefit`](#parameter-azurehybridbenefit) | string | Azure Hybrid Benefit configuration. |
@@ -212,7 +256,6 @@ param location = '<location>'
 | [`controlPlaneVmSize`](#parameter-controlplanevmsize) | string | The VM size for control plane nodes. |
 | [`enableAzureRBAC`](#parameter-enableazurerbac) | bool | Enable Azure RBAC. |
 | [`enableTelemetry`](#parameter-enabletelemetry) | bool | Enable/Disable usage telemetry for module. |
-| [`identityType`](#parameter-identitytype) | string | The identity type for the cluster. Allowed values: "SystemAssigned", "None". |
 | [`kubernetesVersion`](#parameter-kubernetesversion) | string | The Kubernetes version for the cluster. |
 | [`location`](#parameter-location) | string | Location for all Resources. |
 | [`nfsCsiDriverEnabled`](#parameter-nfscsidriverenabled) | bool | Enable or disable NFS CSI driver. |
@@ -221,6 +264,7 @@ param location = '<location>'
 | [`smbCsiDriverEnabled`](#parameter-smbcsidriverenabled) | bool | Enable or disable SMB CSI driver. |
 | [`sshPrivateKeyPemSecretName`](#parameter-sshprivatekeypemsecretname) | string | The name of the secret in the key vault that contains the SSH private key PEM. |
 | [`sshPublicKeySecretName`](#parameter-sshpublickeysecretname) | string | The name of the secret in the key vault that contains the SSH public key. |
+| [`tenantId`](#parameter-tenantid) | string | The Azure AD tenant ID. |
 | [`workloadIdentityEnabled`](#parameter-workloadidentityenabled) | bool | Enable workload identity. |
 
 ### Parameter: `customLocationId`
@@ -250,7 +294,6 @@ The name of the key vault. The key vault name. Required if no existing SSH keys.
 
 - Required: No
 - Type: string
-- Default: `''`
 
 ### Parameter: `sshPublicKey`
 
@@ -258,7 +301,6 @@ The SSH public key that will be used to access the kubernetes cluster nodes. If 
 
 - Required: No
 - Type: string
-- Default: `''`
 
 ### Parameter: `aadAdminGroupObjectIds`
 
@@ -267,14 +309,6 @@ The Azure AD admin group object IDs.
 - Required: No
 - Type: array
 - Default: `[]`
-
-### Parameter: `aadTenantId`
-
-The Azure AD tenant ID.
-
-- Required: No
-- Type: string
-- Default: `''`
 
 ### Parameter: `agentAutoUpgrade`
 
@@ -322,7 +356,15 @@ Azure Hybrid Benefit configuration.
 
 - Required: No
 - Type: string
-- Default: `''`
+- Default: `'False'`
+- Allowed:
+  ```Bicep
+  [
+    'False'
+    'NotApplicable'
+    'True'
+  ]
+  ```
 
 ### Parameter: `connectClustersTags`
 
@@ -346,7 +388,6 @@ The host IP for control plane endpoint.
 
 - Required: No
 - Type: string
-- Default: `''`
 
 ### Parameter: `controlPlaneVmSize`
 
@@ -372,28 +413,12 @@ Enable/Disable usage telemetry for module.
 - Type: bool
 - Default: `True`
 
-### Parameter: `identityType`
-
-The identity type for the cluster. Allowed values: "SystemAssigned", "None".
-
-- Required: No
-- Type: string
-- Default: `'SystemAssigned'`
-- Allowed:
-  ```Bicep
-  [
-    'None'
-    'SystemAssigned'
-  ]
-  ```
-
 ### Parameter: `kubernetesVersion`
 
 The Kubernetes version for the cluster.
 
 - Required: No
 - Type: string
-- Default: `''`
 
 ### Parameter: `location`
 
@@ -451,6 +476,13 @@ The name of the secret in the key vault that contains the SSH public key.
 - Type: string
 - Default: `'AksArcAgentSshPublicKey'`
 
+### Parameter: `tenantId`
+
+The Azure AD tenant ID.
+
+- Required: No
+- Type: string
+
 ### Parameter: `workloadIdentityEnabled`
 
 Enable workload identity.
@@ -473,7 +505,8 @@ This section gives you an overview of all local-referenced module files (i.e., o
 
 | Reference | Type |
 | :-- | :-- |
-| `avm/res/kubernetes/connected-clusters` | Local reference |
+| `avm/res/kubernetes/connected-cluster` | Local reference |
+| `br/public:avm/utl/types/avm-common-types:0.5.1` | Remote reference |
 
 ## Data Collection
 
