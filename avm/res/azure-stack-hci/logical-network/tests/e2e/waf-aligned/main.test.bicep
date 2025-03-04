@@ -1,11 +1,11 @@
 targetScope = 'subscription'
 
-metadata name = 'Deploy azure stack hci logical network in WAF aligned configuration'
-metadata description = 'This test deploys an azure stack hci logical network.'
+metadata name = 'WAF-aligned'
+metadata description = 'This instance deploys the module in alignment with the best-practices of the Azure Well-Architected Framework.'
 
 @description('Optional. The name of the resource group to deploy for testing purposes.')
 @maxLength(90)
-param resourceGroupName string = 'dep-${namePrefix}-azurestackhci.logicalnetworks-${serviceShort}-rg'
+param resourceGroupName string = 'dep-${namePrefix}-azurestackhci.logicalnetwork-${serviceShort}-rg'
 
 @description('Optional. A short identifier for the kind of deployment. Should be kept short to not run into resource-name length-constraints.')
 param serviceShort string = 'ashlnwaf'
@@ -22,7 +22,7 @@ param localAdminAndDeploymentUserPass string = newGuid()
 #disable-next-line secure-parameter-default
 param arbDeploymentAppId string = ''
 
-@description('Required. The service principal ID of the service principal used for the Azure Stack HCI Resource Bridge deployment.')
+@description('Required. The service principal ID of the service principal used for the Azure Stack HCI Resource Bridge deployment. The service principal must have Contributor role assigned.')
 @secure()
 #disable-next-line secure-parameter-default
 param arbDeploymentSPObjectId string = ''
@@ -45,7 +45,7 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   location: enforcedLocation
 }
 
-module nestedDependencies '../../../../cluster/tests/e2e/waf-aligned/dependencies.bicep' = {
+module nestedDependencies '../../../../../../../utilities/e2e-template-assets/module-specific/azure-stack-hci/dependencies/waf-dependencies.bicep' = {
   name: '${uniqueString(deployment().name, enforcedLocation)}-test-nestedDependencies-${serviceShort}'
   scope: resourceGroup
   params: {
@@ -73,7 +73,7 @@ module nestedDependencies '../../../../cluster/tests/e2e/waf-aligned/dependencie
   }
 }
 
-module azlocal '../../../../cluster/main.bicep' = {
+module azlocal 'br/public:avm/res/azure-stack-hci/cluster:0.1.0' = {
   name: '${uniqueString(deployment().name, enforcedLocation)}-test-clustermodule-${serviceShort}'
   scope: resourceGroup
   params: {
@@ -188,7 +188,10 @@ module azlocal '../../../../cluster/main.bicep' = {
 
 resource customLocation 'Microsoft.ExtendedLocation/customLocations@2021-08-31-preview' existing = {
   scope: resourceGroup
-  name: azlocal.outputs.customLocationName
+  name: '${namePrefix}${serviceShort}-location'
+  dependsOn: [
+    azlocal
+  ]
 }
 
 module testDeployment '../../../main.bicep' = {
@@ -196,9 +199,8 @@ module testDeployment '../../../main.bicep' = {
   scope: resourceGroup
   params: {
     name: '${namePrefix}${serviceShort}logicalnetwork'
-    location: enforcedLocation
-    customLocationId: customLocation.id
-    vmSwitchName: 'ConvergedSwitch(managementcompute)'
+    customLocationResourceId: customLocation.id
+    vmSwitchName: 'ConvergedSwitch(management)'
     ipAllocationMethod: 'Static'
     addressPrefix: '172.20.0.1/24'
     startingAddress: '172.20.0.171'
@@ -207,5 +209,10 @@ module testDeployment '../../../main.bicep' = {
     dnsServers: ['172.20.0.1']
     routeName: 'default'
     vlanId: null
+    tags: {
+      'hidden-title': 'This is visible in the resource name'
+      Environment: 'Non-Prod'
+      Role: 'DeploymentValidation'
+    }
   }
 }
