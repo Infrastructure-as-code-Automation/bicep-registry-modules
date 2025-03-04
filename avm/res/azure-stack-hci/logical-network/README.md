@@ -43,20 +43,11 @@ module logicalNetwork 'br/public:avm/res/azure-stack-hci/logical-network:<versio
   name: 'logicalNetworkDeployment'
   params: {
     // Required parameters
-    customLocationId: '<customLocationId>'
+    customLocationResourceId: '<customLocationResourceId>'
     name: 'ashlnminlogicalnetwork'
     vmSwitchName: 'ConvergedSwitch(management)'
     // Non-required parameters
-    addressPrefix: '172.20.0.1/24'
-    defaultGateway: '172.20.0.1'
-    dnsServers: [
-      '172.20.0.1'
-    ]
-    endingAddress: '172.20.0.190'
-    ipAllocationMethod: 'Static'
-    location: '<location>'
     routeName: 'default'
-    startingAddress: '172.20.0.171'
     vlanId: '<vlanId>'
   }
 }
@@ -75,8 +66,8 @@ module logicalNetwork 'br/public:avm/res/azure-stack-hci/logical-network:<versio
   "contentVersion": "1.0.0.0",
   "parameters": {
     // Required parameters
-    "customLocationId": {
-      "value": "<customLocationId>"
+    "customLocationResourceId": {
+      "value": "<customLocationResourceId>"
     },
     "name": {
       "value": "ashlnminlogicalnetwork"
@@ -85,31 +76,8 @@ module logicalNetwork 'br/public:avm/res/azure-stack-hci/logical-network:<versio
       "value": "ConvergedSwitch(management)"
     },
     // Non-required parameters
-    "addressPrefix": {
-      "value": "172.20.0.1/24"
-    },
-    "defaultGateway": {
-      "value": "172.20.0.1"
-    },
-    "dnsServers": {
-      "value": [
-        "172.20.0.1"
-      ]
-    },
-    "endingAddress": {
-      "value": "172.20.0.190"
-    },
-    "ipAllocationMethod": {
-      "value": "Static"
-    },
-    "location": {
-      "value": "<location>"
-    },
     "routeName": {
       "value": "default"
-    },
-    "startingAddress": {
-      "value": "172.20.0.171"
     },
     "vlanId": {
       "value": "<vlanId>"
@@ -129,20 +97,11 @@ module logicalNetwork 'br/public:avm/res/azure-stack-hci/logical-network:<versio
 using 'br/public:avm/res/azure-stack-hci/logical-network:<version>'
 
 // Required parameters
-param customLocationId = '<customLocationId>'
+param customLocationResourceId = '<customLocationResourceId>'
 param name = 'ashlnminlogicalnetwork'
 param vmSwitchName = 'ConvergedSwitch(management)'
 // Non-required parameters
-param addressPrefix = '172.20.0.1/24'
-param defaultGateway = '172.20.0.1'
-param dnsServers = [
-  '172.20.0.1'
-]
-param endingAddress = '172.20.0.190'
-param ipAllocationMethod = 'Static'
-param location = '<location>'
 param routeName = 'default'
-param startingAddress = '172.20.0.171'
 param vlanId = '<vlanId>'
 ```
 
@@ -163,7 +122,7 @@ module logicalNetwork 'br/public:avm/res/azure-stack-hci/logical-network:<versio
   name: 'logicalNetworkDeployment'
   params: {
     // Required parameters
-    customLocationId: '<customLocationId>'
+    customLocationResourceId: '<customLocationResourceId>'
     name: 'ashlnwaflogicalnetwork'
     vmSwitchName: 'ConvergedSwitch(management)'
     // Non-required parameters
@@ -174,7 +133,6 @@ module logicalNetwork 'br/public:avm/res/azure-stack-hci/logical-network:<versio
     ]
     endingAddress: '172.20.0.190'
     ipAllocationMethod: 'Static'
-    location: '<location>'
     routeName: 'default'
     startingAddress: '172.20.0.171'
     tags: {
@@ -200,8 +158,8 @@ module logicalNetwork 'br/public:avm/res/azure-stack-hci/logical-network:<versio
   "contentVersion": "1.0.0.0",
   "parameters": {
     // Required parameters
-    "customLocationId": {
-      "value": "<customLocationId>"
+    "customLocationResourceId": {
+      "value": "<customLocationResourceId>"
     },
     "name": {
       "value": "ashlnwaflogicalnetwork"
@@ -226,9 +184,6 @@ module logicalNetwork 'br/public:avm/res/azure-stack-hci/logical-network:<versio
     },
     "ipAllocationMethod": {
       "value": "Static"
-    },
-    "location": {
-      "value": "<location>"
     },
     "routeName": {
       "value": "default"
@@ -261,7 +216,7 @@ module logicalNetwork 'br/public:avm/res/azure-stack-hci/logical-network:<versio
 using 'br/public:avm/res/azure-stack-hci/logical-network:<version>'
 
 // Required parameters
-param customLocationId = '<customLocationId>'
+param customLocationResourceId = '<customLocationResourceId>'
 param name = 'ashlnwaflogicalnetwork'
 param vmSwitchName = 'ConvergedSwitch(management)'
 // Non-required parameters
@@ -272,7 +227,6 @@ param dnsServers = [
 ]
 param endingAddress = '172.20.0.190'
 param ipAllocationMethod = 'Static'
-param location = '<location>'
 param routeName = 'default'
 param startingAddress = '172.20.0.171'
 param tags = {
@@ -292,30 +246,35 @@ param vlanId = '<vlanId>'
 
 | Parameter | Type | Description |
 | :-- | :-- | :-- |
-| [`customLocationId`](#parameter-customlocationid) | string | The custom location ID. |
+| [`customLocationResourceId`](#parameter-customlocationresourceid) | string | The custom location ID. |
 | [`name`](#parameter-name) | string | Name of the resource to create. |
 | [`vmSwitchName`](#parameter-vmswitchname) | string | The VM switch name. |
+
+**Conditional parameters**
+
+| Parameter | Type | Description |
+| :-- | :-- | :-- |
+| [`addressPrefix`](#parameter-addressprefix) | string | Address prefix for the logical network. Required if ipAllocationMethod is Static. |
+| [`defaultGateway`](#parameter-defaultgateway) | string | The default gateway for the network. Required if ipAllocationMethod is Static. |
+| [`dnsServers`](#parameter-dnsservers) | array | The DNS servers list. Required if ipAllocationMethod is Static. |
+| [`endingAddress`](#parameter-endingaddress) | string | The ending IP address of the IP address range. Required if ipAllocationMethod is Static. |
+| [`routeName`](#parameter-routename) | string | The route name. Required if ipAllocationMethod is Static. |
+| [`startingAddress`](#parameter-startingaddress) | string | The starting IP address of the IP address range. Required if ipAllocationMethod is Static. |
 
 **Optional parameters**
 
 | Parameter | Type | Description |
 | :-- | :-- | :-- |
-| [`addressPrefix`](#parameter-addressprefix) | string | Address prefix for the logical network. |
-| [`defaultGateway`](#parameter-defaultgateway) | string | The default gateway for the network. |
-| [`dnsServers`](#parameter-dnsservers) | array | The DNS servers list. |
 | [`enableTelemetry`](#parameter-enabletelemetry) | bool | Enable/Disable usage telemetry for module. |
-| [`endingAddress`](#parameter-endingaddress) | string | The ending IP address of the IP address range. |
 | [`ipAllocationMethod`](#parameter-ipallocationmethod) | string | The IP allocation method. |
 | [`ipConfigurationReferences`](#parameter-ipconfigurationreferences) | array | A list of IP configuration references. |
 | [`location`](#parameter-location) | string | Location for all Resources. |
 | [`roleAssignments`](#parameter-roleassignments) | array | Array of role assignments to create. |
-| [`routeName`](#parameter-routename) | string | The route name. |
-| [`startingAddress`](#parameter-startingaddress) | string | The starting IP address of the IP address range. |
 | [`subnet0Name`](#parameter-subnet0name) | string | The subnet name. |
 | [`tags`](#parameter-tags) | object | Tags for the logical network. |
 | [`vlanId`](#parameter-vlanid) | int | VLan Id for the logical network. |
 
-### Parameter: `customLocationId`
+### Parameter: `customLocationResourceId`
 
 The custom location ID.
 
@@ -338,25 +297,46 @@ The VM switch name.
 
 ### Parameter: `addressPrefix`
 
-Address prefix for the logical network.
+Address prefix for the logical network. Required if ipAllocationMethod is Static.
 
 - Required: No
 - Type: string
 
 ### Parameter: `defaultGateway`
 
-The default gateway for the network.
+The default gateway for the network. Required if ipAllocationMethod is Static.
 
 - Required: No
 - Type: string
 
 ### Parameter: `dnsServers`
 
-The DNS servers list.
+The DNS servers list. Required if ipAllocationMethod is Static.
 
 - Required: No
 - Type: array
 - Default: `[]`
+
+### Parameter: `endingAddress`
+
+The ending IP address of the IP address range. Required if ipAllocationMethod is Static.
+
+- Required: No
+- Type: string
+
+### Parameter: `routeName`
+
+The route name. Required if ipAllocationMethod is Static.
+
+- Required: No
+- Type: string
+
+### Parameter: `startingAddress`
+
+The starting IP address of the IP address range. Required if ipAllocationMethod is Static.
+
+- Required: No
+- Type: string
 
 ### Parameter: `enableTelemetry`
 
@@ -365,13 +345,6 @@ Enable/Disable usage telemetry for module.
 - Required: No
 - Type: bool
 - Default: `True`
-
-### Parameter: `endingAddress`
-
-The ending IP address of the IP address range.
-
-- Required: No
-- Type: string
 
 ### Parameter: `ipAllocationMethod`
 
@@ -394,7 +367,19 @@ A list of IP configuration references.
 
 - Required: No
 - Type: array
-- Default: `[]`
+
+**Required parameters**
+
+| Parameter | Type | Description |
+| :-- | :-- | :-- |
+| [`id`](#parameter-ipconfigurationreferencesid) | string | The ARM ID for a Network Interface. |
+
+### Parameter: `ipConfigurationReferences.id`
+
+The ARM ID for a Network Interface.
+
+- Required: Yes
+- Type: string
 
 ### Parameter: `location`
 
@@ -415,7 +400,7 @@ Array of role assignments to create.
   - `'Owner'`
   - `'Reader'`
   - `'User Access Administrator'`
-  - `'Role Based Access Control Administrator (Preview)'`
+  - `'Role Based Access Control Administrator'`
 
 **Required parameters**
 
@@ -506,20 +491,6 @@ The principal type of the assigned principal ID.
     'User'
   ]
   ```
-
-### Parameter: `routeName`
-
-The route name.
-
-- Required: No
-- Type: string
-
-### Parameter: `startingAddress`
-
-The starting IP address of the IP address range.
-
-- Required: No
-- Type: string
 
 ### Parameter: `subnet0Name`
 

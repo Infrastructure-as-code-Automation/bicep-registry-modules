@@ -45,7 +45,7 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   location: enforcedLocation
 }
 
-module nestedDependencies '../../../../cluster/tests/e2e/defaults/dependencies.bicep' = {
+module nestedDependencies '../../../../../../../utilities/e2e-template-assets/module-specific/azure-stack-hci/dependencies/defaults-dependencies.bicep' = {
   name: '${uniqueString(deployment().name, enforcedLocation)}-test-nestedDependencies-${serviceShort}'
   scope: resourceGroup
   params: {
@@ -175,7 +175,7 @@ module azlocal 'br/public:avm/res/azure-stack-hci/cluster:0.1.0' = {
   }
 }
 
-module logicalNetwork '../../../../logical-network/main.bicep' = {
+module logicalNetwork 'br/public:avm/res/azure-stack-hci/logical-network:0.1.0' = {
   name: '${uniqueString(deployment().name, enforcedLocation)}-logicalNetwork-${serviceShort}'
   scope: resourceGroup
   params: {
@@ -207,8 +207,7 @@ module testDeployment '../../../main.bicep' = {
   scope: resourceGroup
   params: {
     name: '${namePrefix}${serviceShort}networkinterface'
-    location: enforcedLocation
-    customLocationId: customLocation.id
+    customLocationResourceId: customLocation.id
     ipConfigurations: [
       {
         properties: {
