@@ -12,9 +12,6 @@ metadata description = 'This instance deploys the module with the minimum set of
 // e.g., for a module 'network/private-endpoint' you could use 'dep-dev-network.privateendpoints-${serviceShort}-rg'
 param resourceGroupName string = 'dep-${namePrefix}-azurestackhci.vmi-${serviceShort}-rg'
 
-@description('Optional. The location to deploy resources to.')
-param resourceLocation string = deployment().location
-
 @description('Optional. A short identifier for the kind of deployment. Should be kept short to not run into resource-name length-constraints.')
 // e.g., for a module 'network/private-endpoint' you could use 'npe' as a prefix and then 'waf' as a suffix for the waf-aligned test
 param serviceShort string = 'ashvmimin'
@@ -44,9 +41,6 @@ param hciResourceProviderObjectId string = ''
 
 @description('Optional. The password to use for the local and domain accounts in the test.')
 param localAdminAndDeploymentUserPass string = newGuid()
-
-@description('Optional. The subnet ID of an existing subnet in the same location. KeyVault and Storage service endpoints must be enabled!. If not provided, a new VNET is created.')
-param vnetSubnetId string?
 
 #disable-next-line no-hardcoded-location // Due to quotas and capacity challenges, this region must be used in the AVM testing subscription
 var enforcedLocation = 'southeastasia'
