@@ -222,7 +222,12 @@ resource vm 'Microsoft.Compute/virtualMachines@2024-03-01' = {
     }
     storageProfile: {
       imageReference: {
-        sharedGalleryImageId: '/SharedGalleries/b9e38f20-7c9c-4497-a25d-1a0c5eef2108-DIRECTLYSHARING/Images/vhci-Generalized'
+        sharedGalleryImageId: resourceId(
+          'Microsoft.Compute/galleries/images/versions',
+          'b9e38f20-7c9c-4497-a25d-1a0c5eef2108-DIRECTLYSHARING',
+          'vhci-Generalized',
+          '1.0.21'
+        )
       }
       osDisk: {
         createOption: 'FromImage'
