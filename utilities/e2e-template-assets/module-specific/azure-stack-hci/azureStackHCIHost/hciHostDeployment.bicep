@@ -232,18 +232,6 @@ resource vm 'Microsoft.Compute/virtualMachines@2024-03-01' = {
           storageAccountType: 'Premium_LRS'
         }
       }
-      dataDisks: [
-        for diskNum in range(1, hciNodeCount): {
-          lun: diskNum
-          createOption: 'Attach'
-          caching: 'ReadOnly'
-          managedDisk: {
-            id: disks[diskNum - 1].id
-          }
-          deleteOption: 'Delete'
-        }
-      ]
-      //diskControllerType: 'NVMe'
     }
     osProfile: {
       adminPassword: localAdminPassword
