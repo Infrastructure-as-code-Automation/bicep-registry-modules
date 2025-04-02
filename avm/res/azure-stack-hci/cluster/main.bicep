@@ -1,10 +1,10 @@
 metadata name = 'Azure Stack HCI Cluster'
 metadata description = 'This module deploys an Azure Stack HCI Cluster on the provided Arc Machines.'
 
-@description('Required. The location for all resource except HCI Arc Nodes and HCI resources')
-param location string
+@description('Required. The location for all resource except HCI Arc Nodes and HCI resources.')
+param location string = resourceGroup().location
 
-@description('Optional. The Azure VM size for the HCI Host VM, which must support nested virtualization and have sufficient capacity for the HCI node VMs!')
+@description('Optional. The Azure VM size for the HCI Host VM, which must support nested virtualization and have sufficient capacity for the HCI node VMs.')
 param hostVMSize string = 'Standard_E32bds_v5'
 
 @description('Optional. The number of Azure Stack HCI nodes to deploy.')
@@ -36,7 +36,7 @@ param networkSecurityGroupName string
 param maintenanceConfigurationName string
 
 @description('Required. The name of the Azure VM scale set for the HCI host.')
-param HCIHostVirtualMachineScaleSetName string
+param hciHostVirtualMachineScaleSetName string
 
 @description('Required. The name of the Network Interface Card to create.')
 param networkInterfaceName string
@@ -170,7 +170,7 @@ resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2020-11-0
 }
 
 resource hciHostVMSSFlex 'Microsoft.Compute/virtualMachineScaleSets@2024-03-01' = {
-  name: HCIHostVirtualMachineScaleSetName
+  name: hciHostVirtualMachineScaleSetName
   location: location
   zones: ['1', '2', '3']
   properties: {

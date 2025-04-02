@@ -54,22 +54,22 @@ module cluster 'br/public:avm/res/azure-stack-hci/cluster:<version>' = {
   name: 'clusterDeployment'
   params: {
     // Required parameters
-    diskNamePrefix: '<diskNamePrefix>'
-    HCIHostVirtualMachineScaleSetName: '<HCIHostVirtualMachineScaleSetName>'
+    diskNamePrefix: 'dep-disk-ashcmin'
+    hciHostVirtualMachineScaleSetName: 'dep-hvmss-ashcmin'
     localAdminPassword: '<localAdminPassword>'
-    location: '<location>'
-    maintenanceConfigurationAssignmentName: '<maintenanceConfigurationAssignmentName>'
-    maintenanceConfigurationName: '<maintenanceConfigurationName>'
-    networkInterfaceName: '<networkInterfaceName>'
-    networkSecurityGroupName: '<networkSecurityGroupName>'
-    userAssignedIdentityName: '<userAssignedIdentityName>'
-    virtualMachineName: '<virtualMachineName>'
-    virtualNetworkName: '<virtualNetworkName>'
-    waitDeploymentScriptPrefixName: '<waitDeploymentScriptPrefixName>'
+    maintenanceConfigurationAssignmentName: 'dep-mca-ashcmin'
+    maintenanceConfigurationName: 'dep-mc-ashcmin'
+    networkInterfaceName: 'dep-mice-ashcmin'
+    networkSecurityGroupName: 'dep-nsg-ashcmin'
+    userAssignedIdentityName: 'dep-msi-ashcmin'
+    virtualMachineName: 'dep-vm-ashcmin'
+    virtualNetworkName: 'dep-vnet-ashcmin'
+    waitDeploymentScriptPrefixName: 'dep-wds-ashcmin'
     // Non-required parameters
     hciISODownloadURL: 'https://azurestackreleases.download.prss.microsoft.com/dbazure/AzureStackHCI/OS-Composition/10.2408.0.3061/AZURESTACKHci23H2.25398.469.LCM.10.2408.0.3061.x64.en-us.iso'
     hciNodeCount: '<hciNodeCount>'
     hostVMSize: 'Standard_E16bds_v5'
+    location: '<location>'
     switchlessStorageConfig: false
   }
 }
@@ -89,40 +89,37 @@ module cluster 'br/public:avm/res/azure-stack-hci/cluster:<version>' = {
   "parameters": {
     // Required parameters
     "diskNamePrefix": {
-      "value": "<diskNamePrefix>"
+      "value": "dep-disk-ashcmin"
     },
-    "HCIHostVirtualMachineScaleSetName": {
-      "value": "<HCIHostVirtualMachineScaleSetName>"
+    "hciHostVirtualMachineScaleSetName": {
+      "value": "dep-hvmss-ashcmin"
     },
     "localAdminPassword": {
       "value": "<localAdminPassword>"
     },
-    "location": {
-      "value": "<location>"
-    },
     "maintenanceConfigurationAssignmentName": {
-      "value": "<maintenanceConfigurationAssignmentName>"
+      "value": "dep-mca-ashcmin"
     },
     "maintenanceConfigurationName": {
-      "value": "<maintenanceConfigurationName>"
+      "value": "dep-mc-ashcmin"
     },
     "networkInterfaceName": {
-      "value": "<networkInterfaceName>"
+      "value": "dep-mice-ashcmin"
     },
     "networkSecurityGroupName": {
-      "value": "<networkSecurityGroupName>"
+      "value": "dep-nsg-ashcmin"
     },
     "userAssignedIdentityName": {
-      "value": "<userAssignedIdentityName>"
+      "value": "dep-msi-ashcmin"
     },
     "virtualMachineName": {
-      "value": "<virtualMachineName>"
+      "value": "dep-vm-ashcmin"
     },
     "virtualNetworkName": {
-      "value": "<virtualNetworkName>"
+      "value": "dep-vnet-ashcmin"
     },
     "waitDeploymentScriptPrefixName": {
-      "value": "<waitDeploymentScriptPrefixName>"
+      "value": "dep-wds-ashcmin"
     },
     // Non-required parameters
     "hciISODownloadURL": {
@@ -133,6 +130,9 @@ module cluster 'br/public:avm/res/azure-stack-hci/cluster:<version>' = {
     },
     "hostVMSize": {
       "value": "Standard_E16bds_v5"
+    },
+    "location": {
+      "value": "<location>"
     },
     "switchlessStorageConfig": {
       "value": false
@@ -152,22 +152,22 @@ module cluster 'br/public:avm/res/azure-stack-hci/cluster:<version>' = {
 using 'br/public:avm/res/azure-stack-hci/cluster:<version>'
 
 // Required parameters
-param diskNamePrefix = '<diskNamePrefix>'
-param HCIHostVirtualMachineScaleSetName = '<HCIHostVirtualMachineScaleSetName>'
+param diskNamePrefix = 'dep-disk-ashcmin'
+param hciHostVirtualMachineScaleSetName = 'dep-hvmss-ashcmin'
 param localAdminPassword = '<localAdminPassword>'
-param location = '<location>'
-param maintenanceConfigurationAssignmentName = '<maintenanceConfigurationAssignmentName>'
-param maintenanceConfigurationName = '<maintenanceConfigurationName>'
-param networkInterfaceName = '<networkInterfaceName>'
-param networkSecurityGroupName = '<networkSecurityGroupName>'
-param userAssignedIdentityName = '<userAssignedIdentityName>'
-param virtualMachineName = '<virtualMachineName>'
-param virtualNetworkName = '<virtualNetworkName>'
-param waitDeploymentScriptPrefixName = '<waitDeploymentScriptPrefixName>'
+param maintenanceConfigurationAssignmentName = 'dep-mca-ashcmin'
+param maintenanceConfigurationName = 'dep-mc-ashcmin'
+param networkInterfaceName = 'dep-mice-ashcmin'
+param networkSecurityGroupName = 'dep-nsg-ashcmin'
+param userAssignedIdentityName = 'dep-msi-ashcmin'
+param virtualMachineName = 'dep-vm-ashcmin'
+param virtualNetworkName = 'dep-vnet-ashcmin'
+param waitDeploymentScriptPrefixName = 'dep-wds-ashcmin'
 // Non-required parameters
 param hciISODownloadURL = 'https://azurestackreleases.download.prss.microsoft.com/dbazure/AzureStackHCI/OS-Composition/10.2408.0.3061/AZURESTACKHci23H2.25398.469.LCM.10.2408.0.3061.x64.en-us.iso'
 param hciNodeCount = '<hciNodeCount>'
 param hostVMSize = 'Standard_E16bds_v5'
+param location = '<location>'
 param switchlessStorageConfig = false
 ```
 
@@ -188,22 +188,22 @@ module cluster 'br/public:avm/res/azure-stack-hci/cluster:<version>' = {
   name: 'clusterDeployment'
   params: {
     // Required parameters
-    diskNamePrefix: '<diskNamePrefix>'
-    HCIHostVirtualMachineScaleSetName: '<HCIHostVirtualMachineScaleSetName>'
+    diskNamePrefix: 'dep-disk-ashcwaf'
+    hciHostVirtualMachineScaleSetName: 'dep-hvmss-ashcwaf'
     localAdminPassword: '<localAdminPassword>'
-    location: '<location>'
-    maintenanceConfigurationAssignmentName: '<maintenanceConfigurationAssignmentName>'
-    maintenanceConfigurationName: '<maintenanceConfigurationName>'
-    networkInterfaceName: '<networkInterfaceName>'
-    networkSecurityGroupName: '<networkSecurityGroupName>'
-    userAssignedIdentityName: '<userAssignedIdentityName>'
-    virtualMachineName: '<virtualMachineName>'
-    virtualNetworkName: '<virtualNetworkName>'
-    waitDeploymentScriptPrefixName: '<waitDeploymentScriptPrefixName>'
+    maintenanceConfigurationAssignmentName: 'dep-mca-ashcwaf'
+    maintenanceConfigurationName: 'dep-mc-ashcwaf'
+    networkInterfaceName: 'dep-mice-ashcwaf'
+    networkSecurityGroupName: 'dep-nsg-ashcwaf'
+    userAssignedIdentityName: 'dep-msi-ashcwaf'
+    virtualMachineName: 'dep-vm-ashcwaf'
+    virtualNetworkName: 'dep-vnet-ashcwaf'
+    waitDeploymentScriptPrefixName: 'dep-wds-ashcwaf'
     // Non-required parameters
     hciISODownloadURL: 'https://azurestackreleases.download.prss.microsoft.com/dbazure/AzureStackHCI/OS-Composition/10.2408.0.3061/AZURESTACKHci23H2.25398.469.LCM.10.2408.0.3061.x64.en-us.iso'
     hciNodeCount: '<hciNodeCount>'
     hostVMSize: 'Standard_E16bds_v5'
+    location: '<location>'
     switchlessStorageConfig: false
   }
 }
@@ -223,40 +223,37 @@ module cluster 'br/public:avm/res/azure-stack-hci/cluster:<version>' = {
   "parameters": {
     // Required parameters
     "diskNamePrefix": {
-      "value": "<diskNamePrefix>"
+      "value": "dep-disk-ashcwaf"
     },
-    "HCIHostVirtualMachineScaleSetName": {
-      "value": "<HCIHostVirtualMachineScaleSetName>"
+    "hciHostVirtualMachineScaleSetName": {
+      "value": "dep-hvmss-ashcwaf"
     },
     "localAdminPassword": {
       "value": "<localAdminPassword>"
     },
-    "location": {
-      "value": "<location>"
-    },
     "maintenanceConfigurationAssignmentName": {
-      "value": "<maintenanceConfigurationAssignmentName>"
+      "value": "dep-mca-ashcwaf"
     },
     "maintenanceConfigurationName": {
-      "value": "<maintenanceConfigurationName>"
+      "value": "dep-mc-ashcwaf"
     },
     "networkInterfaceName": {
-      "value": "<networkInterfaceName>"
+      "value": "dep-mice-ashcwaf"
     },
     "networkSecurityGroupName": {
-      "value": "<networkSecurityGroupName>"
+      "value": "dep-nsg-ashcwaf"
     },
     "userAssignedIdentityName": {
-      "value": "<userAssignedIdentityName>"
+      "value": "dep-msi-ashcwaf"
     },
     "virtualMachineName": {
-      "value": "<virtualMachineName>"
+      "value": "dep-vm-ashcwaf"
     },
     "virtualNetworkName": {
-      "value": "<virtualNetworkName>"
+      "value": "dep-vnet-ashcwaf"
     },
     "waitDeploymentScriptPrefixName": {
-      "value": "<waitDeploymentScriptPrefixName>"
+      "value": "dep-wds-ashcwaf"
     },
     // Non-required parameters
     "hciISODownloadURL": {
@@ -267,6 +264,9 @@ module cluster 'br/public:avm/res/azure-stack-hci/cluster:<version>' = {
     },
     "hostVMSize": {
       "value": "Standard_E16bds_v5"
+    },
+    "location": {
+      "value": "<location>"
     },
     "switchlessStorageConfig": {
       "value": false
@@ -286,22 +286,22 @@ module cluster 'br/public:avm/res/azure-stack-hci/cluster:<version>' = {
 using 'br/public:avm/res/azure-stack-hci/cluster:<version>'
 
 // Required parameters
-param diskNamePrefix = '<diskNamePrefix>'
-param HCIHostVirtualMachineScaleSetName = '<HCIHostVirtualMachineScaleSetName>'
+param diskNamePrefix = 'dep-disk-ashcwaf'
+param hciHostVirtualMachineScaleSetName = 'dep-hvmss-ashcwaf'
 param localAdminPassword = '<localAdminPassword>'
-param location = '<location>'
-param maintenanceConfigurationAssignmentName = '<maintenanceConfigurationAssignmentName>'
-param maintenanceConfigurationName = '<maintenanceConfigurationName>'
-param networkInterfaceName = '<networkInterfaceName>'
-param networkSecurityGroupName = '<networkSecurityGroupName>'
-param userAssignedIdentityName = '<userAssignedIdentityName>'
-param virtualMachineName = '<virtualMachineName>'
-param virtualNetworkName = '<virtualNetworkName>'
-param waitDeploymentScriptPrefixName = '<waitDeploymentScriptPrefixName>'
+param maintenanceConfigurationAssignmentName = 'dep-mca-ashcwaf'
+param maintenanceConfigurationName = 'dep-mc-ashcwaf'
+param networkInterfaceName = 'dep-mice-ashcwaf'
+param networkSecurityGroupName = 'dep-nsg-ashcwaf'
+param userAssignedIdentityName = 'dep-msi-ashcwaf'
+param virtualMachineName = 'dep-vm-ashcwaf'
+param virtualNetworkName = 'dep-vnet-ashcwaf'
+param waitDeploymentScriptPrefixName = 'dep-wds-ashcwaf'
 // Non-required parameters
 param hciISODownloadURL = 'https://azurestackreleases.download.prss.microsoft.com/dbazure/AzureStackHCI/OS-Composition/10.2408.0.3061/AZURESTACKHci23H2.25398.469.LCM.10.2408.0.3061.x64.en-us.iso'
 param hciNodeCount = '<hciNodeCount>'
 param hostVMSize = 'Standard_E16bds_v5'
+param location = '<location>'
 param switchlessStorageConfig = false
 ```
 
@@ -315,9 +315,9 @@ param switchlessStorageConfig = false
 | Parameter | Type | Description |
 | :-- | :-- | :-- |
 | [`diskNamePrefix`](#parameter-disknameprefix) | string | The name prefix for the Disks to create. |
-| [`HCIHostVirtualMachineScaleSetName`](#parameter-hcihostvirtualmachinescalesetname) | string | The name of the Azure VM scale set for the HCI host. |
+| [`hciHostVirtualMachineScaleSetName`](#parameter-hcihostvirtualmachinescalesetname) | string | The name of the Azure VM scale set for the HCI host. |
 | [`localAdminPassword`](#parameter-localadminpassword) | securestring | The local admin password. |
-| [`location`](#parameter-location) | string | The location for all resource except HCI Arc Nodes and HCI resources |
+| [`location`](#parameter-location) | string | The location for all resource except HCI Arc Nodes and HCI resources. |
 | [`maintenanceConfigurationAssignmentName`](#parameter-maintenanceconfigurationassignmentname) | string | The name of the Maintenance Configuration Assignment for the proxy server. |
 | [`maintenanceConfigurationName`](#parameter-maintenanceconfigurationname) | string | The name of the maintenance configuration for the Azure Stack HCI Host VM and proxy server. |
 | [`networkInterfaceName`](#parameter-networkinterfacename) | string | The name of the Network Interface Card to create. |
@@ -334,7 +334,7 @@ param switchlessStorageConfig = false
 | [`enableTelemetry`](#parameter-enabletelemetry) | bool | Enable/Disable usage telemetry for module. |
 | [`hciISODownloadURL`](#parameter-hciisodownloadurl) | string | The download URL for the Azure Stack HCI ISO. |
 | [`hciNodeCount`](#parameter-hcinodecount) | int | The number of Azure Stack HCI nodes to deploy. |
-| [`hostVMSize`](#parameter-hostvmsize) | string | The Azure VM size for the HCI Host VM, which must support nested virtualization and have sufficient capacity for the HCI node VMs! |
+| [`hostVMSize`](#parameter-hostvmsize) | string | The Azure VM size for the HCI Host VM, which must support nested virtualization and have sufficient capacity for the HCI node VMs. |
 | [`localAdminUsername`](#parameter-localadminusername) | string | The local admin user name. |
 | [`switchlessStorageConfig`](#parameter-switchlessstorageconfig) | bool | Enable configuring switchless storage. |
 | [`tags`](#parameter-tags) | object | Tags of the resource. |
@@ -346,7 +346,7 @@ The name prefix for the Disks to create.
 - Required: Yes
 - Type: string
 
-### Parameter: `HCIHostVirtualMachineScaleSetName`
+### Parameter: `hciHostVirtualMachineScaleSetName`
 
 The name of the Azure VM scale set for the HCI host.
 
@@ -362,10 +362,11 @@ The local admin password.
 
 ### Parameter: `location`
 
-The location for all resource except HCI Arc Nodes and HCI resources
+The location for all resource except HCI Arc Nodes and HCI resources.
 
-- Required: Yes
+- Required: No
 - Type: string
+- Default: `[resourceGroup().location]`
 
 ### Parameter: `maintenanceConfigurationAssignmentName`
 
@@ -449,7 +450,7 @@ The number of Azure Stack HCI nodes to deploy.
 
 ### Parameter: `hostVMSize`
 
-The Azure VM size for the HCI Host VM, which must support nested virtualization and have sufficient capacity for the HCI node VMs!
+The Azure VM size for the HCI Host VM, which must support nested virtualization and have sufficient capacity for the HCI node VMs.
 
 - Required: No
 - Type: string

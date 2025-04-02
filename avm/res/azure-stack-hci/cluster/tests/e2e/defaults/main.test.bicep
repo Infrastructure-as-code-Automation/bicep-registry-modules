@@ -16,68 +16,35 @@ param namePrefix string = '#_namePrefix_#'
 #disable-next-line no-hardcoded-location // Due to quotas and capacity challenges, this region must be used in the AVM testing subscription
 var enforcedLocation = 'southeastasia'
 
+@description('Optional. The password of the LCM deployment user and local administrator accounts.')
+@secure()
+param localAdminAndDeploymentUserPass string = newGuid()
+
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   name: resourceGroupName
   location: enforcedLocation
 }
 
-@description('Required. The password of the LCM deployment user and local administrator accounts.')
-@secure()
-param localAdminPassword string
-
-@description('Required. The location to deploy the resources into.')
-param location string
-
-@description('Required. The name of the VM-managed user identity to create, used for HCI Arc onboarding.')
-param userAssignedIdentityName string
-
-@description('Required. The name of the maintenance configuration for the Azure Stack HCI Host VM and proxy server.')
-param maintenanceConfigurationName string
-
-@description('Required. The name of the Azure VM scale set for the HCI host.')
-param HCIHostVirtualMachineScaleSetName string
-
-@description('Conditional. The name of the Network Security Group ro create.')
-param networkSecurityGroupName string
-
-@description('Required. The name of the virtual network to create. Used to connect the HCI Azure Host VM to an existing VNET in the same region.')
-param virtualNetworkName string
-
-@description('Required. The name of the Network Interface Card to create.')
-param networkInterfaceName string
-
-@description('Required. The name prefix for the Disks to create.')
-param diskNamePrefix string
-
-@description('Required. The name of the Azure VM to create.')
-param virtualMachineName string
-
-@description('Required. The name of the Maintenance Configuration Assignment for the proxy server.')
-param maintenanceConfigurationAssignmentName string
-
-@description('Required. The name prefix for the \'wait\' deployment scripts to create.')
-param waitDeploymentScriptPrefixName string
-
 var clusterNodeNames = ['hcinode1', 'hcinode2']
 module testDeployment '../../../main.bicep' = {
-  name: '${uniqueString(deployment().name, location)}-test-hcihostdeploy'
+  name: '${uniqueString(deployment().name, enforcedLocation)}-test-hcihostdeploy'
   scope: resourceGroup
   params: {
     hciISODownloadURL: 'https://azurestackreleases.download.prss.microsoft.com/dbazure/AzureStackHCI/OS-Composition/10.2408.0.3061/AZURESTACKHci23H2.25398.469.LCM.10.2408.0.3061.x64.en-us.iso'
     hciNodeCount: length(clusterNodeNames)
     hostVMSize: 'Standard_E16bds_v5'
-    localAdminPassword: localAdminPassword
-    location: location
+    localAdminPassword: localAdminAndDeploymentUserPass
+    location: enforcedLocation
     switchlessStorageConfig: false
-    diskNamePrefix: diskNamePrefix
-    HCIHostVirtualMachineScaleSetName: HCIHostVirtualMachineScaleSetName
-    maintenanceConfigurationAssignmentName: maintenanceConfigurationAssignmentName
-    maintenanceConfigurationName: maintenanceConfigurationName
-    networkInterfaceName: networkInterfaceName
-    networkSecurityGroupName: networkSecurityGroupName
-    virtualNetworkName: virtualNetworkName
-    userAssignedIdentityName: userAssignedIdentityName
-    virtualMachineName: virtualMachineName
-    waitDeploymentScriptPrefixName: waitDeploymentScriptPrefixName
+    diskNamePrefix: 'dep-${namePrefix}-disk-${serviceShort}'
+    hciHostVirtualMachineScaleSetName: 'dep-${namePrefix}-hvmss-${serviceShort}'
+    maintenanceConfigurationAssignmentName: 'dep-${namePrefix}-mca-${serviceShort}'
+    maintenanceConfigurationName: 'dep-${namePrefix}-mc-${serviceShort}'
+    networkInterfaceName: 'dep-${namePrefix}-mice-${serviceShort}'
+    networkSecurityGroupName: 'dep-${namePrefix}-nsg-${serviceShort}'
+    virtualNetworkName: 'dep-${namePrefix}-vnet-${serviceShort}'
+    userAssignedIdentityName: 'dep-${namePrefix}-msi-${serviceShort}'
+    virtualMachineName: 'dep-${namePrefix}-vm-${serviceShort}'
+    waitDeploymentScriptPrefixName: 'dep-${namePrefix}-wds-${serviceShort}'
   }
 }

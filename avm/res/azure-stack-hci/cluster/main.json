@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.33.93.31351",
-      "templateHash": "4758238234287830516"
+      "templateHash": "13656360876425097348"
     },
     "name": "Azure Stack HCI Cluster",
     "description": "This module deploys an Azure Stack HCI Cluster on the provided Arc Machines."
@@ -14,15 +14,16 @@
   "parameters": {
     "location": {
       "type": "string",
+      "defaultValue": "[resourceGroup().location]",
       "metadata": {
-        "description": "Required. The location for all resource except HCI Arc Nodes and HCI resources"
+        "description": "Required. The location for all resource except HCI Arc Nodes and HCI resources."
       }
     },
     "hostVMSize": {
       "type": "string",
       "defaultValue": "Standard_E32bds_v5",
       "metadata": {
-        "description": "Optional. The Azure VM size for the HCI Host VM, which must support nested virtualization and have sufficient capacity for the HCI node VMs!"
+        "description": "Optional. The Azure VM size for the HCI Host VM, which must support nested virtualization and have sufficient capacity for the HCI node VMs."
       }
     },
     "hciNodeCount": {
@@ -83,7 +84,7 @@
         "description": "Required. The name of the maintenance configuration for the Azure Stack HCI Host VM and proxy server."
       }
     },
-    "HCIHostVirtualMachineScaleSetName": {
+    "hciHostVirtualMachineScaleSetName": {
       "type": "string",
       "metadata": {
         "description": "Required. The name of the Azure VM scale set for the HCI host."
@@ -253,7 +254,7 @@
     "hciHostVMSSFlex": {
       "type": "Microsoft.Compute/virtualMachineScaleSets",
       "apiVersion": "2024-03-01",
-      "name": "[parameters('HCIHostVirtualMachineScaleSetName')]",
+      "name": "[parameters('hciHostVirtualMachineScaleSetName')]",
       "location": "[parameters('location')]",
       "zones": [
         "1",
@@ -330,7 +331,7 @@
       },
       "properties": {
         "virtualMachineScaleSet": {
-          "id": "[resourceId('Microsoft.Compute/virtualMachineScaleSets', parameters('HCIHostVirtualMachineScaleSetName'))]"
+          "id": "[resourceId('Microsoft.Compute/virtualMachineScaleSets', parameters('hciHostVirtualMachineScaleSetName'))]"
         },
         "hardwareProfile": {
           "vmSize": "[parameters('hostVMSize')]"
