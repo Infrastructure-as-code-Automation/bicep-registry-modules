@@ -53,6 +53,34 @@ param maintenanceConfigurationAssignmentName string
 @description('Required. The name prefix for the \'wait\' deployment scripts to create.')
 param waitDeploymentScriptPrefixName string
 
+@description('Optional. Enable/Disable usage telemetry for module.')
+param enableTelemetry bool = true
+
+@description('Optional. Tags of the resource.')
+param tags object?
+
+#disable-next-line no-deployments-resources
+resource avmTelemetry 'Microsoft.Resources/deployments@2023-07-01' = if (enableTelemetry) {
+  name: take(
+    '46d3xbcp.res.azurestackhci-cluster.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, location), 0, 4)}',
+    64
+  )
+  properties: {
+    mode: 'Incremental'
+    template: {
+      '$schema': 'https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#'
+      contentVersion: '0.0.0'
+      resources: []
+      outputs: {
+        telemetry: {
+          type: 'String'
+          value: 'For more information, see https://aka.ms/avm/TelemetryInfo'
+        }
+      }
+    }
+  }
+}
+
 // =================================//
 // Deploy Host VM Infrastructure    //
 // =================================//
@@ -423,4 +451,28 @@ resource runCommand5 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' 
   dependsOn: [wait2]
 }
 
+resource cluster 'Microsoft.AzureStackHCI/clusters@2024-04-01' = {
+  name: vm.name
+  identity: {
+    type: 'SystemAssigned'
+  }
+  location: location
+  properties: {}
+  tags: tags
+  dependsOn: [runCommand5]
+}
+
+@description('The name of the vm.')
+output name string = vm.name
+
+@description('The resource ID of the vm.')
+output resourceId string = vm.id
+
+@description('The resource group of the vm.')
+output resourceGroupName string = resourceGroup().name
+
+@description('The location of the vm.')
+output location string = vm.location
+
+@description('The id of the vnet subnet.')
 output vnetSubnetResourceId string = vnet.properties.subnets[0].id

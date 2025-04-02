@@ -8,6 +8,7 @@ This module deploys an Azure Stack HCI Cluster on the provided Arc Machines.
 - [Usage examples](#Usage-examples)
 - [Parameters](#Parameters)
 - [Outputs](#Outputs)
+- [Data Collection](#Data-Collection)
 
 ## Resource Types
 
@@ -15,6 +16,7 @@ This module deploys an Azure Stack HCI Cluster on the provided Arc Machines.
 | :-- | :-- |
 | `Microsoft.Authorization/roleAssignments` | [2022-04-01](https://learn.microsoft.com/en-us/azure/templates/Microsoft.Authorization/2022-04-01/roleAssignments) |
 | `Microsoft.Authorization/roleAssignments` | [2020-04-01-preview](https://learn.microsoft.com/en-us/azure/templates/Microsoft.Authorization/2020-04-01-preview/roleAssignments) |
+| `Microsoft.AzureStackHCI/clusters` | [2024-04-01](https://learn.microsoft.com/en-us/azure/templates/Microsoft.AzureStackHCI/clusters) |
 | `Microsoft.Compute/disks` | [2023-10-02](https://learn.microsoft.com/en-us/azure/templates/Microsoft.Compute/2023-10-02/disks) |
 | `Microsoft.Compute/virtualMachines` | [2024-03-01](https://learn.microsoft.com/en-us/azure/templates/Microsoft.Compute/2024-03-01/virtualMachines) |
 | `Microsoft.Compute/virtualMachines/runCommands` | [2024-03-01](https://learn.microsoft.com/en-us/azure/templates/Microsoft.Compute/2024-03-01/virtualMachines/runCommands) |
@@ -329,11 +331,13 @@ param switchlessStorageConfig = false
 
 | Parameter | Type | Description |
 | :-- | :-- | :-- |
+| [`enableTelemetry`](#parameter-enabletelemetry) | bool | Enable/Disable usage telemetry for module. |
 | [`hciISODownloadURL`](#parameter-hciisodownloadurl) | string | The download URL for the Azure Stack HCI ISO. |
 | [`hciNodeCount`](#parameter-hcinodecount) | int | The number of Azure Stack HCI nodes to deploy. |
 | [`hostVMSize`](#parameter-hostvmsize) | string | The Azure VM size for the HCI Host VM, which must support nested virtualization and have sufficient capacity for the HCI node VMs! |
 | [`localAdminUsername`](#parameter-localadminusername) | string | The local admin user name. |
 | [`switchlessStorageConfig`](#parameter-switchlessstorageconfig) | bool | Enable configuring switchless storage. |
+| [`tags`](#parameter-tags) | object | Tags of the resource. |
 
 ### Parameter: `diskNamePrefix`
 
@@ -419,6 +423,14 @@ The name prefix for the 'wait' deployment scripts to create.
 - Required: Yes
 - Type: string
 
+### Parameter: `enableTelemetry`
+
+Enable/Disable usage telemetry for module.
+
+- Required: No
+- Type: bool
+- Default: `True`
+
 ### Parameter: `hciISODownloadURL`
 
 The download URL for the Azure Stack HCI ISO.
@@ -459,8 +471,23 @@ Enable configuring switchless storage.
 - Type: bool
 - Default: `False`
 
+### Parameter: `tags`
+
+Tags of the resource.
+
+- Required: No
+- Type: object
+
 ## Outputs
 
-| Output | Type |
-| :-- | :-- |
-| `vnetSubnetResourceId` | string |
+| Output | Type | Description |
+| :-- | :-- | :-- |
+| `location` | string | The location of the vm. |
+| `name` | string | The name of the vm. |
+| `resourceGroupName` | string | The resource group of the vm. |
+| `resourceId` | string | The resource ID of the vm. |
+| `vnetSubnetResourceId` | string | The id of the vnet subnet. |
+
+## Data Collection
+
+The software may collect information about you and your use of the software and send it to Microsoft. Microsoft may use this information to provide services and improve our products and services. You may turn off the telemetry as described in the [repository](https://aka.ms/avm/telemetry). There are also some features in the software that may enable you and Microsoft to collect data from users of your applications. If you use these features, you must comply with applicable law, including providing appropriate notices to users of your applications together with a copy of Microsoft’s privacy statement. Our privacy statement is located at <https://go.microsoft.com/fwlink/?LinkID=824704>. You can learn more about data collection and use in the help documentation and our privacy statement. Your use of the software operates as your consent to these practices.

@@ -1,11 +1,12 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "languageVersion": "2.0",
   "contentVersion": "1.0.0.0",
   "metadata": {
     "_generator": {
       "name": "bicep",
       "version": "0.33.93.31351",
-      "templateHash": "7513756891507746471"
+      "templateHash": "4758238234287830516"
     },
     "name": "Azure Stack HCI Cluster",
     "description": "This module deploys an Azure Stack HCI Cluster on the provided Arc Machines."
@@ -117,6 +118,20 @@
       "metadata": {
         "description": "Required. The name prefix for the 'wait' deployment scripts to create."
       }
+    },
+    "enableTelemetry": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Optional. Enable/Disable usage telemetry for module."
+      }
+    },
+    "tags": {
+      "type": "object",
+      "nullable": true,
+      "metadata": {
+        "description": "Optional. Tags of the resource."
+      }
     }
   },
   "variables": {
@@ -126,28 +141,48 @@
     "$fxv#3": "\nFunction log {\n    Param (\n        [string]$message,\n        [string]$logPath = 'C:\\temp\\hciHostDeploy-4.log'\n    )\n\n    If (!(Test-Path -Path C:\\temp)) {\n        New-Item -Path C:\\temp -ItemType Directory\n    }\n\n    Write-Host $message\n    Add-Content -Path $logPath -Value \"$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') [hciHostStage4] - $message\"\n}\n\n$ErrorActionPreference = 'Stop'\n\n# check for reboot status file, reboot if needed\nIf (Test-Path -Path 'C:\\temp\\Reboot2Required.status') {\n    log 'Reboot 2 is required'\n\n    Remove-Item 'C:\\temp\\Reboot2Required.status'\n    Set-Content -Path 'C:\\temp\\Reboot2Initiated.status' -Value 'Reboot 2 Initiated'\n\n    # use scheduled task to reboot the machine, ensuring the runCommand exits gracefully\n    $action = New-ScheduledTaskAction -Execute 'shutdown.exe' -Argument '-r -f -t 0'\n    $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(2)\n    $principal = New-ScheduledTaskPrincipal -UserId 'NT AUTHORITY\\SYSTEM' -LogonType ServiceAccount\n    $task = New-ScheduledTask -Action $action -Description 'Reboot 2' -Trigger $trigger -Principal $principal\n    Register-ScheduledTask -TaskName 'Reboot2' -InputObject $task\n\n} ElseIf (Test-Path -Path 'C:\\temp\\Reboot2Initiated.status') {\n    log 'Reboot 2 has been initiated and now completed'\n\n    Remove-Item 'C:\\temp\\Reboot2Initiated.status'\n    Set-Content -Path 'C:\\temp\\Reboot2Completed.status' -Value 'Reboot 2 Completed'\n\n} ElseIf (Test-Path -Path 'C:\\temp\\Reboot2Completed.status') {\n    log 'Reboot 2 has been completed'\n\n}\n",
     "$fxv#4": "[CmdletBinding()]\nparam (\n    [Parameter()]\n    [string]\n    $adminUsername,\n\n    [Parameter()]\n    [string]\n    $adminPw,\n\n    [Parameter()]\n    [int]\n    $hciNodeCount,\n\n    [Parameter()]\n    [string]\n    $switchlessStorageConfig = 'switched'\n)\n\nFunction log {\n    Param (\n        [string]$message,\n        [string]$logPath = 'C:\\temp\\hciHostDeploy-5.log'\n    )\n\n    If (!(Test-Path -Path C:\\temp)) {\n        New-Item -Path C:\\temp -ItemType Directory\n    }\n\n    Write-Host $message\n    Add-Content -Path $logPath -Value \"$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') [hciHostStage5] - $message\"\n}\n\nFunction Test-ADConnection {\n    try {\n        If ((Get-Service -Name 'ADWS' -ErrorAction SilentlyContinue).Status -ne 'Running') { return $false }\n        $env:ADPS_LoadDefaultDrive = 0\n        Import-Module -Name ActiveDirectory -ErrorAction Stop\n        [bool](Get-ADDomainController -Server $env:COMPUTERNAME -ErrorAction SilentlyContinue)\n    } catch {\n        $false\n    }\n}\n\n$ErrorActionPreference = 'Stop'\n\n# create hyperv switches\nlog 'Creating Hyper-V switches...'\n$existingSwitches = Get-VMSwitch\n\nIf ($switchlessStorageConfig -eq 'switched') {\n    log 'Creating Hyper-V switches for switched storage configuration...'\n    If ($existingSwitches.Name -notcontains 'external' ) { New-VMSwitch -Name external -AllowManagementOS:$true -NetAdapterName Ethernet }\n    If ($existingSwitches.Name -notcontains 'hciNodeCompInternal' ) { New-VMSwitch -Name hciNodeCompInternal -SwitchType Internal -EnableIov $true }\n    If ($existingSwitches.Name -notcontains 'hciNodeMgmtInternal' ) { New-VMSwitch -Name hciNodeMgmtInternal -SwitchType Internal -EnableIov $true }\n    If ($existingSwitches.Name -notcontains 'hciNodeStoragePrivate' ) { New-VMSwitch -Name hciNodeStoragePrivate -SwitchType Private -EnableIov $true }\n} ElseIf ($switchlessStorageConfig -eq 'switchless') {\n    If ($hciNodeCount -gt 3) {\n        log -message 'ERROR: Switchless storage configuration is only supported for 3 or fewer HCI nodes. Exiting script...'\n        Write-Error 'ERROR: Switchless storage configuration is only supported for 3 or fewer HCI nodes. Exiting script...'\n        exit 1\n    }\n\n    log 'Creating Hyper-V switches for switchless storage configuration...'\n    If ($existingSwitches.Name -notcontains 'external' ) { New-VMSwitch -Name external -AllowManagementOS:$true -NetAdapterName Ethernet }\n    If ($existingSwitches.Name -notcontains 'hciNodeCompInternal' ) { New-VMSwitch -Name hciNodeCompInternal -SwitchType Internal -EnableIov $true }\n    If ($existingSwitches.Name -notcontains 'hciNodeMgmtInternal' ) { New-VMSwitch -Name hciNodeMgmtInternal -SwitchType Internal -EnableIov $true }\n    If ($existingSwitches.Name -notcontains 'hciNodeStoragePrivateA' ) { New-VMSwitch -Name hciNodeStoragePrivateA -SwitchType Private -EnableIov $true }\n    If ($existingSwitches.Name -notcontains 'hciNodeStoragePrivateB' ) { New-VMSwitch -Name hciNodeStoragePrivateB -SwitchType Private -EnableIov $true }\n    If ($existingSwitches.Name -notcontains 'hciNodeStoragePrivateC' ) { New-VMSwitch -Name hciNodeStoragePrivateC -SwitchType Private -EnableIov $true }\n}\n\n# add IPs for host\nlog 'Adding IPs for host...'\n$existingIPs = Get-NetIPAddress\nIf ($existingIPs.IPAddress -notcontains '172.20.0.1') { New-NetIPAddress -InterfaceAlias 'vEthernet (hciNodeMgmtInternal)' -IPAddress 172.20.0.1 -PrefixLength 24 }\nIf ($existingIPs.IPAddress -notcontains '10.20.0.1') { New-NetIPAddress -InterfaceAlias 'vEthernet (hciNodeCompInternal)' -IPAddress 10.20.0.1 -PrefixLength 24 }\n\n# configure NAT\nlog 'Restarting RemoteAccess service...'\nRestart-Service RemoteAccess\n\nlog 'Configuring NAT...'\n\nnetsh routing ip nat uninstall\nnetsh routing ip nat install\nnetsh routing ip nat set global tcptimeoutmins=1440 udptimeoutmins=1 loglevel=ERROR\nnetsh routing ip nat add interface name=\"vEthernet (external)\" mode=FULL\nIf (!$?) {\n    $message = \"Failed to run netsh command: ''netsh routing ip nat add interface name='vEthernet (external)' mode=FULL''.\"\n    log $message\n    Write-Error $message\n}\nnetsh routing ip nat add interface name=\"vEthernet (hciNodeCompInternal)\" mode=PRIVATE\nIf (!$?) {\n    $message = \"Failed to run netsh command: ''netsh routing ip nat add interface name='vEthernet (hciNodeCompInternal)' mode=PRIVATE''.\"\n    log $message\n    Write-Error $message\n}\nnetsh routing ip nat add interface name=\"vEthernet (hciNodeMgmtInternal)\" mode=PRIVATE\nIf (!$?) {\n    $message = \"Failed to run netsh command: ''netsh routing ip nat add interface name='vEthernet (hciNodeMgmtInternal)' mode=PRIVATE''.\"\n    log $message\n    Write-Error $message\n}\n\n# create DHCP scopes\nlog 'Creating DHCP scopes...'\n$existingScopes = Get-DhcpServerv4Scope\nIf ($existingScopes.name -notcontains 'HCIComp') { Add-DhcpServerv4Scope -StartRange 10.20.0.10 -EndRange 10.20.0.250 -Name HCIComp -State Active -SubnetMask 255.255.255.0 }\nIf ($existingScopes.name -notcontains 'HCIMgmt') { Add-DhcpServerv4Scope -StartRange 172.20.0.10 -EndRange 172.20.0.250 -Name HCIMgmt -State Active -SubnetMask 255.255.255.0 }\n\n# test DC connectivity before attempting to authorize DHCP server in AD\nlog 'Testing DC connectivity...'\n$count = 0\nWhile (!(Test-ADConnection) -and $count -lt 120) {\n    Start-Sleep -Seconds 5\n    log 'Waiting for AD Web Services to be available...'\n    $count++\n}\n\n# authorize DHCP servers in AD for DNS updates\nlog 'Authorizing DHCP servers in AD for DNS updates...'\ntry {\n    $existingAuthorizedServers = Get-DhcpServerInDC -ErrorAction Stop\n} catch {\n    log 'Failed to query authorized DHCP servers in AD. Waiting 120 seconds before retrying...'\n    Start-Sleep -Seconds 120\n    $existingAuthorizedServers = Get-DhcpServerInDC\n}\n\nIf ($existingAuthorizedServers.IPAddress -notcontains '172.20.0.1') { Add-DhcpServerInDC -DnsName \"$($env:COMPUTERNAME).hci.local\" -IPAddress 172.20.0.1 }\nIf ($existingAuthorizedServers.IPAddress -notcontains '10.20.0.1') { Add-DhcpServerInDC -DnsName \"$($env:COMPUTERNAME).hci.local\" -IPAddress 10.20.0.1 }\n\n# set router and dns options for mgmt DHCP scope\nlog 'Setting router and dns options for mgmt DHCP scope...'\nSet-DhcpServerv4OptionValue -ScopeId 172.20.0.0 -DnsDomain hci.local -DnsServer 172.20.0.1 -Router 172.20.0.1\n\n# create HCI node VMs\nlog 'Creating HCI node VMs...'\n$existingVMs = Get-VM\nFor ($i = 1; $i -le $hciNodeCount; $i++) {\n    $hciNodeName = \"hcinode$i\"\n    $hciNodePath = \"C:\\diskMounts\\$hciNodeName\"\n\n    If ($existingVMs.name -notcontains $hciNodeName) { New-VM -Name $hciNodeName -MemoryStartupBytes 32GB -BootDevice VHD -SwitchName hciNodeMgmtInternal -Path C:\\diskMounts\\ -VHDPath \"$hciNodePath\\hci_os.vhdx\" -Generation 2 }\n}\n\n# configure HCI node VMs\nlog 'Configuring HCI node VMs...'\nlog 'Setting VM processor count to 16 and enabling virtualization extensions...'\nGet-VM | Set-VMProcessor -ExposeVirtualizationExtensions $true -Count 8\n\nlog 'Setting VM key protector and enabling TPM...'\nGet-VM | ForEach-Object {\n    If (($_ | Get-VMKeyProtector).Length -eq 4) {\n        log \"Adding key protector for VM '$($_.Name)'\"\n        $_ | Set-VMKeyProtector -NewLocalKeyProtector\n    } Else {\n        log \"Key protector already exists for VM '$($_.Name)'\"\n    }\n\n    If (($_ | Get-VMSecurity).TpmEnabled -eq $false) {\n        log \"Enabling TPM for VM '$($_.Name)'\"\n        $_ | Enable-VMTPM\n    } Else {\n        log \"TPM already enabled for VM '$($_.Name)'\"\n    }\n}\n\n\n# rename nic to mgmt\nlog 'Renaming first network adapter on HCI nodes...'\nif (Get-VMNetworkAdapter -Name 'Network Adapter' -VMName * -ErrorAction SilentlyContinue) { Rename-VMNetworkAdapter -NewName mgmt -VMName * -Name 'Network Adapter' }\nGet-VM | Get-VMNetworkAdapter -Name 'mgmt' | Set-VMNetworkAdapter -DeviceNaming On\n\n# add additional NICs to HCI node VMs\nlog 'Adding additional NICs to HCI node VMs...'\nForEach ($existingVM in (Get-VM)) {\n    $existingNICs = Get-VMNetworkAdapter -VM $existingVM\n    If ($existingNICs.name -notcontains 'comp0') { $existingVM | Add-VMNetworkAdapter -Name comp0 -SwitchName hciNodeCompInternal -DeviceNaming On }\n    If ($existingNICs.name -notcontains 'comp1') { $existingVM | Add-VMNetworkAdapter -Name comp1 -SwitchName hciNodeCompInternal -DeviceNaming On }\n\n    If ($switchlessStorageConfig -eq 'switched') {\n        log \"Adding NICs to VM '$($existingVM.name)' for switched storage configuration...\"\n        If ($existingNICs.name -notcontains 'smb0') { $existingVM | Add-VMNetworkAdapter -Name smb0 -SwitchName hciNodeStoragePrivate -DeviceNaming On -Passthru | Set-VMNetworkAdapterVlan -Trunk -AllowedVlanIdList '711' -NativeVlanId 0 }\n        If ($existingNICs.name -notcontains 'smb1') { $existingVM | Add-VMNetworkAdapter -Name smb1 -SwitchName hciNodeStoragePrivate -DeviceNaming On -Passthru | Set-VMNetworkAdapterVlan -Trunk -AllowedVlanIdList '712' -NativeVlanId 0 }\n    } ElseIf ($switchlessStorageConfig -eq 'switchless') {\n        log \"Adding NICs to VM '$($existingVM.name)' for switchless storage configuration...\"\n\n        switch ($existingVM.Name[-1]) {\n            1 {\n                If ($existingNICs.name -notcontains 'smb0') { $existingVM | Add-VMNetworkAdapter -Name smb0 -SwitchName hciNodeStoragePrivateA -DeviceNaming On -Passthru | Set-VMNetworkAdapterVlan -Trunk -AllowedVlanIdList '711' -NativeVlanId 0 }\n                If ($existingNICs.name -notcontains 'smb1') { $existingVM | Add-VMNetworkAdapter -Name smb1 -SwitchName hciNodeStoragePrivateB -DeviceNaming On -Passthru | Set-VMNetworkAdapterVlan -Trunk -AllowedVlanIdList '711' -NativeVlanId 0 }\n            }\n            2 {\n                If ($existingNICs.name -notcontains 'smb0') { $existingVM | Add-VMNetworkAdapter -Name smb0 -SwitchName hciNodeStoragePrivateA -DeviceNaming On -Passthru | Set-VMNetworkAdapterVlan -Trunk -AllowedVlanIdList '711' -NativeVlanId 0 }\n                If ($existingNICs.name -notcontains 'smb1') { $existingVM | Add-VMNetworkAdapter -Name smb1 -SwitchName hciNodeStoragePrivateC -DeviceNaming On -Passthru | Set-VMNetworkAdapterVlan -Trunk -AllowedVlanIdList '711' -NativeVlanId 0 }\n            }\n            3 {\n                If ($existingNICs.name -notcontains 'smb0') { $existingVM | Add-VMNetworkAdapter -Name smb0 -SwitchName hciNodeStoragePrivateB -DeviceNaming On -Passthru | Set-VMNetworkAdapterVlan -Trunk -AllowedVlanIdList '711' -NativeVlanId 0 }\n                If ($existingNICs.name -notcontains 'smb1') { $existingVM | Add-VMNetworkAdapter -Name smb1 -SwitchName hciNodeStoragePrivateC -DeviceNaming On -Passthru | Set-VMNetworkAdapterVlan -Trunk -AllowedVlanIdList '711' -NativeVlanId 0 }\n            }\n            Default {}\n        }\n    }\n}\n\n# add disks to HCI node VMs\nlog 'Adding disks to HCI node VMs...'\nForeach ($vm in (Get-VM)) {\n    (1..4) | ForEach-Object {\n        $diskPath = \"C:\\diskMounts\\$($vm.Name)\\hciNodeDisk$($_).vhdx\"\n        If (!(Test-Path -Path $diskPath)) {\n            log \"Creating disk: $diskPath\"\n            New-VHD -Path $diskPath -SizeBytes 1TB -Dynamic | Out-Null\n        }\n        If ($VM.HardDrives.Path -notcontains $diskPath) {\n            log \"Adding disk: $diskPath to VM: $($vm.Name)\"\n            Add-VMHardDiskDrive -VMName $vm.Name -ControllerType SCSI -ControllerNumber 0 -ControllerLocation $_ -Path $diskPath | Out-Null\n        }\n    }\n}\n\n# enable mac soofing on HCI node VMs\nlog 'Enabling MAC spoofing on HCI node VMs...'\nGet-VM | Get-VMNetworkAdapter | Set-VMNetworkAdapter -MacAddressSpoofing On\n\n# define unattend.xml for HCI node VMs template\n$unattendSource = @'\n<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<unattend xmlns=\"urn:schemas-microsoft-com:unattend\">\n    <settings pass=\"specialize\">\n        <component name=\"Microsoft-Windows-Shell-Setup\" processorArchitecture=\"amd64\" publicKeyToken=\"31bf3856ad364e35\" language=\"neutral\" versionScope=\"nonSxS\" xmlns:wcm=\"http://schemas.microsoft.com/WMIConfig/2002/State\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n            <ComputerName>$hciNodeName</ComputerName>\n            <RegisteredOrganization>Organization</RegisteredOrganization>\n            <RegisteredOwner>Owner</RegisteredOwner>\n            <TimeZone>UTC</TimeZone>\n        </component>\n        <component name=\"Microsoft-Windows-IE-ESC\" processorArchitecture=\"amd64\" publicKeyToken=\"31bf3856ad364e35\" language=\"neutral\" versionScope=\"nonSxS\" xmlns:wcm=\"http://schemas.microsoft.com/WMIConfig/2002/State\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n            <IEHardenAdmin>false</IEHardenAdmin>\n        </component>\n        <component name=\"Microsoft-Windows-ErrorReportingCore\" processorArchitecture=\"amd64\" publicKeyToken=\"31bf3856ad364e35\" language=\"neutral\" versionScope=\"nonSxS\" xmlns:wcm=\"http://schemas.microsoft.com/WMIConfig/2002/State\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n            <DisableWER>1</DisableWER>\n        </component>\n        <component name=\"Microsoft-Windows-TerminalServices-LocalSessionManager\" processorArchitecture=\"amd64\" publicKeyToken=\"31bf3856ad364e35\" language=\"neutral\" versionScope=\"nonSxS\" xmlns:wcm=\"http://schemas.microsoft.com/WMIConfig/2002/State\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n            <fDenyTSConnections>false</fDenyTSConnections>\n        </component>\n        <component name=\"Microsoft-Windows-TCPIP\" processorArchitecture=\"amd64\" publicKeyToken=\"31bf3856ad364e35\" language=\"neutral\" versionScope=\"nonSxS\" xmlns:wcm=\"http://schemas.microsoft.com/WMIConfig/2002/State\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n            <Interfaces>\n                <Interface wcm:action=\"add\">\n                    <Ipv4Settings>\n                        <DhcpEnabled>true</DhcpEnabled>\n                    </Ipv4Settings>\n                </Interface>\n            </Interfaces>\n        </component>\n    </settings>\n    <settings pass=\"oobeSystem\">\n        <component name=\"Microsoft-Windows-Shell-Setup\" processorArchitecture=\"amd64\" publicKeyToken=\"31bf3856ad364e35\" language=\"neutral\" versionScope=\"nonSxS\" xmlns:wcm=\"http://schemas.microsoft.com/WMIConfig/2002/State\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n            <OOBE>\n                <HideEULAPage>true</HideEULAPage>\n                <HideLocalAccountScreen>true</HideLocalAccountScreen>\n                <HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE>\n                <NetworkLocation>Work</NetworkLocation>\n                <ProtectYourPC>1</ProtectYourPC>\n            </OOBE>\n            <FirstLogonCommands>\n                <SynchronousCommand wcm:action=\"add\">\n                    <CommandLine>powershell.exe -command &quot;Get-NetAdapterAdvancedProperty -DisplayName 'Hyper-V Network Adapter Name' | Foreach-Object {`$_ | Get-NetAdapter | Rename-NetAdapter -NewName `$_.DisplayValue}&quot;</CommandLine>\n                    <Order>1</Order>\n                    <RequiresUserInput>false</RequiresUserInput>\n                </SynchronousCommand>\n                <SynchronousCommand wcm:action=\"add\">\n                    <CommandLine>powershell.exe -command &quot;Enable-WindowsOptionalFeature -Online -FeatureName 'microsoft-hyper-v-online' -all -NoRestart&quot;</CommandLine>\n                    <Order>2</Order>\n                    <RequiresUserInput>false</RequiresUserInput>\n                </SynchronousCommand>\n                <SynchronousCommand wcm:action=\"add\">\n                <CommandLine>powershell.exe -command &quot;Remove-Item -Path &apos;C:\\unattend.xml&apos; -Force&quot;</CommandLine>\n                <Order>3</Order>\n                <RequiresUserInput>false</RequiresUserInput>\n            </SynchronousCommand>\n                <SynchronousCommand wcm:action=\"add\">\n                    <CommandLine>shutdown -r -f -t 0</CommandLine>\n                    <Order>4</Order>\n                    <RequiresUserInput>false</RequiresUserInput>\n            </SynchronousCommand>\n            </FirstLogonCommands>\n            <AutoLogon>\n                <Username>Administrator</Username>\n                <Enabled>true</Enabled>\n                <LogonCount>1</LogonCount>\n                <Password>\n                    <Value>$adminPw</Value>\n                    <PlainText>true</PlainText>\n                </Password>\n            </AutoLogon>\n            <UserAccounts>\n                <AdministratorPassword>\n                    <Value>$adminPw</Value>\n                    <PlainText>True</PlainText>\n                </AdministratorPassword>\n                <LocalAccounts>\n                <LocalAccount wcm:action=\"add\">\n                   <Password>\n                      <Value>$adminPw</Value>\n                      <PlainText>true</PlainText>\n                   </Password>\n                   <Description>HCI Admin User</Description>\n                   <DisplayName>$adminUsername</DisplayName>\n                   <Group>Administrators;Power Users</Group>\n                   <Name>$adminUsername</Name>\n                </LocalAccount>\n                </LocalAccounts>\n            </UserAccounts>\n        </component>\n        <component name=\"Microsoft-Windows-International-Core\" processorArchitecture=\"amd64\" publicKeyToken=\"31bf3856ad364e35\" language=\"neutral\" versionScope=\"nonSxS\" xmlns:wcm=\"http://schemas.microsoft.com/WMIConfig/2002/State\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n            <InputLocale>en-us</InputLocale>\n            <SystemLocale>en-us</SystemLocale>\n            <UILanguage>en-us</UILanguage>\n            <UILanguageFallback>en-us</UILanguageFallback>\n            <UserLocale>en-us</UserLocale>\n        </component>\n    </settings>\n</unattend>\n'@\n\n# inject updated sysp answer file into each HCI node disk\nlog 'Injecting updated sysprep answer file into each HCI node disk...'\nFor ($i = 1; $i -le $hciNodeCount; $i++) {\n    $hciNodeName = \"hciNode$i\"\n    $hciProductKey = ''\n\n    Push-Location c:\\diskMounts\\$hciNodeName\n\n    If (!(Test-Path -Path unattend_injected.status) -and (Get-VM -Name $hciNodeName).State -eq 'Off') {\n        log \"Injecting unattend.xml into HCI node disk '$hciNodeName'...\"\n        $mountedVolume = Mount-VHD .\\hci_os.vhdx -Passthru | Get-Disk | Get-Partition | Get-Volume | Where-Object FileSystemType -EQ 'NTFS'\n\n        $clone = $unattendSource.psobject.copy()\n        $clone = $ExecutionContext.InvokeCommand.ExpandString($clone)\n\n        Set-Content -Path \"$($mountedVolume.DriveLetter):\\unattend.xml\" -Value $clone -Force\n\n        Dismount-VHD .\\hci_os.vhdx\n\n        Set-Content 'unattend_injected.status' -Value 'Unattend.xml injected'\n    } Else {\n        log \"Unattend.xml already injected into HCI node disk '$hciNodeName'.\"\n    }\n\n    Pop-Location\n}\n\n# start HCI node VMs\nIf (Get-VM | Where-Object State -EQ 'Off') {\n    log 'Starting HCI node VMs...'\n    try {\n        $errorActionPreference = 'Stop'\n        Get-VM | Start-VM\n    } catch {\n        log \"Failed to start HCI node VMs. $_\"\n        Write-Error \"Failed to start HCI node VMs. $_\"\n    }\n\n    #wait for vms to boot\n    log 'Waiting 300s for VMs to boot and apply sysprep...'\n    Start-Sleep -Seconds 300\n} Else {\n    log 'HCI node VMs are already running.'\n}\n\n# create DHCP reservations for HCI node VMs management interfaces\nlog 'Checking DHCP reservations for HCI node VMs management interfaces...'\n$existingReservations = Get-DhcpServerv4Reservation -ScopeId 172.20.0.0\nFor ($i = 1; $i -le $hciNodeCount; $i++) {\n    $hciNodeName = \"hciNode$i\"\n    $hciNodeIP = \"172.20.0.$(9 + $i)\"\n    If ($existingReservations.Description -notcontains $hciNodeName) {\n        log \"Creating DHCP reservation for HCI node '$hciNodeName' with IP '$hciNodeIP'...\"\n\n        $mgmtNIC = Get-VMNetworkAdapter -VMName $hciNodeName -Name mgmt\n\n        If ($mgmtNIC) {\n            $mgmtMac = $mgmtNIC.MacAddress -split '(.{2})' -ne '' -join '-'\n\n            log \"Creating DHCP reservation for HCI node '$hciNodeName' with IP '$hciNodeIP' for MAC address '$mgmtMac'...\"\n            Add-DhcpServerv4Reservation -ScopeId 172.20.0.0 -Name $hciNodeName -IPAddress $hciNodeIP -ClientId $mgmtMac -Description $hciNodeName\n        } Else {\n            log \"Failed to create DHCP reservation for HCI node '$hciNodeName'. Could not find NIC named 'mgmt'.\"\n            Write-Error \"Failed to create DHCP reservation for HCI node '$hciNodeName'. Could not find NIC named 'mgmt'.\"\n            exit 1\n        }\n    } Else {\n        log \"DHCP reservation for HCI node '$hciNodeName' already exists.\"\n    }\n}\n"
   },
-  "resources": [
-    {
+  "resources": {
+    "avmTelemetry": {
+      "condition": "[parameters('enableTelemetry')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2023-07-01",
+      "name": "[take(format('46d3xbcp.res.azurestackhci-cluster.{0}.{1}', replace('-..--..-', '.', '-'), substring(uniqueString(deployment().name, parameters('location')), 0, 4)), 64)]",
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "0.0.0",
+          "resources": [],
+          "outputs": {
+            "telemetry": {
+              "type": "String",
+              "value": "For more information, see https://aka.ms/avm/TelemetryInfo"
+            }
+          }
+        }
+      }
+    },
+    "userAssignedIdentity": {
       "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
       "apiVersion": "2023-07-31-preview",
       "name": "[parameters('userAssignedIdentityName')]",
       "location": "[parameters('location')]"
     },
-    {
+    "roleAssignment": {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
       "name": "[guid(subscription().subscriptionId, parameters('userAssignedIdentityName'), 'Owner', resourceGroup().id)]",
       "properties": {
-        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedIdentityName')), '2023-07-31-preview').principalId]",
+        "principalId": "[reference('userAssignedIdentity').principalId]",
         "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
         "principalType": "ServicePrincipal",
         "description": "Role assigned used for Azure Stack HCI IaC testing pipeline - remove if identity no longer exists!"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedIdentityName'))]"
+        "userAssignedIdentity"
       ]
     },
-    {
+    "vnet": {
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2020-11-01",
       "name": "[parameters('virtualNetworkName')]",
@@ -182,7 +217,7 @@
         ]
       }
     },
-    {
+    "maintenanceConfig": {
       "type": "Microsoft.Maintenance/maintenanceConfigurations",
       "apiVersion": "2023-09-01-preview",
       "name": "[coalesce(parameters('maintenanceConfigurationName'), '')]",
@@ -209,13 +244,13 @@
         }
       }
     },
-    {
+    "networkSecurityGroup": {
       "type": "Microsoft.Network/networkSecurityGroups",
       "apiVersion": "2020-11-01",
       "name": "[parameters('networkSecurityGroupName')]",
       "location": "[parameters('location')]"
     },
-    {
+    "hciHostVMSSFlex": {
       "type": "Microsoft.Compute/virtualMachineScaleSets",
       "apiVersion": "2024-03-01",
       "name": "[parameters('HCIHostVirtualMachineScaleSetName')]",
@@ -230,7 +265,7 @@
         "platformFaultDomainCount": 1
       }
     },
-    {
+    "nic": {
       "type": "Microsoft.Network/networkInterfaces",
       "apiVersion": "2020-11-01",
       "name": "[parameters('networkInterfaceName')]",
@@ -244,7 +279,7 @@
             "name": "ipConfig01",
             "properties": {
               "subnet": {
-                "id": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName')), '2020-11-01').subnets[0].id]"
+                "id": "[reference('vnet').subnets[0].id]"
               },
               "privateIPAllocationMethod": "Dynamic"
             }
@@ -252,11 +287,11 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]"
+        "networkSecurityGroup",
+        "vnet"
       ]
     },
-    {
+    "disks": {
       "copy": {
         "name": "disks",
         "count": "[length(range(1, parameters('hciNodeCount')))]"
@@ -279,7 +314,7 @@
         }
       }
     },
-    {
+    "vm": {
       "type": "Microsoft.Compute/virtualMachines",
       "apiVersion": "2024-03-01",
       "name": "[parameters('virtualMachineName')]",
@@ -365,12 +400,12 @@
       },
       "dependsOn": [
         "disks",
-        "[resourceId('Microsoft.Compute/virtualMachineScaleSets', parameters('HCIHostVirtualMachineScaleSetName'))]",
-        "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaceName'))]",
-        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedIdentityName'))]"
+        "hciHostVMSSFlex",
+        "nic",
+        "userAssignedIdentity"
       ]
     },
-    {
+    "maintenanceAssignment_hciHost": {
       "type": "Microsoft.Maintenance/configurationAssignments",
       "apiVersion": "2023-04-01",
       "scope": "[format('Microsoft.Compute/virtualMachines/{0}', parameters('virtualMachineName'))]",
@@ -380,11 +415,11 @@
         "maintenanceConfigurationId": "[resourceId('Microsoft.Maintenance/maintenanceConfigurations', coalesce(parameters('maintenanceConfigurationName'), ''))]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Maintenance/maintenanceConfigurations', coalesce(parameters('maintenanceConfigurationName'), ''))]",
-        "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]"
+        "maintenanceConfig",
+        "vm"
       ]
     },
-    {
+    "runCommand1": {
       "type": "Microsoft.Compute/virtualMachines/runCommands",
       "apiVersion": "2024-03-01",
       "name": "[format('{0}/{1}', parameters('virtualMachineName'), 'runCommand1')]",
@@ -396,10 +431,10 @@
         "treatFailureAsDeploymentFailure": true
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]"
+        "vm"
       ]
     },
-    {
+    "runCommand2": {
       "type": "Microsoft.Compute/virtualMachines/runCommands",
       "apiVersion": "2024-03-01",
       "name": "[format('{0}/{1}', parameters('virtualMachineName'), 'runCommand2')]",
@@ -411,11 +446,11 @@
         "treatFailureAsDeploymentFailure": true
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines/runCommands', parameters('virtualMachineName'), 'runCommand1')]",
-        "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]"
+        "runCommand1",
+        "vm"
       ]
     },
-    {
+    "wait1": {
       "type": "Microsoft.Resources/deploymentScripts",
       "apiVersion": "2023-08-01",
       "name": "[format('{0}-wait1', parameters('waitDeploymentScriptPrefixName'))]",
@@ -427,10 +462,10 @@
         "retentionInterval": "PT6H"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines/runCommands', parameters('virtualMachineName'), 'runCommand2')]"
+        "runCommand2"
       ]
     },
-    {
+    "runCommand3": {
       "type": "Microsoft.Compute/virtualMachines/runCommands",
       "apiVersion": "2024-03-01",
       "name": "[format('{0}/{1}', parameters('virtualMachineName'), 'runCommand3')]",
@@ -456,11 +491,11 @@
         "treatFailureAsDeploymentFailure": true
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]",
-        "[resourceId('Microsoft.Resources/deploymentScripts', format('{0}-wait1', parameters('waitDeploymentScriptPrefixName')))]"
+        "vm",
+        "wait1"
       ]
     },
-    {
+    "runCommand4": {
       "type": "Microsoft.Compute/virtualMachines/runCommands",
       "apiVersion": "2024-03-01",
       "name": "[format('{0}/{1}', parameters('virtualMachineName'), 'runCommand4')]",
@@ -472,11 +507,11 @@
         "treatFailureAsDeploymentFailure": true
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines/runCommands', parameters('virtualMachineName'), 'runCommand3')]",
-        "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]"
+        "runCommand3",
+        "vm"
       ]
     },
-    {
+    "wait2": {
       "type": "Microsoft.Resources/deploymentScripts",
       "apiVersion": "2023-08-01",
       "name": "[format('{0}-wait2', parameters('waitDeploymentScriptPrefixName'))]",
@@ -488,10 +523,10 @@
         "retentionInterval": "PT6H"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines/runCommands', parameters('virtualMachineName'), 'runCommand4')]"
+        "runCommand4"
       ]
     },
-    {
+    "runCommand5": {
       "type": "Microsoft.Compute/virtualMachines/runCommands",
       "apiVersion": "2024-03-01",
       "name": "[format('{0}/{1}', parameters('virtualMachineName'), 'runCommand5')]",
@@ -523,11 +558,26 @@
         "treatFailureAsDeploymentFailure": true
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]",
-        "[resourceId('Microsoft.Resources/deploymentScripts', format('{0}-wait2', parameters('waitDeploymentScriptPrefixName')))]"
+        "vm",
+        "wait2"
       ]
     },
-    {
+    "cluster": {
+      "type": "Microsoft.AzureStackHCI/clusters",
+      "apiVersion": "2024-04-01",
+      "name": "[parameters('virtualMachineName')]",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "location": "[parameters('location')]",
+      "properties": {},
+      "tags": "[parameters('tags')]",
+      "dependsOn": [
+        "runCommand5",
+        "vm"
+      ]
+    },
+    "roleAssignment_subscriptionContributor": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2022-09-01",
       "name": "[format('{0}-hcihostmi-roleAssignment_subContributor', uniqueString(deployment().name, parameters('location')))]",
@@ -540,7 +590,7 @@
         "mode": "Incremental",
         "parameters": {
           "principalId": {
-            "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedIdentityName')), '2023-07-31-preview').principalId]"
+            "value": "[reference('userAssignedIdentity').principalId]"
           }
         },
         "template": {
@@ -573,14 +623,45 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedIdentityName'))]"
+        "userAssignedIdentity"
       ]
     }
-  ],
+  },
   "outputs": {
+    "name": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the vm."
+      },
+      "value": "[parameters('virtualMachineName')]"
+    },
+    "resourceId": {
+      "type": "string",
+      "metadata": {
+        "description": "The resource ID of the vm."
+      },
+      "value": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]"
+    },
+    "resourceGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "The resource group of the vm."
+      },
+      "value": "[resourceGroup().name]"
+    },
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "The location of the vm."
+      },
+      "value": "[reference('vm', '2024-03-01', 'full').location]"
+    },
     "vnetSubnetResourceId": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName')), '2020-11-01').subnets[0].id]"
+      "metadata": {
+        "description": "The id of the vnet subnet."
+      },
+      "value": "[reference('vnet').subnets[0].id]"
     }
   }
 }
