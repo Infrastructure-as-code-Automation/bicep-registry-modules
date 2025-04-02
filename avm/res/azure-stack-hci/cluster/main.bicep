@@ -1,515 +1,426 @@
 metadata name = 'Azure Stack HCI Cluster'
 metadata description = 'This module deploys an Azure Stack HCI Cluster on the provided Arc Machines.'
 
-// ============== //
-//   Parameters   //
-// ============== //
+@description('Required. The location for all resource except HCI Arc Nodes and HCI resources')
+param location string
 
-@description('Required. The name of the Azure Stack HCI cluster - this must be a valid Active Directory computer name and will be the name of your cluster in Azure.')
-@maxLength(15)
-@minLength(4)
-param name string
+@description('Optional. The Azure VM size for the HCI Host VM, which must support nested virtualization and have sufficient capacity for the HCI node VMs!')
+param hostVMSize string = 'Standard_E32bds_v5'
 
-@description('Optional. Location for all resources.')
-param location string = resourceGroup().location
+@description('Optional. The number of Azure Stack HCI nodes to deploy.')
+param hciNodeCount int = 2
 
-@description('Optional. Tags of the resource.')
-param tags object?
+@description('Optional. Enable configuring switchless storage.')
+param switchlessStorageConfig bool = false
 
-@description('Optional. The cluster deployment operations to execute. Defaults to "[Validate, Deploy]".')
-@allowed([
-  'Deploy'
-  'Validate'
-])
-param deploymentOperations string[] = ['Validate', 'Deploy']
+@description('Optional. The download URL for the Azure Stack HCI ISO.')
+param hciISODownloadURL string = 'https://azurestackreleases.download.prss.microsoft.com/dbazure/AzureStackHCI/OS-Composition/10.2408.0.3061/AZURESTACKHci23H2.25398.469.LCM.10.2408.0.3061.x64.en-us.iso'
 
-@description('Optional. Enable/Disable usage telemetry for module.')
-param enableTelemetry bool = true
+@description('Optional. The local admin user name.')
+param localAdminUsername string = 'admin-hci'
 
-@description('Required. The deployment settings of the cluster.')
-param deploymentSettings deploymentSettingsType
-
-import { roleAssignmentType } from 'br/public:avm/utl/types/avm-common-types:0.5.1'
-@description('Optional. Array of role assignments to create.')
-param roleAssignments roleAssignmentType[]?
-
-@description('Optional. Specify whether to use the shared key vault for the HCI cluster.')
-param useSharedKeyVault bool = true
-
-@description('Conditional. The name of the deployment user. Required if useSharedKeyVault is true.')
-param deploymentUser string?
-
+@description('Required. The local admin password.')
 @secure()
-@description('Conditional. The password of the deployment user. Required if useSharedKeyVault is true.')
-param deploymentUserPassword string?
+param localAdminPassword string
 
-@description('Conditional. The name of the local admin user. Required if useSharedKeyVault is true.')
-param localAdminUser string?
+@description('Required. The name of the VM-managed user identity to create, used for HCI Arc onboarding.')
+param userAssignedIdentityName string
 
-@secure()
-@description('Conditional. The password of the local admin user. Required if useSharedKeyVault is true.')
-param localAdminPassword string?
+@description('Required. The name of the VNET for the HCI host Azure VM.')
+param virtualNetworkName string
 
-@description('Conditional. The service principal ID for ARB. Required if useSharedKeyVault is true.')
-param servicePrincipalId string?
+@description('Required. The name of the NSG to create.')
+param networkSecurityGroupName string
 
-@secure()
-@description('Conditional. The service principal secret for ARB. Required if useSharedKeyVault is true.')
-param servicePrincipalSecret string?
+@description('Required. The name of the maintenance configuration for the Azure Stack HCI Host VM and proxy server.')
+param maintenanceConfigurationName string
 
-@description('Optional. Content type of the azure stack lcm user credential.')
-param azureStackLCMUserCredentialContentType string = 'Secret'
+@description('Required. The name of the Azure VM scale set for the HCI host.')
+param HCIHostVirtualMachineScaleSetName string
 
-@description('Optional. Content type of the local admin credential.')
-param localAdminCredentialContentType string = 'Secret'
+@description('Required. The name of the Network Interface Card to create.')
+param networkInterfaceName string
 
-@description('Optional. Content type of the witness storage key.')
-param witnessStoragekeyContentType string = 'Secret'
+@description('Required. The name prefix for the Disks to create.')
+param diskNamePrefix string
 
-@description('Optional. Content type of the default ARB application.')
-param defaultARBApplicationContentType string = 'Secret'
+@description('Required. The name of the Azure VM to create.')
+param virtualMachineName string
 
-@description('Optional. Tags of azure stack LCM user credential.')
-param azureStackLCMUserCredentialTags object?
+@description('Required. The name of the Maintenance Configuration Assignment for the proxy server.')
+param maintenanceConfigurationAssignmentName string
 
-@description('Optional. Tags of the local admin credential.')
-param localAdminCredentialTags object?
+@description('Required. The name prefix for the \'wait\' deployment scripts to create.')
+param waitDeploymentScriptPrefixName string
 
-@description('Optional. Tags of the witness storage key.')
-param witnessStoragekeyTags object?
+// =================================//
+// Deploy Host VM Infrastructure    //
+// =================================//
 
-@description('Optional. Tags of the default ARB application.')
-param defaultARBApplicationTags object?
-
-@description('Optional. Key vault subscription ID, which is used for for storing secrets for the HCI cluster.')
-param keyvaultSubscriptionId string?
-
-@description('Optional. Key vault resource group, which is used for for storing secrets for the HCI cluster.')
-param keyvaultResourceGroup string?
-
-@description('Optional. Storage account subscription ID, which is used as the witness for the HCI Windows Failover Cluster.')
-param witnessStorageAccountSubscriptionId string?
-
-@description('Optional. Storage account resource group, which is used as the witness for the HCI Windows Failover Cluster.')
-param witnessStorageAccountResourceGroup string?
-
-// ============= //
-//   Variables   //
-// ============= //
-
-var builtInRoleNames = {
-  // Add other relevant built-in roles here for your resource as per BCPNFR5
-  Contributor: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')
-  Owner: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')
-  Reader: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')
-  'Role Based Access Control Administrator': subscriptionResourceId(
-    'Microsoft.Authorization/roleDefinitions',
-    'f58310d9-a9f6-439a-9e8d-f62e7b41a168'
-  )
-  'User Access Administrator': subscriptionResourceId(
-    'Microsoft.Authorization/roleDefinitions',
-    '18d7d88d-d35e-4fb5-a5c3-7773c20a72d9'
-  )
-  'Azure Stack HCI Administrator': subscriptionResourceId(
-    'Microsoft.Authorization/roleDefinitions',
-    'bda0d508-adf1-4af0-9c28-88919fc3ae06'
-  )
-  'Windows Admin Center Administrator Login': subscriptionResourceId(
-    'Microsoft.Authorization/roleDefinitions',
-    'a6333a3e-0164-44c3-b281-7a577aff287f'
-  )
+// vm managed identity used for HCI Arc onboarding
+resource userAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' = {
+  location: location
+  name: userAssignedIdentityName
 }
 
-var formattedRoleAssignments = [
-  for (roleAssignment, index) in (roleAssignments ?? []): union(roleAssignment, {
-    roleDefinitionId: builtInRoleNames[?roleAssignment.roleDefinitionIdOrName] ?? (contains(
-        roleAssignment.roleDefinitionIdOrName,
-        '/providers/Microsoft.Authorization/roleDefinitions/'
-      )
-      ? roleAssignment.roleDefinitionIdOrName
-      : subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleAssignment.roleDefinitionIdOrName))
-  })
-]
-
-// if deployment operations requested, validation must be performed first so we reverse sort the array
-var sortedDeploymentOperations = (!empty(deploymentOperations)) ? sort(deploymentOperations, (a, b) => a > b) : []
-
-// ============= //
-//   Resources   //
-// ============= //
-
-#disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2023-07-01' = if (enableTelemetry) {
-  name: take(
-    '46d3xbcp.res.azurestackhci-cluster.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, location), 0, 4)}',
-    64
-  )
+// grant identity owner permissions on the resource group
+resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(subscription().subscriptionId, userAssignedIdentity.name, 'Owner', resourceGroup().id)
   properties: {
-    mode: 'Incremental'
-    template: {
-      '$schema': 'https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#'
-      contentVersion: '0.0.0'
-      resources: []
-      outputs: {
-        telemetry: {
-          type: 'String'
-          value: 'For more information, see https://aka.ms/avm/TelemetryInfo'
+    principalId: userAssignedIdentity.properties.principalId
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')
+    principalType: 'ServicePrincipal'
+    description: 'Role assigned used for Azure Stack HCI IaC testing pipeline - remove if identity no longer exists!'
+  }
+}
+
+// grant identity contributor permissions on the subscription - needed to register resource providers
+module roleAssignment_subscriptionContributor 'modules/subscriptionRoleAssignment.bicep' = {
+  name: '${uniqueString(deployment().name, location)}-hcihostmi-roleAssignment_subContributor'
+  scope: subscription()
+  params: {
+    principalId: userAssignedIdentity.properties.principalId
+  }
+}
+
+// optional VNET and subnet for the HCI host Azure VM
+resource vnet 'Microsoft.Network/virtualNetworks@2020-11-01' = {
+  name: virtualNetworkName
+  location: location
+  properties: {
+    addressSpace: {
+      addressPrefixes: ['10.0.0.0/24']
+    }
+    subnets: [
+      {
+        name: 'subnet01'
+        properties: {
+          addressPrefix: '10.0.0.0/24'
+          serviceEndpoints: [
+            {
+              service: 'Microsoft.Storage'
+              locations: [location]
+            }
+            {
+              service: 'Microsoft.KeyVault'
+              locations: [location]
+            }
+          ]
         }
+      }
+    ]
+  }
+}
+
+// create a mintenance configuration for the Azure Stack HCI Host VM and proxy server
+resource maintenanceConfig 'Microsoft.Maintenance/maintenanceConfigurations@2023-09-01-preview' = {
+  location: location
+  name: maintenanceConfigurationName ?? ''
+  properties: {
+    maintenanceScope: 'InGuestPatch'
+    maintenanceWindow: {
+      recurEvery: 'Week Sunday'
+      startDateTime: '2020-04-30 08:00'
+      duration: '02:00'
+      timeZone: 'UTC'
+    }
+    installPatches: {
+      windowsParameters: {
+        classificationsToInclude: ['Critical', 'Security']
+      }
+      rebootSetting: 'IfRequired'
+    }
+    extensionProperties: {
+      InGuestPatchMode: 'User'
+    }
+  }
+}
+
+resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2020-11-01' = {
+  location: location
+  name: networkSecurityGroupName
+}
+
+resource hciHostVMSSFlex 'Microsoft.Compute/virtualMachineScaleSets@2024-03-01' = {
+  name: HCIHostVirtualMachineScaleSetName
+  location: location
+  zones: ['1', '2', '3']
+  properties: {
+    orchestrationMode: 'Flexible'
+    platformFaultDomainCount: 1
+  }
+}
+
+resource nic 'Microsoft.Network/networkInterfaces@2020-11-01' = {
+  location: location
+  name: networkInterfaceName
+  properties: {
+    networkSecurityGroup: {
+      id: networkSecurityGroup.id
+    }
+    ipConfigurations: [
+      {
+        name: 'ipConfig01'
+        properties: {
+          subnet: {
+            id: vnet.properties.subnets[0].id
+          }
+          privateIPAllocationMethod: 'Dynamic'
+        }
+      }
+    ]
+  }
+}
+
+// host VM disks
+resource disks 'Microsoft.Compute/disks@2023-10-02' = [
+  for diskNum in range(1, hciNodeCount): {
+    name: '${diskNamePrefix}${string(diskNum)}'
+    location: location
+    zones: ['1']
+    sku: {
+      name: 'Premium_LRS'
+    }
+    properties: {
+      diskSizeGB: 2048
+      networkAccessPolicy: 'DenyAll'
+      creationData: {
+        createOption: 'Empty'
       }
     }
   }
-}
+]
 
-resource cluster 'Microsoft.AzureStackHCI/clusters@2024-04-01' = {
-  name: name
-  identity: {
-    type: 'SystemAssigned'
-  }
+// Azure Stack HCI Host VM -
+resource vm 'Microsoft.Compute/virtualMachines@2024-03-01' = {
   location: location
-  properties: {}
-  tags: tags
-}
-
-module secrets './secrets.bicep' = if (useSharedKeyVault) {
-  name: '${uniqueString(deployment().name, location)}-secrets'
-  scope: resourceGroup(
-    keyvaultSubscriptionId ?? subscription().subscriptionId,
-    keyvaultResourceGroup ?? resourceGroup().name
-  )
-  params: {
-    clusterName: name
-    cloudId: cluster.properties.cloudId
-    keyVaultName: deploymentSettings!.keyVaultName
-    storageAccountName: deploymentSettings!.clusterWitnessStorageAccountName
-    deploymentUser: deploymentUser!
-    deploymentUserPassword: deploymentUserPassword!
-    localAdminUser: localAdminUser!
-    localAdminPassword: localAdminPassword!
-    servicePrincipalId: servicePrincipalId!
-    servicePrincipalSecret: servicePrincipalSecret!
-    azureStackLCMUserCredentialContentType: azureStackLCMUserCredentialContentType
-    localAdminCredentialContentType: localAdminCredentialContentType
-    witnessStoragekeyContentType: witnessStoragekeyContentType
-    defaultARBApplicationContentType: defaultARBApplicationContentType
-    azureStackLCMUserCredentialTags: azureStackLCMUserCredentialTags
-    localAdminCredentialTags: localAdminCredentialTags
-    witnessStoragekeyTags: witnessStoragekeyTags
-    defaultARBApplicationTags: defaultARBApplicationTags
-    witnessStorageAccountResourceGroup: witnessStorageAccountResourceGroup ?? resourceGroup().name
-    witnessStorageAccountSubscriptionId: witnessStorageAccountSubscriptionId ?? subscription().subscriptionId
+  name: virtualMachineName
+  zones: ['1']
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${userAssignedIdentity.id}': {}
+    }
   }
-}
-
-@batchSize(1)
-module deploymentSetting 'deployment-setting/main.bicep' = [
-  for deploymentOperation in sortedDeploymentOperations: if (!empty(deploymentOperation) && !empty(deploymentSettings)) {
-    name: 'deploymentSettings-${deploymentOperation}'
-    params: {
-      cloudId: useSharedKeyVault ? cluster.properties.cloudId : null
-      clusterName: cluster.name
-      deploymentMode: deploymentOperation
-      clusterNodeNames: deploymentSettings!.clusterNodeNames
-      clusterWitnessStorageAccountName: deploymentSettings!.clusterWitnessStorageAccountName
-      customLocationName: deploymentSettings!.customLocationName
-      defaultGateway: deploymentSettings!.defaultGateway
-      deploymentPrefix: deploymentSettings!.deploymentPrefix
-      dnsServers: deploymentSettings!.dnsServers
-      domainFqdn: deploymentSettings!.domainFqdn
-      domainOUPath: deploymentSettings!.domainOUPath
-      endingIPAddress: deploymentSettings!.endingIPAddress
-      keyVaultName: deploymentSettings!.keyVaultName
-      networkIntents: [
-        for intent in deploymentSettings.networkIntents: {
-          ...intent
-          qosPolicyOverrides: {
-            bandwidthPercentage_SMB: intent.qosPolicyOverrides.bandwidthPercentageSMB
-            priorityValue8021Action_Cluster: intent.qosPolicyOverrides.priorityValue8021ActionCluster
-            priorityValue8021Action_SMB: intent.qosPolicyOverrides.priorityValue8021ActionSMB
-          }
+  properties: {
+    virtualMachineScaleSet: {
+      id: hciHostVMSSFlex.id
+    }
+    hardwareProfile: {
+      vmSize: hostVMSize
+    }
+    priority: 'Regular'
+    networkProfile: {
+      networkInterfaces: [
+        {
+          id: nic.id
         }
       ]
-      startingIPAddress: deploymentSettings!.startingIPAddress
-      storageConnectivitySwitchless: deploymentSettings!.storageConnectivitySwitchless
-      storageNetworks: deploymentSettings!.storageNetworks
-      subnetMask: deploymentSettings!.subnetMask
-      bitlockerBootVolume: deploymentSettings!.?bitlockerBootVolume
-      bitlockerDataVolumes: deploymentSettings!.?bitlockerDataVolumes
-      credentialGuardEnforced: deploymentSettings!.?credentialGuardEnforced
-      driftControlEnforced: deploymentSettings!.?driftControlEnforced
-      drtmProtection: deploymentSettings!.?drtmProtection
-      enableStorageAutoIp: deploymentSettings!.?enableStorageAutoIp
-      episodicDataUpload: deploymentSettings!.?episodicDataUpload
-      hvciProtection: deploymentSettings!.?hvciProtection
-      isEuropeanUnionLocation: deploymentSettings!.?isRFEuropeanUnionLocation
-      sideChannelMitigationEnforced: deploymentSettings!.?sideChannelMitigationEnforced
-      smbClusterEncryption: deploymentSettings!.?smbClusterEncryption
-      smbSigningEnforced: deploymentSettings!.?smbSigningEnforced
-      storageConfigurationMode: deploymentSettings!.?storageConfigurationMode
-      streamingDataClient: deploymentSettings!.?streamingDataClient
-      wdacEnforced: deploymentSettings!.?wdacEnforced
     }
-  }
-]
-
-resource cluster_roleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
-  for (roleAssignment, index) in (formattedRoleAssignments ?? []): {
-    name: roleAssignment.?name ?? guid(cluster.id, roleAssignment.principalId, roleAssignment.roleDefinitionId)
-    properties: {
-      roleDefinitionId: roleAssignment.roleDefinitionId
-      principalId: roleAssignment.principalId
-      description: roleAssignment.?description
-      principalType: roleAssignment.?principalType
-      condition: roleAssignment.?condition
-      conditionVersion: !empty(roleAssignment.?condition) ? (roleAssignment.?conditionVersion ?? '2.0') : null // Must only be set if condtion is set
-      delegatedManagedIdentityResourceId: roleAssignment.?delegatedManagedIdentityResourceId
+    storageProfile: {
+      imageReference: {
+        publisher: 'MicrosoftWindowsServer'
+        offer: 'WindowsServer'
+        sku: '2022-datacenter-g2'
+        version: 'latest'
+      }
+      osDisk: {
+        createOption: 'FromImage'
+        diskSizeGB: 128
+        deleteOption: 'Delete'
+        managedDisk: {
+          storageAccountType: 'Premium_LRS'
+        }
+      }
+      dataDisks: [
+        for diskNum in range(1, hciNodeCount): {
+          lun: diskNum
+          createOption: 'Attach'
+          caching: 'ReadOnly'
+          managedDisk: {
+            id: disks[diskNum - 1].id
+          }
+          deleteOption: 'Delete'
+        }
+      ]
+      //diskControllerType: 'NVMe'
     }
-    scope: cluster
+    osProfile: {
+      adminPassword: localAdminPassword
+      adminUsername: localAdminUsername
+      computerName: 'hciHost01'
+      windowsConfiguration: {
+        provisionVMAgent: true
+        enableAutomaticUpdates: true
+        patchSettings: {
+          patchMode: 'AutomaticByPlatform'
+          automaticByPlatformSettings: {
+            bypassPlatformSafetyChecksOnUserSchedule: true
+          }
+        }
+      }
+    }
+    securityProfile: {
+      uefiSettings: {
+        secureBootEnabled: true
+        vTpmEnabled: true
+      }
+      securityType: 'TrustedLaunch'
+    }
+    licenseType: 'Windows_Server'
   }
-]
+}
 
-@description('The name of the cluster.')
-output name string = cluster.name
-
-@description('The ID of the cluster.')
-output resourceId string = cluster.id
-
-@description('The resource group of the cluster.')
-output resourceGroupName string = resourceGroup().name
-
-@description('The managed identity of the cluster.')
-output systemAssignedMIPrincipalId string = cluster.identity.principalId
-
-@description('The location of the cluster.')
-output location string = cluster.location
-
-// =============== //
-//   Definitions   //
-// =============== //
-
-@export()
-type networkIntentType = {
-  @description('Required. The names of the network adapters to include in the intent.')
-  adapter: string[]
-
-  @description('Required. The name of the network intent.')
-  name: string
-
-  @description('Required. Specify whether to override the adapter property. Use false by default.')
-  overrideAdapterProperty: bool
-
-  @description('Required. The adapter property overrides for the network intent.')
-  adapterPropertyOverrides: {
-    @description('Required. The jumboPacket configuration for the network adapters.')
-    jumboPacket: string
-
-    @description('Required. The networkDirect configuration for the network adapters.')
-    networkDirect: ('Enabled' | 'Disabled')
-
-    @description('Required. The networkDirectTechnology configuration for the network adapters.')
-    networkDirectTechnology: ('RoCEv2' | 'iWARP')
+resource maintenanceAssignment_hciHost 'Microsoft.Maintenance/configurationAssignments@2023-04-01' = {
+  location: location
+  name: maintenanceConfigurationAssignmentName
+  properties: {
+    maintenanceConfigurationId: maintenanceConfig.id
   }
+  scope: vm
+}
 
-  @description('Required. Specify whether to override the qosPolicy property. Use false by default.')
-  overrideQosPolicy: bool
+// ====================//
+// Install Host Roles  //
+// ====================//
 
-  @description('Required. The qosPolicy overrides for the network intent.')
-  qosPolicyOverrides: {
-    @description('Required. The bandwidthPercentage for the network intent. Recommend 50.')
-    bandwidthPercentageSMB: string
-
-    @description('Required. Recommend 7.')
-    priorityValue8021ActionCluster: string
-
-    @description('Required. Recommend 3.')
-    priorityValue8021ActionSMB: string
+// installs roles and features required for Azure Stack HCI Host VM
+resource runCommand1 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
+  parent: vm
+  location: location
+  name: 'runCommand1'
+  properties: {
+    source: {
+      script: loadTextContent('./scripts/hciHostStage1.ps1')
+    }
+    treatFailureAsDeploymentFailure: true
   }
+}
 
-  @description('Required. Specify whether to override the virtualSwitchConfiguration property. Use false by default.')
-  overrideVirtualSwitchConfiguration: bool
-
-  @description('Required. The virtualSwitchConfiguration overrides for the network intent.')
-  virtualSwitchConfigurationOverrides: {
-    @description('Required. The enableIov configuration for the network intent.')
-    enableIov: ('true' | 'false')
-
-    @description('Required. The loadBalancingAlgorithm configuration for the network intent.')
-    loadBalancingAlgorithm: ('Dynamic' | 'HyperVPort' | 'IPHash')
+// schedules a reboot of the VM
+resource runCommand2 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
+  parent: vm
+  location: location
+  name: 'runCommand2'
+  properties: {
+    source: {
+      script: loadTextContent('./scripts/hciHostStage2.ps1')
+    }
+    treatFailureAsDeploymentFailure: true
   }
-
-  @description('Required. The traffic types for the network intent.')
-  trafficType: ('Compute' | 'Management' | 'Storage')[]
+  dependsOn: [runCommand1]
 }
 
-// define custom type for storage adapter IP info for 3-node switchless deployments
-@export()
-type storageAdapterIPInfoType = {
-  @description('Required. The HCI node name.')
-  physicalNode: string
-
-  @description('Required. The IPv4 address for the storage adapter.')
-  ipv4Address: string
-
-  @description('Required. The subnet mask for the storage adapter.')
-  subnetMask: string
+// initiates a wait for the VM to reboot
+resource wait1 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
+  location: location
+  kind: 'AzurePowerShell'
+  name: '${waitDeploymentScriptPrefixName}-wait1'
+  properties: {
+    azPowerShellVersion: '3.0'
+    scriptContent: 'Start-Sleep -Seconds 90'
+    retentionInterval: 'PT6H'
+  }
+  dependsOn: [runCommand2]
 }
 
-// define custom type for storage network objects
-@export()
-type storageNetworksType = {
-  @description('Required. The name of the storage network.')
-  name: string
+// ======================//
+// Configure Host Roles  //
+// ======================//
 
-  @description('Required. The name of the storage adapter.')
-  adapterName: string
-
-  @description('Required. The VLAN for the storage adapter.')
-  vlan: string
-
-  @description('Optional. The storage adapter IP information for 3-node switchless or manual config deployments.')
-  storageAdapterIPInfo: storageAdapterIPInfoType[]? // optional for switched deployments
+// initializes and mounts data disks, downloads HCI VHDX, configures the Azure Stack HCI Host VM with AD, routing, DNS, DHCP
+resource runCommand3 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
+  parent: vm
+  location: location
+  name: 'runCommand3'
+  properties: {
+    source: {
+      script: loadTextContent('./scripts/hciHostStage3.ps1')
+    }
+    parameters: [
+      {
+        name: 'hciVHDXDownloadURL'
+        value: ''
+      }
+      {
+        name: 'hciISODownloadURL'
+        value: hciISODownloadURL
+      }
+      {
+        name: 'hciNodeCount'
+        value: string(hciNodeCount)
+      }
+    ]
+    treatFailureAsDeploymentFailure: true
+  }
+  dependsOn: [wait1]
 }
 
-// cluster security configuration settings
-@export()
-type securityConfigurationType = {
-  @description('Required. Enable/Disable HVCI protection.')
-  hvciProtection: bool
-
-  @description('Required. Enable/Disable DRTM protection.')
-  drtmProtection: bool
-
-  @description('Required. Enable/Disable Drift Control enforcement.')
-  driftControlEnforced: bool
-
-  @description('Required. Enable/Disable Credential Guard enforcement.')
-  credentialGuardEnforced: bool
-
-  @description('Required. Enable/Disable SMB signing enforcement.')
-  smbSigningEnforced: bool
-
-  @description('Required. Enable/Disable SMB cluster encryption.')
-  smbClusterEncryption: bool
-
-  @description('Required. Enable/Disable Side Channel Mitigation enforcement.')
-  sideChannelMitigationEnforced: bool
-
-  @description('Required. Enable/Disable BitLocker protection for boot volume.')
-  bitlockerBootVolume: bool
-
-  @description('Required. Enable/Disable BitLocker protection for data volumes.')
-  bitlockerDataVolumes: bool
-
-  @description('Required. Enable/Disable WDAC enforcement.')
-  wdacEnforced: bool
+// schedules a reboot of the VM
+resource runCommand4 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
+  parent: vm
+  location: location
+  name: 'runCommand4'
+  properties: {
+    source: {
+      script: loadTextContent('./scripts/hciHostStage4.ps1')
+    }
+    treatFailureAsDeploymentFailure: true
+  }
+  dependsOn: [runCommand3]
 }
 
-type deploymentSettingsType = {
-  @minLength(4)
-  @maxLength(8)
-  @description('Required. The prefix for the resource for the deployment. This value is used in key vault and storage account names in this template, as well as for the deploymentSettings.properties.deploymentConfiguration.scaleUnits.deploymentData.namingPrefix property which requires regex pattern: ^[a-zA-Z0-9-]{1,8}$.')
-  deploymentPrefix: string
-
-  @description('Required. Names of the cluster node Arc Machine resources. These are the name of the Arc Machine resources created when the new HCI nodes were Arc initialized. Example: [hci-node-1, hci-node-2].')
-  clusterNodeNames: array
-
-  @description('Required. The domain name of the Active Directory Domain Services. Example: "contoso.com".')
-  domainFqdn: string
-
-  @description('Required. The ADDS OU path - ex "OU=HCI,DC=contoso,DC=com".')
-  domainOUPath: string
-
-  @description('Optional. The Hypervisor-protected Code Integrity setting.')
-  hvciProtection: bool?
-
-  @description('Optional. The hardware-dependent Secure Boot setting.')
-  drtmProtection: bool?
-
-  @description('Optional. When set to true, the security baseline is re-applied regularly.')
-  driftControlEnforced: bool?
-
-  @description('Optional. Enables the Credential Guard.')
-  credentialGuardEnforced: bool?
-
-  @description('Optional. When set to true, the SMB default instance requires sign in for the client and server services.')
-  smbSigningEnforced: bool?
-
-  @description('Optional. When set to true, cluster east-west traffic is encrypted.')
-  smbClusterEncryption: bool?
-
-  @description('Optional. When set to true, all the side channel mitigations are enabled.')
-  sideChannelMitigationEnforced: bool?
-
-  @description('Optional. When set to true, BitLocker XTS_AES 256-bit encryption is enabled for all data-at-rest on the OS volume of your Azure Stack HCI cluster. This setting is TPM-hardware dependent.')
-  bitlockerBootVolume: bool?
-
-  @description('Optional. When set to true, BitLocker XTS-AES 256-bit encryption is enabled for all data-at-rest on your Azure Stack HCI cluster shared volumes.')
-  bitlockerDataVolumes: bool?
-
-  @description('Optional. Limits the applications and the code that you can run on your Azure Stack HCI cluster.')
-  wdacEnforced: bool?
-
-  // cluster diagnostics and telemetry configuration
-  @description('Optional. The metrics data for deploying a HCI cluster.')
-  streamingDataClient: bool?
-
-  @description('Optional. The location data for deploying a HCI cluster.')
-  isEuropeanUnionLocation: bool?
-
-  @description('Optional. The diagnostic data for deploying a HCI cluster.')
-  episodicDataUpload: bool?
-
-  // storage configuration
-  @description('Optional. The storage volume configuration mode. See documentation for details.')
-  storageConfigurationMode: ('Express' | 'InfraOnly' | 'KeepStorage')?
-
-  // cluster network configuration details
-  @description('Required. The subnet mask pf the Management Network for the HCI cluster - ex: 255.255.252.0.')
-  subnetMask: string
-
-  @description('Required. The default gateway of the Management Network. Example: 192.168.0.1.')
-  defaultGateway: string
-
-  @description('Required. The starting IP address for the Infrastructure Network IP pool. There must be at least 6 IPs between startingIPAddress and endingIPAddress and this pool should be not include the node IPs.')
-  startingIPAddress: string
-
-  @description('Required. The ending IP address for the Infrastructure Network IP pool. There must be at least 6 IPs between startingIPAddress and endingIPAddress and this pool should be not include the node IPs.')
-  endingIPAddress: string
-
-  @description('Required. The DNS servers accessible from the Management Network for the HCI cluster.')
-  dnsServers: string[]
-
-  @description('Required. An array of Network ATC Network Intent objects that define the Compute, Management, and Storage network configuration for the cluster.')
-  networkIntents: networkIntentType[]
-
-  @description('Required. Specify whether the Storage Network connectivity is switched or switchless.')
-  storageConnectivitySwitchless: bool
-
-  @description('Optional. Enable storage auto IP assignment. This should be true for most deployments except when deploying a three-node switchless cluster, in which case storage IPs should be configured before deployment and this value set to false.')
-  enableStorageAutoIp: bool?
-
-  @description('Required. An array of JSON objects that define the storage network configuration for the cluster. Each object should contain the adapterName, VLAN properties, and (optionally) IP configurations.')
-  storageNetworks: storageNetworksType[]
-
-  // other cluster configuration parameters
-  @description('Required. The name of the Custom Location associated with the Arc Resource Bridge for this cluster. This value should reflect the physical location and identifier of the HCI cluster. Example: cl-hci-den-clu01.')
-  customLocationName: string
-
-  @description('Required. The name of the storage account to be used as the witness for the HCI Windows Failover Cluster.')
-  clusterWitnessStorageAccountName: string
-
-  @description('Required. The name of the key vault to be used for storing secrets for the HCI cluster. This currently needs to be unique per HCI cluster.')
-  keyVaultName: string
+// initiates a wait for the VM to reboot - extra time for AD initialization
+resource wait2 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
+  location: location
+  kind: 'AzurePowerShell'
+  name: '${waitDeploymentScriptPrefixName}-wait2'
+  properties: {
+    azPowerShellVersion: '3.0'
+    scriptContent: 'Start-Sleep -Seconds 300 #enough time for AD start-up'
+    retentionInterval: 'PT6H'
+  }
+  dependsOn: [
+    runCommand4
+  ]
 }
 
-@export()
-@description('Key vault secret names interface')
-type KeyVaultSecretNames = {
-  @description('Required. The name of the Azure Stack HCI LCM user credential secret.')
-  azureStackLCMUserCredential: string
-  @description('Required. The name of the Azure Stack HCI local admin credential secret.')
-  localAdminCredential: string
-  @description('Required. The name of the Azure Stack HCI default ARB application secret.')
-  defaultARBApplication: string
-  @description('Required. The name of the Azure Stack HCI witness storage key secret.')
-  witnessStorageKey: string
+// ===========================//
+// Create HCI Node Guest VMs  //
+// ===========================//
+
+// creates hyper-v resources, configures NAT, builds and preps the Azure Stack HCI node VMs
+resource runCommand5 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
+  parent: vm
+  location: location
+  name: 'runCommand5'
+  properties: {
+    source: {
+      script: loadTextContent('./scripts/hciHostStage5.ps1')
+    }
+    parameters: [
+      {
+        name: 'adminUsername'
+        value: localAdminUsername
+      }
+      {
+        name: 'hciNodeCount'
+        value: string(hciNodeCount)
+      }
+      {
+        name: 'switchlessStorageConfig'
+        value: switchlessStorageConfig ? 'switchless' : 'switched'
+      }
+    ]
+    protectedParameters: [
+      {
+        name: 'adminPw'
+        value: localAdminPassword
+      }
+    ]
+    treatFailureAsDeploymentFailure: true
+  }
+  dependsOn: [wait2]
 }
+
+output vnetSubnetResourceId string = vnet.properties.subnets[0].id

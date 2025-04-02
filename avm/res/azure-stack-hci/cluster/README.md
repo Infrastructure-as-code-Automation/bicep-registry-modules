@@ -8,16 +8,24 @@ This module deploys an Azure Stack HCI Cluster on the provided Arc Machines.
 - [Usage examples](#Usage-examples)
 - [Parameters](#Parameters)
 - [Outputs](#Outputs)
-- [Data Collection](#Data-Collection)
 
 ## Resource Types
 
 | Resource Type | API Version |
 | :-- | :-- |
 | `Microsoft.Authorization/roleAssignments` | [2022-04-01](https://learn.microsoft.com/en-us/azure/templates/Microsoft.Authorization/2022-04-01/roleAssignments) |
-| `Microsoft.AzureStackHCI/clusters` | [2024-04-01](https://learn.microsoft.com/en-us/azure/templates/Microsoft.AzureStackHCI/clusters) |
-| `Microsoft.AzureStackHCI/clusters/deploymentSettings` | [2024-04-01](https://learn.microsoft.com/en-us/azure/templates/Microsoft.AzureStackHCI/clusters/deploymentSettings) |
-| `Microsoft.KeyVault/vaults/secrets` | [2023-07-01](https://learn.microsoft.com/en-us/azure/templates/Microsoft.KeyVault/2023-07-01/vaults/secrets) |
+| `Microsoft.Authorization/roleAssignments` | [2020-04-01-preview](https://learn.microsoft.com/en-us/azure/templates/Microsoft.Authorization/2020-04-01-preview/roleAssignments) |
+| `Microsoft.Compute/disks` | [2023-10-02](https://learn.microsoft.com/en-us/azure/templates/Microsoft.Compute/2023-10-02/disks) |
+| `Microsoft.Compute/virtualMachines` | [2024-03-01](https://learn.microsoft.com/en-us/azure/templates/Microsoft.Compute/2024-03-01/virtualMachines) |
+| `Microsoft.Compute/virtualMachines/runCommands` | [2024-03-01](https://learn.microsoft.com/en-us/azure/templates/Microsoft.Compute/2024-03-01/virtualMachines/runCommands) |
+| `Microsoft.Compute/virtualMachineScaleSets` | [2024-03-01](https://learn.microsoft.com/en-us/azure/templates/Microsoft.Compute/2024-03-01/virtualMachineScaleSets) |
+| `Microsoft.Maintenance/configurationAssignments` | [2023-04-01](https://learn.microsoft.com/en-us/azure/templates/Microsoft.Maintenance/2023-04-01/configurationAssignments) |
+| `Microsoft.Maintenance/maintenanceConfigurations` | [2023-09-01-preview](https://learn.microsoft.com/en-us/azure/templates/Microsoft.Maintenance/2023-09-01-preview/maintenanceConfigurations) |
+| `Microsoft.ManagedIdentity/userAssignedIdentities` | [2023-07-31-preview](https://learn.microsoft.com/en-us/azure/templates/Microsoft.ManagedIdentity/2023-07-31-preview/userAssignedIdentities) |
+| `Microsoft.Network/networkInterfaces` | [2020-11-01](https://learn.microsoft.com/en-us/azure/templates/Microsoft.Network/2020-11-01/networkInterfaces) |
+| `Microsoft.Network/networkSecurityGroups` | [2020-11-01](https://learn.microsoft.com/en-us/azure/templates/Microsoft.Network/2020-11-01/networkSecurityGroups) |
+| `Microsoft.Network/virtualNetworks` | [2020-11-01](https://learn.microsoft.com/en-us/azure/templates/Microsoft.Network/2020-11-01/virtualNetworks) |
+| `Microsoft.Resources/deploymentScripts` | [2023-08-01](https://learn.microsoft.com/en-us/azure/templates/Microsoft.Resources/2023-08-01/deploymentScripts) |
 
 ## Usage examples
 
@@ -44,126 +52,23 @@ module cluster 'br/public:avm/res/azure-stack-hci/cluster:<version>' = {
   name: 'clusterDeployment'
   params: {
     // Required parameters
-    deploymentSettings: {
-      clusterNodeNames: '<clusterNodeNames>'
-      clusterWitnessStorageAccountName: '<clusterWitnessStorageAccountName>'
-      customLocationName: 'ashcmin-location'
-      defaultGateway: '172.20.0.1'
-      deploymentPrefix: '<deploymentPrefix>'
-      dnsServers: [
-        '172.20.0.1'
-      ]
-      domainFqdn: 'hci.local'
-      domainOUPath: '<domainOUPath>'
-      enableStorageAutoIp: true
-      endingIPAddress: '172.20.0.7'
-      keyVaultName: '<keyVaultName>'
-      networkIntents: [
-        {
-          adapter: [
-            'mgmt'
-          ]
-          adapterPropertyOverrides: {
-            jumboPacket: '9014'
-            networkDirect: 'Disabled'
-            networkDirectTechnology: 'iWARP'
-          }
-          name: 'management'
-          overrideAdapterProperty: true
-          overrideQosPolicy: false
-          overrideVirtualSwitchConfiguration: false
-          qosPolicyOverrides: {
-            bandwidthPercentageSMB: '50'
-            priorityValue8021ActionCluster: '7'
-            priorityValue8021ActionSMB: '3'
-          }
-          trafficType: [
-            'Management'
-          ]
-          virtualSwitchConfigurationOverrides: {
-            enableIov: 'true'
-            loadBalancingAlgorithm: 'Dynamic'
-          }
-        }
-        {
-          adapter: [
-            'comp0'
-            'comp1'
-          ]
-          adapterPropertyOverrides: {
-            jumboPacket: '9014'
-            networkDirect: 'Disabled'
-            networkDirectTechnology: 'iWARP'
-          }
-          name: 'compute'
-          overrideAdapterProperty: true
-          overrideQosPolicy: false
-          overrideVirtualSwitchConfiguration: false
-          qosPolicyOverrides: {
-            bandwidthPercentageSMB: '50'
-            priorityValue8021ActionCluster: '7'
-            priorityValue8021ActionSMB: '3'
-          }
-          trafficType: [
-            'Compute'
-          ]
-          virtualSwitchConfigurationOverrides: {
-            enableIov: 'true'
-            loadBalancingAlgorithm: 'Dynamic'
-          }
-        }
-        {
-          adapter: [
-            'smb0'
-            'smb1'
-          ]
-          adapterPropertyOverrides: {
-            jumboPacket: '9014'
-            networkDirect: 'Disabled'
-            networkDirectTechnology: 'iWARP'
-          }
-          name: 'storage'
-          overrideAdapterProperty: true
-          overrideQosPolicy: true
-          overrideVirtualSwitchConfiguration: false
-          qosPolicyOverrides: {
-            bandwidthPercentageSMB: '50'
-            priorityValue8021ActionCluster: '7'
-            priorityValue8021ActionSMB: '3'
-          }
-          trafficType: [
-            'Storage'
-          ]
-          virtualSwitchConfigurationOverrides: {
-            enableIov: 'true'
-            loadBalancingAlgorithm: 'Dynamic'
-          }
-        }
-      ]
-      startingIPAddress: '172.20.0.2'
-      storageConnectivitySwitchless: false
-      storageNetworks: [
-        {
-          adapterName: 'smb0'
-          name: 'StorageNetwork0'
-          vlan: '711'
-        }
-        {
-          adapterName: 'smb1'
-          name: 'StorageNetwork1'
-          vlan: '712'
-        }
-      ]
-      subnetMask: '255.255.255.0'
-    }
-    name: '<name>'
-    // Non-required parameters
-    deploymentUser: 'deployUser'
-    deploymentUserPassword: '<deploymentUserPassword>'
+    diskNamePrefix: '<diskNamePrefix>'
+    HCIHostVirtualMachineScaleSetName: '<HCIHostVirtualMachineScaleSetName>'
     localAdminPassword: '<localAdminPassword>'
-    localAdminUser: 'admin-hci'
-    servicePrincipalId: '<servicePrincipalId>'
-    servicePrincipalSecret: '<servicePrincipalSecret>'
+    location: '<location>'
+    maintenanceConfigurationAssignmentName: '<maintenanceConfigurationAssignmentName>'
+    maintenanceConfigurationName: '<maintenanceConfigurationName>'
+    networkInterfaceName: '<networkInterfaceName>'
+    networkSecurityGroupName: '<networkSecurityGroupName>'
+    userAssignedIdentityName: '<userAssignedIdentityName>'
+    virtualMachineName: '<virtualMachineName>'
+    virtualNetworkName: '<virtualNetworkName>'
+    waitDeploymentScriptPrefixName: '<waitDeploymentScriptPrefixName>'
+    // Non-required parameters
+    hciISODownloadURL: 'https://azurestackreleases.download.prss.microsoft.com/dbazure/AzureStackHCI/OS-Composition/10.2408.0.3061/AZURESTACKHci23H2.25398.469.LCM.10.2408.0.3061.x64.en-us.iso'
+    hciNodeCount: '<hciNodeCount>'
+    hostVMSize: 'Standard_E16bds_v5'
+    switchlessStorageConfig: false
   }
 }
 ```
@@ -181,141 +86,54 @@ module cluster 'br/public:avm/res/azure-stack-hci/cluster:<version>' = {
   "contentVersion": "1.0.0.0",
   "parameters": {
     // Required parameters
-    "deploymentSettings": {
-      "value": {
-        "clusterNodeNames": "<clusterNodeNames>",
-        "clusterWitnessStorageAccountName": "<clusterWitnessStorageAccountName>",
-        "customLocationName": "ashcmin-location",
-        "defaultGateway": "172.20.0.1",
-        "deploymentPrefix": "<deploymentPrefix>",
-        "dnsServers": [
-          "172.20.0.1"
-        ],
-        "domainFqdn": "hci.local",
-        "domainOUPath": "<domainOUPath>",
-        "enableStorageAutoIp": true,
-        "endingIPAddress": "172.20.0.7",
-        "keyVaultName": "<keyVaultName>",
-        "networkIntents": [
-          {
-            "adapter": [
-              "mgmt"
-            ],
-            "adapterPropertyOverrides": {
-              "jumboPacket": "9014",
-              "networkDirect": "Disabled",
-              "networkDirectTechnology": "iWARP"
-            },
-            "name": "management",
-            "overrideAdapterProperty": true,
-            "overrideQosPolicy": false,
-            "overrideVirtualSwitchConfiguration": false,
-            "qosPolicyOverrides": {
-              "bandwidthPercentageSMB": "50",
-              "priorityValue8021ActionCluster": "7",
-              "priorityValue8021ActionSMB": "3"
-            },
-            "trafficType": [
-              "Management"
-            ],
-            "virtualSwitchConfigurationOverrides": {
-              "enableIov": "true",
-              "loadBalancingAlgorithm": "Dynamic"
-            }
-          },
-          {
-            "adapter": [
-              "comp0",
-              "comp1"
-            ],
-            "adapterPropertyOverrides": {
-              "jumboPacket": "9014",
-              "networkDirect": "Disabled",
-              "networkDirectTechnology": "iWARP"
-            },
-            "name": "compute",
-            "overrideAdapterProperty": true,
-            "overrideQosPolicy": false,
-            "overrideVirtualSwitchConfiguration": false,
-            "qosPolicyOverrides": {
-              "bandwidthPercentageSMB": "50",
-              "priorityValue8021ActionCluster": "7",
-              "priorityValue8021ActionSMB": "3"
-            },
-            "trafficType": [
-              "Compute"
-            ],
-            "virtualSwitchConfigurationOverrides": {
-              "enableIov": "true",
-              "loadBalancingAlgorithm": "Dynamic"
-            }
-          },
-          {
-            "adapter": [
-              "smb0",
-              "smb1"
-            ],
-            "adapterPropertyOverrides": {
-              "jumboPacket": "9014",
-              "networkDirect": "Disabled",
-              "networkDirectTechnology": "iWARP"
-            },
-            "name": "storage",
-            "overrideAdapterProperty": true,
-            "overrideQosPolicy": true,
-            "overrideVirtualSwitchConfiguration": false,
-            "qosPolicyOverrides": {
-              "bandwidthPercentageSMB": "50",
-              "priorityValue8021ActionCluster": "7",
-              "priorityValue8021ActionSMB": "3"
-            },
-            "trafficType": [
-              "Storage"
-            ],
-            "virtualSwitchConfigurationOverrides": {
-              "enableIov": "true",
-              "loadBalancingAlgorithm": "Dynamic"
-            }
-          }
-        ],
-        "startingIPAddress": "172.20.0.2",
-        "storageConnectivitySwitchless": false,
-        "storageNetworks": [
-          {
-            "adapterName": "smb0",
-            "name": "StorageNetwork0",
-            "vlan": "711"
-          },
-          {
-            "adapterName": "smb1",
-            "name": "StorageNetwork1",
-            "vlan": "712"
-          }
-        ],
-        "subnetMask": "255.255.255.0"
-      }
+    "diskNamePrefix": {
+      "value": "<diskNamePrefix>"
     },
-    "name": {
-      "value": "<name>"
-    },
-    // Non-required parameters
-    "deploymentUser": {
-      "value": "deployUser"
-    },
-    "deploymentUserPassword": {
-      "value": "<deploymentUserPassword>"
+    "HCIHostVirtualMachineScaleSetName": {
+      "value": "<HCIHostVirtualMachineScaleSetName>"
     },
     "localAdminPassword": {
       "value": "<localAdminPassword>"
     },
-    "localAdminUser": {
-      "value": "admin-hci"
+    "location": {
+      "value": "<location>"
     },
-    "servicePrincipalId": {
-      "value": "<servicePrincipalId>"
+    "maintenanceConfigurationAssignmentName": {
+      "value": "<maintenanceConfigurationAssignmentName>"
     },
-    "servicePrincipalSecret": {
-      "value": "<servicePrincipalSecret>"
+    "maintenanceConfigurationName": {
+      "value": "<maintenanceConfigurationName>"
+    },
+    "networkInterfaceName": {
+      "value": "<networkInterfaceName>"
+    },
+    "networkSecurityGroupName": {
+      "value": "<networkSecurityGroupName>"
+    },
+    "userAssignedIdentityName": {
+      "value": "<userAssignedIdentityName>"
+    },
+    "virtualMachineName": {
+      "value": "<virtualMachineName>"
+    },
+    "virtualNetworkName": {
+      "value": "<virtualNetworkName>"
+    },
+    "waitDeploymentScriptPrefixName": {
+      "value": "<waitDeploymentScriptPrefixName>"
+    },
+    // Non-required parameters
+    "hciISODownloadURL": {
+      "value": "https://azurestackreleases.download.prss.microsoft.com/dbazure/AzureStackHCI/OS-Composition/10.2408.0.3061/AZURESTACKHci23H2.25398.469.LCM.10.2408.0.3061.x64.en-us.iso"
+    },
+    "hciNodeCount": {
+      "value": "<hciNodeCount>"
+    },
+    "hostVMSize": {
+      "value": "Standard_E16bds_v5"
+    },
+    "switchlessStorageConfig": {
+      "value": false
     }
   }
 }
@@ -332,126 +150,23 @@ module cluster 'br/public:avm/res/azure-stack-hci/cluster:<version>' = {
 using 'br/public:avm/res/azure-stack-hci/cluster:<version>'
 
 // Required parameters
-param deploymentSettings = {
-  clusterNodeNames: '<clusterNodeNames>'
-  clusterWitnessStorageAccountName: '<clusterWitnessStorageAccountName>'
-  customLocationName: 'ashcmin-location'
-  defaultGateway: '172.20.0.1'
-  deploymentPrefix: '<deploymentPrefix>'
-  dnsServers: [
-    '172.20.0.1'
-  ]
-  domainFqdn: 'hci.local'
-  domainOUPath: '<domainOUPath>'
-  enableStorageAutoIp: true
-  endingIPAddress: '172.20.0.7'
-  keyVaultName: '<keyVaultName>'
-  networkIntents: [
-    {
-      adapter: [
-        'mgmt'
-      ]
-      adapterPropertyOverrides: {
-        jumboPacket: '9014'
-        networkDirect: 'Disabled'
-        networkDirectTechnology: 'iWARP'
-      }
-      name: 'management'
-      overrideAdapterProperty: true
-      overrideQosPolicy: false
-      overrideVirtualSwitchConfiguration: false
-      qosPolicyOverrides: {
-        bandwidthPercentageSMB: '50'
-        priorityValue8021ActionCluster: '7'
-        priorityValue8021ActionSMB: '3'
-      }
-      trafficType: [
-        'Management'
-      ]
-      virtualSwitchConfigurationOverrides: {
-        enableIov: 'true'
-        loadBalancingAlgorithm: 'Dynamic'
-      }
-    }
-    {
-      adapter: [
-        'comp0'
-        'comp1'
-      ]
-      adapterPropertyOverrides: {
-        jumboPacket: '9014'
-        networkDirect: 'Disabled'
-        networkDirectTechnology: 'iWARP'
-      }
-      name: 'compute'
-      overrideAdapterProperty: true
-      overrideQosPolicy: false
-      overrideVirtualSwitchConfiguration: false
-      qosPolicyOverrides: {
-        bandwidthPercentageSMB: '50'
-        priorityValue8021ActionCluster: '7'
-        priorityValue8021ActionSMB: '3'
-      }
-      trafficType: [
-        'Compute'
-      ]
-      virtualSwitchConfigurationOverrides: {
-        enableIov: 'true'
-        loadBalancingAlgorithm: 'Dynamic'
-      }
-    }
-    {
-      adapter: [
-        'smb0'
-        'smb1'
-      ]
-      adapterPropertyOverrides: {
-        jumboPacket: '9014'
-        networkDirect: 'Disabled'
-        networkDirectTechnology: 'iWARP'
-      }
-      name: 'storage'
-      overrideAdapterProperty: true
-      overrideQosPolicy: true
-      overrideVirtualSwitchConfiguration: false
-      qosPolicyOverrides: {
-        bandwidthPercentageSMB: '50'
-        priorityValue8021ActionCluster: '7'
-        priorityValue8021ActionSMB: '3'
-      }
-      trafficType: [
-        'Storage'
-      ]
-      virtualSwitchConfigurationOverrides: {
-        enableIov: 'true'
-        loadBalancingAlgorithm: 'Dynamic'
-      }
-    }
-  ]
-  startingIPAddress: '172.20.0.2'
-  storageConnectivitySwitchless: false
-  storageNetworks: [
-    {
-      adapterName: 'smb0'
-      name: 'StorageNetwork0'
-      vlan: '711'
-    }
-    {
-      adapterName: 'smb1'
-      name: 'StorageNetwork1'
-      vlan: '712'
-    }
-  ]
-  subnetMask: '255.255.255.0'
-}
-param name = '<name>'
-// Non-required parameters
-param deploymentUser = 'deployUser'
-param deploymentUserPassword = '<deploymentUserPassword>'
+param diskNamePrefix = '<diskNamePrefix>'
+param HCIHostVirtualMachineScaleSetName = '<HCIHostVirtualMachineScaleSetName>'
 param localAdminPassword = '<localAdminPassword>'
-param localAdminUser = 'admin-hci'
-param servicePrincipalId = '<servicePrincipalId>'
-param servicePrincipalSecret = '<servicePrincipalSecret>'
+param location = '<location>'
+param maintenanceConfigurationAssignmentName = '<maintenanceConfigurationAssignmentName>'
+param maintenanceConfigurationName = '<maintenanceConfigurationName>'
+param networkInterfaceName = '<networkInterfaceName>'
+param networkSecurityGroupName = '<networkSecurityGroupName>'
+param userAssignedIdentityName = '<userAssignedIdentityName>'
+param virtualMachineName = '<virtualMachineName>'
+param virtualNetworkName = '<virtualNetworkName>'
+param waitDeploymentScriptPrefixName = '<waitDeploymentScriptPrefixName>'
+// Non-required parameters
+param hciISODownloadURL = 'https://azurestackreleases.download.prss.microsoft.com/dbazure/AzureStackHCI/OS-Composition/10.2408.0.3061/AZURESTACKHci23H2.25398.469.LCM.10.2408.0.3061.x64.en-us.iso'
+param hciNodeCount = '<hciNodeCount>'
+param hostVMSize = 'Standard_E16bds_v5'
+param switchlessStorageConfig = false
 ```
 
 </details>
@@ -471,137 +186,23 @@ module cluster 'br/public:avm/res/azure-stack-hci/cluster:<version>' = {
   name: 'clusterDeployment'
   params: {
     // Required parameters
-    deploymentSettings: {
-      bitlockerBootVolume: true
-      bitlockerDataVolumes: true
-      clusterNodeNames: '<clusterNodeNames>'
-      clusterWitnessStorageAccountName: '<clusterWitnessStorageAccountName>'
-      customLocationName: 'ashcwaf-location'
-      defaultGateway: '172.20.0.1'
-      deploymentPrefix: '<deploymentPrefix>'
-      dnsServers: [
-        '172.20.0.1'
-      ]
-      domainFqdn: 'hci.local'
-      domainOUPath: '<domainOUPath>'
-      driftControlEnforced: true
-      enableStorageAutoIp: true
-      endingIPAddress: '172.20.0.7'
-      keyVaultName: '<keyVaultName>'
-      networkIntents: [
-        {
-          adapter: [
-            'mgmt'
-          ]
-          adapterPropertyOverrides: {
-            jumboPacket: '9014'
-            networkDirect: 'Disabled'
-            networkDirectTechnology: 'iWARP'
-          }
-          name: 'management'
-          overrideAdapterProperty: true
-          overrideQosPolicy: false
-          overrideVirtualSwitchConfiguration: false
-          qosPolicyOverrides: {
-            bandwidthPercentageSMB: '50'
-            priorityValue8021ActionCluster: '7'
-            priorityValue8021ActionSMB: '3'
-          }
-          trafficType: [
-            'Management'
-          ]
-          virtualSwitchConfigurationOverrides: {
-            enableIov: 'true'
-            loadBalancingAlgorithm: 'Dynamic'
-          }
-        }
-        {
-          adapter: [
-            'comp0'
-            'comp1'
-          ]
-          adapterPropertyOverrides: {
-            jumboPacket: '9014'
-            networkDirect: 'Disabled'
-            networkDirectTechnology: 'iWARP'
-          }
-          name: 'compute'
-          overrideAdapterProperty: true
-          overrideQosPolicy: false
-          overrideVirtualSwitchConfiguration: false
-          qosPolicyOverrides: {
-            bandwidthPercentageSMB: '50'
-            priorityValue8021ActionCluster: '7'
-            priorityValue8021ActionSMB: '3'
-          }
-          trafficType: [
-            'Compute'
-          ]
-          virtualSwitchConfigurationOverrides: {
-            enableIov: 'true'
-            loadBalancingAlgorithm: 'Dynamic'
-          }
-        }
-        {
-          adapter: [
-            'smb0'
-            'smb1'
-          ]
-          adapterPropertyOverrides: {
-            jumboPacket: '9014'
-            networkDirect: 'Disabled'
-            networkDirectTechnology: 'iWARP'
-          }
-          name: 'storage'
-          overrideAdapterProperty: true
-          overrideQosPolicy: true
-          overrideVirtualSwitchConfiguration: false
-          qosPolicyOverrides: {
-            bandwidthPercentageSMB: '50'
-            priorityValue8021ActionCluster: '7'
-            priorityValue8021ActionSMB: '3'
-          }
-          trafficType: [
-            'Storage'
-          ]
-          virtualSwitchConfigurationOverrides: {
-            enableIov: 'true'
-            loadBalancingAlgorithm: 'Dynamic'
-          }
-        }
-      ]
-      sideChannelMitigationEnforced: true
-      smbClusterEncryption: true
-      smbSigningEnforced: true
-      startingIPAddress: '172.20.0.2'
-      storageConnectivitySwitchless: false
-      storageNetworks: [
-        {
-          adapterName: 'smb0'
-          name: 'StorageNetwork0'
-          vlan: '711'
-        }
-        {
-          adapterName: 'smb1'
-          name: 'StorageNetwork1'
-          vlan: '712'
-        }
-      ]
-      subnetMask: '255.255.255.0'
-    }
-    name: '<name>'
-    // Non-required parameters
-    deploymentUser: 'deployUser'
-    deploymentUserPassword: '<deploymentUserPassword>'
+    diskNamePrefix: '<diskNamePrefix>'
+    HCIHostVirtualMachineScaleSetName: '<HCIHostVirtualMachineScaleSetName>'
     localAdminPassword: '<localAdminPassword>'
-    localAdminUser: 'admin-hci'
-    servicePrincipalId: '<servicePrincipalId>'
-    servicePrincipalSecret: '<servicePrincipalSecret>'
-    tags: {
-      Environment: 'Non-Prod'
-      'hidden-title': 'This is visible in the resource name'
-      Role: 'DeploymentValidation'
-    }
+    location: '<location>'
+    maintenanceConfigurationAssignmentName: '<maintenanceConfigurationAssignmentName>'
+    maintenanceConfigurationName: '<maintenanceConfigurationName>'
+    networkInterfaceName: '<networkInterfaceName>'
+    networkSecurityGroupName: '<networkSecurityGroupName>'
+    userAssignedIdentityName: '<userAssignedIdentityName>'
+    virtualMachineName: '<virtualMachineName>'
+    virtualNetworkName: '<virtualNetworkName>'
+    waitDeploymentScriptPrefixName: '<waitDeploymentScriptPrefixName>'
+    // Non-required parameters
+    hciISODownloadURL: 'https://azurestackreleases.download.prss.microsoft.com/dbazure/AzureStackHCI/OS-Composition/10.2408.0.3061/AZURESTACKHci23H2.25398.469.LCM.10.2408.0.3061.x64.en-us.iso'
+    hciNodeCount: '<hciNodeCount>'
+    hostVMSize: 'Standard_E16bds_v5'
+    switchlessStorageConfig: false
   }
 }
 ```
@@ -619,154 +220,54 @@ module cluster 'br/public:avm/res/azure-stack-hci/cluster:<version>' = {
   "contentVersion": "1.0.0.0",
   "parameters": {
     // Required parameters
-    "deploymentSettings": {
-      "value": {
-        "bitlockerBootVolume": true,
-        "bitlockerDataVolumes": true,
-        "clusterNodeNames": "<clusterNodeNames>",
-        "clusterWitnessStorageAccountName": "<clusterWitnessStorageAccountName>",
-        "customLocationName": "ashcwaf-location",
-        "defaultGateway": "172.20.0.1",
-        "deploymentPrefix": "<deploymentPrefix>",
-        "dnsServers": [
-          "172.20.0.1"
-        ],
-        "domainFqdn": "hci.local",
-        "domainOUPath": "<domainOUPath>",
-        "driftControlEnforced": true,
-        "enableStorageAutoIp": true,
-        "endingIPAddress": "172.20.0.7",
-        "keyVaultName": "<keyVaultName>",
-        "networkIntents": [
-          {
-            "adapter": [
-              "mgmt"
-            ],
-            "adapterPropertyOverrides": {
-              "jumboPacket": "9014",
-              "networkDirect": "Disabled",
-              "networkDirectTechnology": "iWARP"
-            },
-            "name": "management",
-            "overrideAdapterProperty": true,
-            "overrideQosPolicy": false,
-            "overrideVirtualSwitchConfiguration": false,
-            "qosPolicyOverrides": {
-              "bandwidthPercentageSMB": "50",
-              "priorityValue8021ActionCluster": "7",
-              "priorityValue8021ActionSMB": "3"
-            },
-            "trafficType": [
-              "Management"
-            ],
-            "virtualSwitchConfigurationOverrides": {
-              "enableIov": "true",
-              "loadBalancingAlgorithm": "Dynamic"
-            }
-          },
-          {
-            "adapter": [
-              "comp0",
-              "comp1"
-            ],
-            "adapterPropertyOverrides": {
-              "jumboPacket": "9014",
-              "networkDirect": "Disabled",
-              "networkDirectTechnology": "iWARP"
-            },
-            "name": "compute",
-            "overrideAdapterProperty": true,
-            "overrideQosPolicy": false,
-            "overrideVirtualSwitchConfiguration": false,
-            "qosPolicyOverrides": {
-              "bandwidthPercentageSMB": "50",
-              "priorityValue8021ActionCluster": "7",
-              "priorityValue8021ActionSMB": "3"
-            },
-            "trafficType": [
-              "Compute"
-            ],
-            "virtualSwitchConfigurationOverrides": {
-              "enableIov": "true",
-              "loadBalancingAlgorithm": "Dynamic"
-            }
-          },
-          {
-            "adapter": [
-              "smb0",
-              "smb1"
-            ],
-            "adapterPropertyOverrides": {
-              "jumboPacket": "9014",
-              "networkDirect": "Disabled",
-              "networkDirectTechnology": "iWARP"
-            },
-            "name": "storage",
-            "overrideAdapterProperty": true,
-            "overrideQosPolicy": true,
-            "overrideVirtualSwitchConfiguration": false,
-            "qosPolicyOverrides": {
-              "bandwidthPercentageSMB": "50",
-              "priorityValue8021ActionCluster": "7",
-              "priorityValue8021ActionSMB": "3"
-            },
-            "trafficType": [
-              "Storage"
-            ],
-            "virtualSwitchConfigurationOverrides": {
-              "enableIov": "true",
-              "loadBalancingAlgorithm": "Dynamic"
-            }
-          }
-        ],
-        "sideChannelMitigationEnforced": true,
-        "smbClusterEncryption": true,
-        "smbSigningEnforced": true,
-        "startingIPAddress": "172.20.0.2",
-        "storageConnectivitySwitchless": false,
-        "storageNetworks": [
-          {
-            "adapterName": "smb0",
-            "name": "StorageNetwork0",
-            "vlan": "711"
-          },
-          {
-            "adapterName": "smb1",
-            "name": "StorageNetwork1",
-            "vlan": "712"
-          }
-        ],
-        "subnetMask": "255.255.255.0"
-      }
+    "diskNamePrefix": {
+      "value": "<diskNamePrefix>"
     },
-    "name": {
-      "value": "<name>"
-    },
-    // Non-required parameters
-    "deploymentUser": {
-      "value": "deployUser"
-    },
-    "deploymentUserPassword": {
-      "value": "<deploymentUserPassword>"
+    "HCIHostVirtualMachineScaleSetName": {
+      "value": "<HCIHostVirtualMachineScaleSetName>"
     },
     "localAdminPassword": {
       "value": "<localAdminPassword>"
     },
-    "localAdminUser": {
-      "value": "admin-hci"
+    "location": {
+      "value": "<location>"
     },
-    "servicePrincipalId": {
-      "value": "<servicePrincipalId>"
+    "maintenanceConfigurationAssignmentName": {
+      "value": "<maintenanceConfigurationAssignmentName>"
     },
-    "servicePrincipalSecret": {
-      "value": "<servicePrincipalSecret>"
+    "maintenanceConfigurationName": {
+      "value": "<maintenanceConfigurationName>"
     },
-    "tags": {
-      "value": {
-        "Environment": "Non-Prod",
-        "hidden-title": "This is visible in the resource name",
-        "Role": "DeploymentValidation"
-      }
+    "networkInterfaceName": {
+      "value": "<networkInterfaceName>"
+    },
+    "networkSecurityGroupName": {
+      "value": "<networkSecurityGroupName>"
+    },
+    "userAssignedIdentityName": {
+      "value": "<userAssignedIdentityName>"
+    },
+    "virtualMachineName": {
+      "value": "<virtualMachineName>"
+    },
+    "virtualNetworkName": {
+      "value": "<virtualNetworkName>"
+    },
+    "waitDeploymentScriptPrefixName": {
+      "value": "<waitDeploymentScriptPrefixName>"
+    },
+    // Non-required parameters
+    "hciISODownloadURL": {
+      "value": "https://azurestackreleases.download.prss.microsoft.com/dbazure/AzureStackHCI/OS-Composition/10.2408.0.3061/AZURESTACKHci23H2.25398.469.LCM.10.2408.0.3061.x64.en-us.iso"
+    },
+    "hciNodeCount": {
+      "value": "<hciNodeCount>"
+    },
+    "hostVMSize": {
+      "value": "Standard_E16bds_v5"
+    },
+    "switchlessStorageConfig": {
+      "value": false
     }
   }
 }
@@ -783,137 +284,23 @@ module cluster 'br/public:avm/res/azure-stack-hci/cluster:<version>' = {
 using 'br/public:avm/res/azure-stack-hci/cluster:<version>'
 
 // Required parameters
-param deploymentSettings = {
-  bitlockerBootVolume: true
-  bitlockerDataVolumes: true
-  clusterNodeNames: '<clusterNodeNames>'
-  clusterWitnessStorageAccountName: '<clusterWitnessStorageAccountName>'
-  customLocationName: 'ashcwaf-location'
-  defaultGateway: '172.20.0.1'
-  deploymentPrefix: '<deploymentPrefix>'
-  dnsServers: [
-    '172.20.0.1'
-  ]
-  domainFqdn: 'hci.local'
-  domainOUPath: '<domainOUPath>'
-  driftControlEnforced: true
-  enableStorageAutoIp: true
-  endingIPAddress: '172.20.0.7'
-  keyVaultName: '<keyVaultName>'
-  networkIntents: [
-    {
-      adapter: [
-        'mgmt'
-      ]
-      adapterPropertyOverrides: {
-        jumboPacket: '9014'
-        networkDirect: 'Disabled'
-        networkDirectTechnology: 'iWARP'
-      }
-      name: 'management'
-      overrideAdapterProperty: true
-      overrideQosPolicy: false
-      overrideVirtualSwitchConfiguration: false
-      qosPolicyOverrides: {
-        bandwidthPercentageSMB: '50'
-        priorityValue8021ActionCluster: '7'
-        priorityValue8021ActionSMB: '3'
-      }
-      trafficType: [
-        'Management'
-      ]
-      virtualSwitchConfigurationOverrides: {
-        enableIov: 'true'
-        loadBalancingAlgorithm: 'Dynamic'
-      }
-    }
-    {
-      adapter: [
-        'comp0'
-        'comp1'
-      ]
-      adapterPropertyOverrides: {
-        jumboPacket: '9014'
-        networkDirect: 'Disabled'
-        networkDirectTechnology: 'iWARP'
-      }
-      name: 'compute'
-      overrideAdapterProperty: true
-      overrideQosPolicy: false
-      overrideVirtualSwitchConfiguration: false
-      qosPolicyOverrides: {
-        bandwidthPercentageSMB: '50'
-        priorityValue8021ActionCluster: '7'
-        priorityValue8021ActionSMB: '3'
-      }
-      trafficType: [
-        'Compute'
-      ]
-      virtualSwitchConfigurationOverrides: {
-        enableIov: 'true'
-        loadBalancingAlgorithm: 'Dynamic'
-      }
-    }
-    {
-      adapter: [
-        'smb0'
-        'smb1'
-      ]
-      adapterPropertyOverrides: {
-        jumboPacket: '9014'
-        networkDirect: 'Disabled'
-        networkDirectTechnology: 'iWARP'
-      }
-      name: 'storage'
-      overrideAdapterProperty: true
-      overrideQosPolicy: true
-      overrideVirtualSwitchConfiguration: false
-      qosPolicyOverrides: {
-        bandwidthPercentageSMB: '50'
-        priorityValue8021ActionCluster: '7'
-        priorityValue8021ActionSMB: '3'
-      }
-      trafficType: [
-        'Storage'
-      ]
-      virtualSwitchConfigurationOverrides: {
-        enableIov: 'true'
-        loadBalancingAlgorithm: 'Dynamic'
-      }
-    }
-  ]
-  sideChannelMitigationEnforced: true
-  smbClusterEncryption: true
-  smbSigningEnforced: true
-  startingIPAddress: '172.20.0.2'
-  storageConnectivitySwitchless: false
-  storageNetworks: [
-    {
-      adapterName: 'smb0'
-      name: 'StorageNetwork0'
-      vlan: '711'
-    }
-    {
-      adapterName: 'smb1'
-      name: 'StorageNetwork1'
-      vlan: '712'
-    }
-  ]
-  subnetMask: '255.255.255.0'
-}
-param name = '<name>'
-// Non-required parameters
-param deploymentUser = 'deployUser'
-param deploymentUserPassword = '<deploymentUserPassword>'
+param diskNamePrefix = '<diskNamePrefix>'
+param HCIHostVirtualMachineScaleSetName = '<HCIHostVirtualMachineScaleSetName>'
 param localAdminPassword = '<localAdminPassword>'
-param localAdminUser = 'admin-hci'
-param servicePrincipalId = '<servicePrincipalId>'
-param servicePrincipalSecret = '<servicePrincipalSecret>'
-param tags = {
-  Environment: 'Non-Prod'
-  'hidden-title': 'This is visible in the resource name'
-  Role: 'DeploymentValidation'
-}
+param location = '<location>'
+param maintenanceConfigurationAssignmentName = '<maintenanceConfigurationAssignmentName>'
+param maintenanceConfigurationName = '<maintenanceConfigurationName>'
+param networkInterfaceName = '<networkInterfaceName>'
+param networkSecurityGroupName = '<networkSecurityGroupName>'
+param userAssignedIdentityName = '<userAssignedIdentityName>'
+param virtualMachineName = '<virtualMachineName>'
+param virtualNetworkName = '<virtualNetworkName>'
+param waitDeploymentScriptPrefixName = '<waitDeploymentScriptPrefixName>'
+// Non-required parameters
+param hciISODownloadURL = 'https://azurestackreleases.download.prss.microsoft.com/dbazure/AzureStackHCI/OS-Composition/10.2408.0.3061/AZURESTACKHci23H2.25398.469.LCM.10.2408.0.3061.x64.en-us.iso'
+param hciNodeCount = '<hciNodeCount>'
+param hostVMSize = 'Standard_E16bds_v5'
+param switchlessStorageConfig = false
 ```
 
 </details>
@@ -925,876 +312,155 @@ param tags = {
 
 | Parameter | Type | Description |
 | :-- | :-- | :-- |
-| [`deploymentSettings`](#parameter-deploymentsettings) | object | The deployment settings of the cluster. |
-| [`name`](#parameter-name) | string | The name of the Azure Stack HCI cluster - this must be a valid Active Directory computer name and will be the name of your cluster in Azure. |
-
-**Conditional parameters**
-
-| Parameter | Type | Description |
-| :-- | :-- | :-- |
-| [`deploymentUser`](#parameter-deploymentuser) | string | The name of the deployment user. Required if useSharedKeyVault is true. |
-| [`deploymentUserPassword`](#parameter-deploymentuserpassword) | securestring | The password of the deployment user. Required if useSharedKeyVault is true. |
-| [`localAdminPassword`](#parameter-localadminpassword) | securestring | The password of the local admin user. Required if useSharedKeyVault is true. |
-| [`localAdminUser`](#parameter-localadminuser) | string | The name of the local admin user. Required if useSharedKeyVault is true. |
-| [`servicePrincipalId`](#parameter-serviceprincipalid) | string | The service principal ID for ARB. Required if useSharedKeyVault is true. |
-| [`servicePrincipalSecret`](#parameter-serviceprincipalsecret) | securestring | The service principal secret for ARB. Required if useSharedKeyVault is true. |
-
-**Optional parameters**
-
-| Parameter | Type | Description |
-| :-- | :-- | :-- |
-| [`azureStackLCMUserCredentialContentType`](#parameter-azurestacklcmusercredentialcontenttype) | string | Content type of the azure stack lcm user credential. |
-| [`azureStackLCMUserCredentialTags`](#parameter-azurestacklcmusercredentialtags) | object | Tags of azure stack LCM user credential. |
-| [`defaultARBApplicationContentType`](#parameter-defaultarbapplicationcontenttype) | string | Content type of the default ARB application. |
-| [`defaultARBApplicationTags`](#parameter-defaultarbapplicationtags) | object | Tags of the default ARB application. |
-| [`deploymentOperations`](#parameter-deploymentoperations) | array | The cluster deployment operations to execute. Defaults to "[Validate, Deploy]". |
-| [`enableTelemetry`](#parameter-enabletelemetry) | bool | Enable/Disable usage telemetry for module. |
-| [`keyvaultResourceGroup`](#parameter-keyvaultresourcegroup) | string | Key vault resource group, which is used for for storing secrets for the HCI cluster. |
-| [`keyvaultSubscriptionId`](#parameter-keyvaultsubscriptionid) | string | Key vault subscription ID, which is used for for storing secrets for the HCI cluster. |
-| [`localAdminCredentialContentType`](#parameter-localadmincredentialcontenttype) | string | Content type of the local admin credential. |
-| [`localAdminCredentialTags`](#parameter-localadmincredentialtags) | object | Tags of the local admin credential. |
-| [`location`](#parameter-location) | string | Location for all resources. |
-| [`roleAssignments`](#parameter-roleassignments) | array | Array of role assignments to create. |
-| [`tags`](#parameter-tags) | object | Tags of the resource. |
-| [`useSharedKeyVault`](#parameter-usesharedkeyvault) | bool | Specify whether to use the shared key vault for the HCI cluster. |
-| [`witnessStorageAccountResourceGroup`](#parameter-witnessstorageaccountresourcegroup) | string | Storage account resource group, which is used as the witness for the HCI Windows Failover Cluster. |
-| [`witnessStorageAccountSubscriptionId`](#parameter-witnessstorageaccountsubscriptionid) | string | Storage account subscription ID, which is used as the witness for the HCI Windows Failover Cluster. |
-| [`witnessStoragekeyContentType`](#parameter-witnessstoragekeycontenttype) | string | Content type of the witness storage key. |
-| [`witnessStoragekeyTags`](#parameter-witnessstoragekeytags) | object | Tags of the witness storage key. |
-
-### Parameter: `deploymentSettings`
-
-The deployment settings of the cluster.
-
-- Required: Yes
-- Type: object
-
-**Required parameters**
-
-| Parameter | Type | Description |
-| :-- | :-- | :-- |
-| [`clusterNodeNames`](#parameter-deploymentsettingsclusternodenames) | array | Names of the cluster node Arc Machine resources. These are the name of the Arc Machine resources created when the new HCI nodes were Arc initialized. Example: [hci-node-1, hci-node-2]. |
-| [`clusterWitnessStorageAccountName`](#parameter-deploymentsettingsclusterwitnessstorageaccountname) | string | The name of the storage account to be used as the witness for the HCI Windows Failover Cluster. |
-| [`customLocationName`](#parameter-deploymentsettingscustomlocationname) | string | The name of the Custom Location associated with the Arc Resource Bridge for this cluster. This value should reflect the physical location and identifier of the HCI cluster. Example: cl-hci-den-clu01. |
-| [`defaultGateway`](#parameter-deploymentsettingsdefaultgateway) | string | The default gateway of the Management Network. Example: 192.168.0.1. |
-| [`deploymentPrefix`](#parameter-deploymentsettingsdeploymentprefix) | string | The prefix for the resource for the deployment. This value is used in key vault and storage account names in this template, as well as for the deploymentSettings.properties.deploymentConfiguration.scaleUnits.deploymentData.namingPrefix property which requires regex pattern: ^[a-zA-Z0-9-]{1,8}$. |
-| [`dnsServers`](#parameter-deploymentsettingsdnsservers) | array | The DNS servers accessible from the Management Network for the HCI cluster. |
-| [`domainFqdn`](#parameter-deploymentsettingsdomainfqdn) | string | The domain name of the Active Directory Domain Services. Example: "contoso.com". |
-| [`domainOUPath`](#parameter-deploymentsettingsdomainoupath) | string | The ADDS OU path - ex "OU=HCI,DC=contoso,DC=com". |
-| [`endingIPAddress`](#parameter-deploymentsettingsendingipaddress) | string | The ending IP address for the Infrastructure Network IP pool. There must be at least 6 IPs between startingIPAddress and endingIPAddress and this pool should be not include the node IPs. |
-| [`keyVaultName`](#parameter-deploymentsettingskeyvaultname) | string | The name of the key vault to be used for storing secrets for the HCI cluster. This currently needs to be unique per HCI cluster. |
-| [`networkIntents`](#parameter-deploymentsettingsnetworkintents) | array | An array of Network ATC Network Intent objects that define the Compute, Management, and Storage network configuration for the cluster. |
-| [`startingIPAddress`](#parameter-deploymentsettingsstartingipaddress) | string | The starting IP address for the Infrastructure Network IP pool. There must be at least 6 IPs between startingIPAddress and endingIPAddress and this pool should be not include the node IPs. |
-| [`storageConnectivitySwitchless`](#parameter-deploymentsettingsstorageconnectivityswitchless) | bool | Specify whether the Storage Network connectivity is switched or switchless. |
-| [`storageNetworks`](#parameter-deploymentsettingsstoragenetworks) | array | An array of JSON objects that define the storage network configuration for the cluster. Each object should contain the adapterName, VLAN properties, and (optionally) IP configurations. |
-| [`subnetMask`](#parameter-deploymentsettingssubnetmask) | string | The subnet mask pf the Management Network for the HCI cluster - ex: 255.255.252.0. |
+| [`diskNamePrefix`](#parameter-disknameprefix) | string | The name prefix for the Disks to create. |
+| [`HCIHostVirtualMachineScaleSetName`](#parameter-hcihostvirtualmachinescalesetname) | string | The name of the Azure VM scale set for the HCI host. |
+| [`localAdminPassword`](#parameter-localadminpassword) | securestring | The local admin password. |
+| [`location`](#parameter-location) | string | The location for all resource except HCI Arc Nodes and HCI resources |
+| [`maintenanceConfigurationAssignmentName`](#parameter-maintenanceconfigurationassignmentname) | string | The name of the Maintenance Configuration Assignment for the proxy server. |
+| [`maintenanceConfigurationName`](#parameter-maintenanceconfigurationname) | string | The name of the maintenance configuration for the Azure Stack HCI Host VM and proxy server. |
+| [`networkInterfaceName`](#parameter-networkinterfacename) | string | The name of the Network Interface Card to create. |
+| [`networkSecurityGroupName`](#parameter-networksecuritygroupname) | string | The name of the NSG to create. |
+| [`userAssignedIdentityName`](#parameter-userassignedidentityname) | string | The name of the VM-managed user identity to create, used for HCI Arc onboarding. |
+| [`virtualMachineName`](#parameter-virtualmachinename) | string | The name of the Azure VM to create. |
+| [`virtualNetworkName`](#parameter-virtualnetworkname) | string | The name of the VNET for the HCI host Azure VM. |
+| [`waitDeploymentScriptPrefixName`](#parameter-waitdeploymentscriptprefixname) | string | The name prefix for the 'wait' deployment scripts to create. |
 
 **Optional parameters**
 
 | Parameter | Type | Description |
 | :-- | :-- | :-- |
-| [`bitlockerBootVolume`](#parameter-deploymentsettingsbitlockerbootvolume) | bool | When set to true, BitLocker XTS_AES 256-bit encryption is enabled for all data-at-rest on the OS volume of your Azure Stack HCI cluster. This setting is TPM-hardware dependent. |
-| [`bitlockerDataVolumes`](#parameter-deploymentsettingsbitlockerdatavolumes) | bool | When set to true, BitLocker XTS-AES 256-bit encryption is enabled for all data-at-rest on your Azure Stack HCI cluster shared volumes. |
-| [`credentialGuardEnforced`](#parameter-deploymentsettingscredentialguardenforced) | bool | Enables the Credential Guard. |
-| [`driftControlEnforced`](#parameter-deploymentsettingsdriftcontrolenforced) | bool | When set to true, the security baseline is re-applied regularly. |
-| [`drtmProtection`](#parameter-deploymentsettingsdrtmprotection) | bool | The hardware-dependent Secure Boot setting. |
-| [`enableStorageAutoIp`](#parameter-deploymentsettingsenablestorageautoip) | bool | Enable storage auto IP assignment. This should be true for most deployments except when deploying a three-node switchless cluster, in which case storage IPs should be configured before deployment and this value set to false. |
-| [`episodicDataUpload`](#parameter-deploymentsettingsepisodicdataupload) | bool | The diagnostic data for deploying a HCI cluster. |
-| [`hvciProtection`](#parameter-deploymentsettingshvciprotection) | bool | The Hypervisor-protected Code Integrity setting. |
-| [`isEuropeanUnionLocation`](#parameter-deploymentsettingsiseuropeanunionlocation) | bool | The location data for deploying a HCI cluster. |
-| [`sideChannelMitigationEnforced`](#parameter-deploymentsettingssidechannelmitigationenforced) | bool | When set to true, all the side channel mitigations are enabled. |
-| [`smbClusterEncryption`](#parameter-deploymentsettingssmbclusterencryption) | bool | When set to true, cluster east-west traffic is encrypted. |
-| [`smbSigningEnforced`](#parameter-deploymentsettingssmbsigningenforced) | bool | When set to true, the SMB default instance requires sign in for the client and server services. |
-| [`storageConfigurationMode`](#parameter-deploymentsettingsstorageconfigurationmode) | string | The storage volume configuration mode. See documentation for details. |
-| [`streamingDataClient`](#parameter-deploymentsettingsstreamingdataclient) | bool | The metrics data for deploying a HCI cluster. |
-| [`wdacEnforced`](#parameter-deploymentsettingswdacenforced) | bool | Limits the applications and the code that you can run on your Azure Stack HCI cluster. |
+| [`hciISODownloadURL`](#parameter-hciisodownloadurl) | string | The download URL for the Azure Stack HCI ISO. |
+| [`hciNodeCount`](#parameter-hcinodecount) | int | The number of Azure Stack HCI nodes to deploy. |
+| [`hostVMSize`](#parameter-hostvmsize) | string | The Azure VM size for the HCI Host VM, which must support nested virtualization and have sufficient capacity for the HCI node VMs! |
+| [`localAdminUsername`](#parameter-localadminusername) | string | The local admin user name. |
+| [`switchlessStorageConfig`](#parameter-switchlessstorageconfig) | bool | Enable configuring switchless storage. |
 
-### Parameter: `deploymentSettings.clusterNodeNames`
+### Parameter: `diskNamePrefix`
 
-Names of the cluster node Arc Machine resources. These are the name of the Arc Machine resources created when the new HCI nodes were Arc initialized. Example: [hci-node-1, hci-node-2].
-
-- Required: Yes
-- Type: array
-
-### Parameter: `deploymentSettings.clusterWitnessStorageAccountName`
-
-The name of the storage account to be used as the witness for the HCI Windows Failover Cluster.
+The name prefix for the Disks to create.
 
 - Required: Yes
 - Type: string
 
-### Parameter: `deploymentSettings.customLocationName`
+### Parameter: `HCIHostVirtualMachineScaleSetName`
 
-The name of the Custom Location associated with the Arc Resource Bridge for this cluster. This value should reflect the physical location and identifier of the HCI cluster. Example: cl-hci-den-clu01.
-
-- Required: Yes
-- Type: string
-
-### Parameter: `deploymentSettings.defaultGateway`
-
-The default gateway of the Management Network. Example: 192.168.0.1.
+The name of the Azure VM scale set for the HCI host.
 
 - Required: Yes
 - Type: string
-
-### Parameter: `deploymentSettings.deploymentPrefix`
-
-The prefix for the resource for the deployment. This value is used in key vault and storage account names in this template, as well as for the deploymentSettings.properties.deploymentConfiguration.scaleUnits.deploymentData.namingPrefix property which requires regex pattern: ^[a-zA-Z0-9-]{1,8}$.
-
-- Required: Yes
-- Type: string
-
-### Parameter: `deploymentSettings.dnsServers`
-
-The DNS servers accessible from the Management Network for the HCI cluster.
-
-- Required: Yes
-- Type: array
-
-### Parameter: `deploymentSettings.domainFqdn`
-
-The domain name of the Active Directory Domain Services. Example: "contoso.com".
-
-- Required: Yes
-- Type: string
-
-### Parameter: `deploymentSettings.domainOUPath`
-
-The ADDS OU path - ex "OU=HCI,DC=contoso,DC=com".
-
-- Required: Yes
-- Type: string
-
-### Parameter: `deploymentSettings.endingIPAddress`
-
-The ending IP address for the Infrastructure Network IP pool. There must be at least 6 IPs between startingIPAddress and endingIPAddress and this pool should be not include the node IPs.
-
-- Required: Yes
-- Type: string
-
-### Parameter: `deploymentSettings.keyVaultName`
-
-The name of the key vault to be used for storing secrets for the HCI cluster. This currently needs to be unique per HCI cluster.
-
-- Required: Yes
-- Type: string
-
-### Parameter: `deploymentSettings.networkIntents`
-
-An array of Network ATC Network Intent objects that define the Compute, Management, and Storage network configuration for the cluster.
-
-- Required: Yes
-- Type: array
-
-**Required parameters**
-
-| Parameter | Type | Description |
-| :-- | :-- | :-- |
-| [`adapter`](#parameter-deploymentsettingsnetworkintentsadapter) | array | The names of the network adapters to include in the intent. |
-| [`adapterPropertyOverrides`](#parameter-deploymentsettingsnetworkintentsadapterpropertyoverrides) | object | The adapter property overrides for the network intent. |
-| [`name`](#parameter-deploymentsettingsnetworkintentsname) | string | The name of the network intent. |
-| [`overrideAdapterProperty`](#parameter-deploymentsettingsnetworkintentsoverrideadapterproperty) | bool | Specify whether to override the adapter property. Use false by default. |
-| [`overrideQosPolicy`](#parameter-deploymentsettingsnetworkintentsoverrideqospolicy) | bool | Specify whether to override the qosPolicy property. Use false by default. |
-| [`overrideVirtualSwitchConfiguration`](#parameter-deploymentsettingsnetworkintentsoverridevirtualswitchconfiguration) | bool | Specify whether to override the virtualSwitchConfiguration property. Use false by default. |
-| [`qosPolicyOverrides`](#parameter-deploymentsettingsnetworkintentsqospolicyoverrides) | object | The qosPolicy overrides for the network intent. |
-| [`trafficType`](#parameter-deploymentsettingsnetworkintentstraffictype) | array | The traffic types for the network intent. |
-| [`virtualSwitchConfigurationOverrides`](#parameter-deploymentsettingsnetworkintentsvirtualswitchconfigurationoverrides) | object | The virtualSwitchConfiguration overrides for the network intent. |
-
-### Parameter: `deploymentSettings.networkIntents.adapter`
-
-The names of the network adapters to include in the intent.
-
-- Required: Yes
-- Type: array
-
-### Parameter: `deploymentSettings.networkIntents.adapterPropertyOverrides`
-
-The adapter property overrides for the network intent.
-
-- Required: Yes
-- Type: object
-
-**Required parameters**
-
-| Parameter | Type | Description |
-| :-- | :-- | :-- |
-| [`jumboPacket`](#parameter-deploymentsettingsnetworkintentsadapterpropertyoverridesjumbopacket) | string | The jumboPacket configuration for the network adapters. |
-| [`networkDirect`](#parameter-deploymentsettingsnetworkintentsadapterpropertyoverridesnetworkdirect) | string | The networkDirect configuration for the network adapters. |
-| [`networkDirectTechnology`](#parameter-deploymentsettingsnetworkintentsadapterpropertyoverridesnetworkdirecttechnology) | string | The networkDirectTechnology configuration for the network adapters. |
-
-### Parameter: `deploymentSettings.networkIntents.adapterPropertyOverrides.jumboPacket`
-
-The jumboPacket configuration for the network adapters.
-
-- Required: Yes
-- Type: string
-
-### Parameter: `deploymentSettings.networkIntents.adapterPropertyOverrides.networkDirect`
-
-The networkDirect configuration for the network adapters.
-
-- Required: Yes
-- Type: string
-- Allowed:
-  ```Bicep
-  [
-    'Disabled'
-    'Enabled'
-  ]
-  ```
-
-### Parameter: `deploymentSettings.networkIntents.adapterPropertyOverrides.networkDirectTechnology`
-
-The networkDirectTechnology configuration for the network adapters.
-
-- Required: Yes
-- Type: string
-- Allowed:
-  ```Bicep
-  [
-    'iWARP'
-    'RoCEv2'
-  ]
-  ```
-
-### Parameter: `deploymentSettings.networkIntents.name`
-
-The name of the network intent.
-
-- Required: Yes
-- Type: string
-
-### Parameter: `deploymentSettings.networkIntents.overrideAdapterProperty`
-
-Specify whether to override the adapter property. Use false by default.
-
-- Required: Yes
-- Type: bool
-
-### Parameter: `deploymentSettings.networkIntents.overrideQosPolicy`
-
-Specify whether to override the qosPolicy property. Use false by default.
-
-- Required: Yes
-- Type: bool
-
-### Parameter: `deploymentSettings.networkIntents.overrideVirtualSwitchConfiguration`
-
-Specify whether to override the virtualSwitchConfiguration property. Use false by default.
-
-- Required: Yes
-- Type: bool
-
-### Parameter: `deploymentSettings.networkIntents.qosPolicyOverrides`
-
-The qosPolicy overrides for the network intent.
-
-- Required: Yes
-- Type: object
-
-**Required parameters**
-
-| Parameter | Type | Description |
-| :-- | :-- | :-- |
-| [`bandwidthPercentageSMB`](#parameter-deploymentsettingsnetworkintentsqospolicyoverridesbandwidthpercentagesmb) | string | The bandwidthPercentage for the network intent. Recommend 50. |
-| [`priorityValue8021ActionCluster`](#parameter-deploymentsettingsnetworkintentsqospolicyoverridespriorityvalue8021actioncluster) | string | Recommend 7. |
-| [`priorityValue8021ActionSMB`](#parameter-deploymentsettingsnetworkintentsqospolicyoverridespriorityvalue8021actionsmb) | string | Recommend 3. |
-
-### Parameter: `deploymentSettings.networkIntents.qosPolicyOverrides.bandwidthPercentageSMB`
-
-The bandwidthPercentage for the network intent. Recommend 50.
-
-- Required: Yes
-- Type: string
-
-### Parameter: `deploymentSettings.networkIntents.qosPolicyOverrides.priorityValue8021ActionCluster`
-
-Recommend 7.
-
-- Required: Yes
-- Type: string
-
-### Parameter: `deploymentSettings.networkIntents.qosPolicyOverrides.priorityValue8021ActionSMB`
-
-Recommend 3.
-
-- Required: Yes
-- Type: string
-
-### Parameter: `deploymentSettings.networkIntents.trafficType`
-
-The traffic types for the network intent.
-
-- Required: Yes
-- Type: array
-- Allowed:
-  ```Bicep
-  [
-    'Compute'
-    'Management'
-    'Storage'
-  ]
-  ```
-
-### Parameter: `deploymentSettings.networkIntents.virtualSwitchConfigurationOverrides`
-
-The virtualSwitchConfiguration overrides for the network intent.
-
-- Required: Yes
-- Type: object
-
-**Required parameters**
-
-| Parameter | Type | Description |
-| :-- | :-- | :-- |
-| [`enableIov`](#parameter-deploymentsettingsnetworkintentsvirtualswitchconfigurationoverridesenableiov) | string | The enableIov configuration for the network intent. |
-| [`loadBalancingAlgorithm`](#parameter-deploymentsettingsnetworkintentsvirtualswitchconfigurationoverridesloadbalancingalgorithm) | string | The loadBalancingAlgorithm configuration for the network intent. |
-
-### Parameter: `deploymentSettings.networkIntents.virtualSwitchConfigurationOverrides.enableIov`
-
-The enableIov configuration for the network intent.
-
-- Required: Yes
-- Type: string
-- Allowed:
-  ```Bicep
-  [
-    'false'
-    'true'
-  ]
-  ```
-
-### Parameter: `deploymentSettings.networkIntents.virtualSwitchConfigurationOverrides.loadBalancingAlgorithm`
-
-The loadBalancingAlgorithm configuration for the network intent.
-
-- Required: Yes
-- Type: string
-- Allowed:
-  ```Bicep
-  [
-    'Dynamic'
-    'HyperVPort'
-    'IPHash'
-  ]
-  ```
-
-### Parameter: `deploymentSettings.startingIPAddress`
-
-The starting IP address for the Infrastructure Network IP pool. There must be at least 6 IPs between startingIPAddress and endingIPAddress and this pool should be not include the node IPs.
-
-- Required: Yes
-- Type: string
-
-### Parameter: `deploymentSettings.storageConnectivitySwitchless`
-
-Specify whether the Storage Network connectivity is switched or switchless.
-
-- Required: Yes
-- Type: bool
-
-### Parameter: `deploymentSettings.storageNetworks`
-
-An array of JSON objects that define the storage network configuration for the cluster. Each object should contain the adapterName, VLAN properties, and (optionally) IP configurations.
-
-- Required: Yes
-- Type: array
-
-**Required parameters**
-
-| Parameter | Type | Description |
-| :-- | :-- | :-- |
-| [`adapterName`](#parameter-deploymentsettingsstoragenetworksadaptername) | string | The name of the storage adapter. |
-| [`name`](#parameter-deploymentsettingsstoragenetworksname) | string | The name of the storage network. |
-| [`vlan`](#parameter-deploymentsettingsstoragenetworksvlan) | string | The VLAN for the storage adapter. |
-
-**Optional parameters**
-
-| Parameter | Type | Description |
-| :-- | :-- | :-- |
-| [`storageAdapterIPInfo`](#parameter-deploymentsettingsstoragenetworksstorageadapteripinfo) | array | The storage adapter IP information for 3-node switchless or manual config deployments. |
-
-### Parameter: `deploymentSettings.storageNetworks.adapterName`
-
-The name of the storage adapter.
-
-- Required: Yes
-- Type: string
-
-### Parameter: `deploymentSettings.storageNetworks.name`
-
-The name of the storage network.
-
-- Required: Yes
-- Type: string
-
-### Parameter: `deploymentSettings.storageNetworks.vlan`
-
-The VLAN for the storage adapter.
-
-- Required: Yes
-- Type: string
-
-### Parameter: `deploymentSettings.storageNetworks.storageAdapterIPInfo`
-
-The storage adapter IP information for 3-node switchless or manual config deployments.
-
-- Required: No
-- Type: array
-
-**Required parameters**
-
-| Parameter | Type | Description |
-| :-- | :-- | :-- |
-| [`ipv4Address`](#parameter-deploymentsettingsstoragenetworksstorageadapteripinfoipv4address) | string | The IPv4 address for the storage adapter. |
-| [`physicalNode`](#parameter-deploymentsettingsstoragenetworksstorageadapteripinfophysicalnode) | string | The HCI node name. |
-| [`subnetMask`](#parameter-deploymentsettingsstoragenetworksstorageadapteripinfosubnetmask) | string | The subnet mask for the storage adapter. |
-
-### Parameter: `deploymentSettings.storageNetworks.storageAdapterIPInfo.ipv4Address`
-
-The IPv4 address for the storage adapter.
-
-- Required: Yes
-- Type: string
-
-### Parameter: `deploymentSettings.storageNetworks.storageAdapterIPInfo.physicalNode`
-
-The HCI node name.
-
-- Required: Yes
-- Type: string
-
-### Parameter: `deploymentSettings.storageNetworks.storageAdapterIPInfo.subnetMask`
-
-The subnet mask for the storage adapter.
-
-- Required: Yes
-- Type: string
-
-### Parameter: `deploymentSettings.subnetMask`
-
-The subnet mask pf the Management Network for the HCI cluster - ex: 255.255.252.0.
-
-- Required: Yes
-- Type: string
-
-### Parameter: `deploymentSettings.bitlockerBootVolume`
-
-When set to true, BitLocker XTS_AES 256-bit encryption is enabled for all data-at-rest on the OS volume of your Azure Stack HCI cluster. This setting is TPM-hardware dependent.
-
-- Required: No
-- Type: bool
-
-### Parameter: `deploymentSettings.bitlockerDataVolumes`
-
-When set to true, BitLocker XTS-AES 256-bit encryption is enabled for all data-at-rest on your Azure Stack HCI cluster shared volumes.
-
-- Required: No
-- Type: bool
-
-### Parameter: `deploymentSettings.credentialGuardEnforced`
-
-Enables the Credential Guard.
-
-- Required: No
-- Type: bool
-
-### Parameter: `deploymentSettings.driftControlEnforced`
-
-When set to true, the security baseline is re-applied regularly.
-
-- Required: No
-- Type: bool
-
-### Parameter: `deploymentSettings.drtmProtection`
-
-The hardware-dependent Secure Boot setting.
-
-- Required: No
-- Type: bool
-
-### Parameter: `deploymentSettings.enableStorageAutoIp`
-
-Enable storage auto IP assignment. This should be true for most deployments except when deploying a three-node switchless cluster, in which case storage IPs should be configured before deployment and this value set to false.
-
-- Required: No
-- Type: bool
-
-### Parameter: `deploymentSettings.episodicDataUpload`
-
-The diagnostic data for deploying a HCI cluster.
-
-- Required: No
-- Type: bool
-
-### Parameter: `deploymentSettings.hvciProtection`
-
-The Hypervisor-protected Code Integrity setting.
-
-- Required: No
-- Type: bool
-
-### Parameter: `deploymentSettings.isEuropeanUnionLocation`
-
-The location data for deploying a HCI cluster.
-
-- Required: No
-- Type: bool
-
-### Parameter: `deploymentSettings.sideChannelMitigationEnforced`
-
-When set to true, all the side channel mitigations are enabled.
-
-- Required: No
-- Type: bool
-
-### Parameter: `deploymentSettings.smbClusterEncryption`
-
-When set to true, cluster east-west traffic is encrypted.
-
-- Required: No
-- Type: bool
-
-### Parameter: `deploymentSettings.smbSigningEnforced`
-
-When set to true, the SMB default instance requires sign in for the client and server services.
-
-- Required: No
-- Type: bool
-
-### Parameter: `deploymentSettings.storageConfigurationMode`
-
-The storage volume configuration mode. See documentation for details.
-
-- Required: No
-- Type: string
-- Allowed:
-  ```Bicep
-  [
-    'Express'
-    'InfraOnly'
-    'KeepStorage'
-  ]
-  ```
-
-### Parameter: `deploymentSettings.streamingDataClient`
-
-The metrics data for deploying a HCI cluster.
-
-- Required: No
-- Type: bool
-
-### Parameter: `deploymentSettings.wdacEnforced`
-
-Limits the applications and the code that you can run on your Azure Stack HCI cluster.
-
-- Required: No
-- Type: bool
-
-### Parameter: `name`
-
-The name of the Azure Stack HCI cluster - this must be a valid Active Directory computer name and will be the name of your cluster in Azure.
-
-- Required: Yes
-- Type: string
-
-### Parameter: `deploymentUser`
-
-The name of the deployment user. Required if useSharedKeyVault is true.
-
-- Required: No
-- Type: string
-
-### Parameter: `deploymentUserPassword`
-
-The password of the deployment user. Required if useSharedKeyVault is true.
-
-- Required: No
-- Type: securestring
 
 ### Parameter: `localAdminPassword`
 
-The password of the local admin user. Required if useSharedKeyVault is true.
+The local admin password.
 
-- Required: No
+- Required: Yes
 - Type: securestring
-
-### Parameter: `localAdminUser`
-
-The name of the local admin user. Required if useSharedKeyVault is true.
-
-- Required: No
-- Type: string
-
-### Parameter: `servicePrincipalId`
-
-The service principal ID for ARB. Required if useSharedKeyVault is true.
-
-- Required: No
-- Type: string
-
-### Parameter: `servicePrincipalSecret`
-
-The service principal secret for ARB. Required if useSharedKeyVault is true.
-
-- Required: No
-- Type: securestring
-
-### Parameter: `azureStackLCMUserCredentialContentType`
-
-Content type of the azure stack lcm user credential.
-
-- Required: No
-- Type: string
-- Default: `'Secret'`
-
-### Parameter: `azureStackLCMUserCredentialTags`
-
-Tags of azure stack LCM user credential.
-
-- Required: No
-- Type: object
-
-### Parameter: `defaultARBApplicationContentType`
-
-Content type of the default ARB application.
-
-- Required: No
-- Type: string
-- Default: `'Secret'`
-
-### Parameter: `defaultARBApplicationTags`
-
-Tags of the default ARB application.
-
-- Required: No
-- Type: object
-
-### Parameter: `deploymentOperations`
-
-The cluster deployment operations to execute. Defaults to "[Validate, Deploy]".
-
-- Required: No
-- Type: array
-- Default:
-  ```Bicep
-  [
-    'Deploy'
-    'Validate'
-  ]
-  ```
-- Allowed:
-  ```Bicep
-  [
-    'Deploy'
-    'Validate'
-  ]
-  ```
-
-### Parameter: `enableTelemetry`
-
-Enable/Disable usage telemetry for module.
-
-- Required: No
-- Type: bool
-- Default: `True`
-
-### Parameter: `keyvaultResourceGroup`
-
-Key vault resource group, which is used for for storing secrets for the HCI cluster.
-
-- Required: No
-- Type: string
-
-### Parameter: `keyvaultSubscriptionId`
-
-Key vault subscription ID, which is used for for storing secrets for the HCI cluster.
-
-- Required: No
-- Type: string
-
-### Parameter: `localAdminCredentialContentType`
-
-Content type of the local admin credential.
-
-- Required: No
-- Type: string
-- Default: `'Secret'`
-
-### Parameter: `localAdminCredentialTags`
-
-Tags of the local admin credential.
-
-- Required: No
-- Type: object
 
 ### Parameter: `location`
 
-Location for all resources.
-
-- Required: No
-- Type: string
-- Default: `[resourceGroup().location]`
-
-### Parameter: `roleAssignments`
-
-Array of role assignments to create.
-
-- Required: No
-- Type: array
-- Roles configurable by name:
-  - `'Contributor'`
-  - `'Owner'`
-  - `'Reader'`
-  - `'Role Based Access Control Administrator'`
-  - `'User Access Administrator'`
-  - `'Azure Stack HCI Administrator'`
-  - `'Windows Admin Center Administrator Login'`
-
-**Required parameters**
-
-| Parameter | Type | Description |
-| :-- | :-- | :-- |
-| [`principalId`](#parameter-roleassignmentsprincipalid) | string | The principal ID of the principal (user/group/identity) to assign the role to. |
-| [`roleDefinitionIdOrName`](#parameter-roleassignmentsroledefinitionidorname) | string | The role to assign. You can provide either the display name of the role definition, the role definition GUID, or its fully qualified ID in the following format: '/providers/Microsoft.Authorization/roleDefinitions/c2f4ef07-c644-48eb-af81-4b1b4947fb11'. |
-
-**Optional parameters**
-
-| Parameter | Type | Description |
-| :-- | :-- | :-- |
-| [`condition`](#parameter-roleassignmentscondition) | string | The conditions on the role assignment. This limits the resources it can be assigned to. e.g.: @Resource[Microsoft.Storage/storageAccounts/blobServices/containers:ContainerName] StringEqualsIgnoreCase "foo_storage_container". |
-| [`conditionVersion`](#parameter-roleassignmentsconditionversion) | string | Version of the condition. |
-| [`delegatedManagedIdentityResourceId`](#parameter-roleassignmentsdelegatedmanagedidentityresourceid) | string | The Resource Id of the delegated managed identity resource. |
-| [`description`](#parameter-roleassignmentsdescription) | string | The description of the role assignment. |
-| [`name`](#parameter-roleassignmentsname) | string | The name (as GUID) of the role assignment. If not provided, a GUID will be generated. |
-| [`principalType`](#parameter-roleassignmentsprincipaltype) | string | The principal type of the assigned principal ID. |
-
-### Parameter: `roleAssignments.principalId`
-
-The principal ID of the principal (user/group/identity) to assign the role to.
+The location for all resource except HCI Arc Nodes and HCI resources
 
 - Required: Yes
 - Type: string
 
-### Parameter: `roleAssignments.roleDefinitionIdOrName`
+### Parameter: `maintenanceConfigurationAssignmentName`
 
-The role to assign. You can provide either the display name of the role definition, the role definition GUID, or its fully qualified ID in the following format: '/providers/Microsoft.Authorization/roleDefinitions/c2f4ef07-c644-48eb-af81-4b1b4947fb11'.
+The name of the Maintenance Configuration Assignment for the proxy server.
 
 - Required: Yes
 - Type: string
 
-### Parameter: `roleAssignments.condition`
+### Parameter: `maintenanceConfigurationName`
 
-The conditions on the role assignment. This limits the resources it can be assigned to. e.g.: @Resource[Microsoft.Storage/storageAccounts/blobServices/containers:ContainerName] StringEqualsIgnoreCase "foo_storage_container".
+The name of the maintenance configuration for the Azure Stack HCI Host VM and proxy server.
+
+- Required: Yes
+- Type: string
+
+### Parameter: `networkInterfaceName`
+
+The name of the Network Interface Card to create.
+
+- Required: Yes
+- Type: string
+
+### Parameter: `networkSecurityGroupName`
+
+The name of the NSG to create.
+
+- Required: Yes
+- Type: string
+
+### Parameter: `userAssignedIdentityName`
+
+The name of the VM-managed user identity to create, used for HCI Arc onboarding.
+
+- Required: Yes
+- Type: string
+
+### Parameter: `virtualMachineName`
+
+The name of the Azure VM to create.
+
+- Required: Yes
+- Type: string
+
+### Parameter: `virtualNetworkName`
+
+The name of the VNET for the HCI host Azure VM.
+
+- Required: Yes
+- Type: string
+
+### Parameter: `waitDeploymentScriptPrefixName`
+
+The name prefix for the 'wait' deployment scripts to create.
+
+- Required: Yes
+- Type: string
+
+### Parameter: `hciISODownloadURL`
+
+The download URL for the Azure Stack HCI ISO.
 
 - Required: No
 - Type: string
+- Default: `'https://azurestackreleases.download.prss.microsoft.com/dbazure/AzureStackHCI/OS-Composition/10.2408.0.3061/AZURESTACKHci23H2.25398.469.LCM.10.2408.0.3061.x64.en-us.iso'`
 
-### Parameter: `roleAssignments.conditionVersion`
+### Parameter: `hciNodeCount`
 
-Version of the condition.
+The number of Azure Stack HCI nodes to deploy.
+
+- Required: No
+- Type: int
+- Default: `2`
+
+### Parameter: `hostVMSize`
+
+The Azure VM size for the HCI Host VM, which must support nested virtualization and have sufficient capacity for the HCI node VMs!
 
 - Required: No
 - Type: string
-- Allowed:
-  ```Bicep
-  [
-    '2.0'
-  ]
-  ```
+- Default: `'Standard_E32bds_v5'`
 
-### Parameter: `roleAssignments.delegatedManagedIdentityResourceId`
+### Parameter: `localAdminUsername`
 
-The Resource Id of the delegated managed identity resource.
+The local admin user name.
 
 - Required: No
 - Type: string
+- Default: `'admin-hci'`
 
-### Parameter: `roleAssignments.description`
+### Parameter: `switchlessStorageConfig`
 
-The description of the role assignment.
-
-- Required: No
-- Type: string
-
-### Parameter: `roleAssignments.name`
-
-The name (as GUID) of the role assignment. If not provided, a GUID will be generated.
-
-- Required: No
-- Type: string
-
-### Parameter: `roleAssignments.principalType`
-
-The principal type of the assigned principal ID.
-
-- Required: No
-- Type: string
-- Allowed:
-  ```Bicep
-  [
-    'Device'
-    'ForeignGroup'
-    'Group'
-    'ServicePrincipal'
-    'User'
-  ]
-  ```
-
-### Parameter: `tags`
-
-Tags of the resource.
-
-- Required: No
-- Type: object
-
-### Parameter: `useSharedKeyVault`
-
-Specify whether to use the shared key vault for the HCI cluster.
+Enable configuring switchless storage.
 
 - Required: No
 - Type: bool
-- Default: `True`
-
-### Parameter: `witnessStorageAccountResourceGroup`
-
-Storage account resource group, which is used as the witness for the HCI Windows Failover Cluster.
-
-- Required: No
-- Type: string
-
-### Parameter: `witnessStorageAccountSubscriptionId`
-
-Storage account subscription ID, which is used as the witness for the HCI Windows Failover Cluster.
-
-- Required: No
-- Type: string
-
-### Parameter: `witnessStoragekeyContentType`
-
-Content type of the witness storage key.
-
-- Required: No
-- Type: string
-- Default: `'Secret'`
-
-### Parameter: `witnessStoragekeyTags`
-
-Tags of the witness storage key.
-
-- Required: No
-- Type: object
+- Default: `False`
 
 ## Outputs
 
-| Output | Type | Description |
-| :-- | :-- | :-- |
-| `location` | string | The location of the cluster. |
-| `name` | string | The name of the cluster. |
-| `resourceGroupName` | string | The resource group of the cluster. |
-| `resourceId` | string | The ID of the cluster. |
-| `systemAssignedMIPrincipalId` | string | The managed identity of the cluster. |
-
-## Data Collection
-
-The software may collect information about you and your use of the software and send it to Microsoft. Microsoft may use this information to provide services and improve our products and services. You may turn off the telemetry as described in the [repository](https://aka.ms/avm/telemetry). There are also some features in the software that may enable you and Microsoft to collect data from users of your applications. If you use these features, you must comply with applicable law, including providing appropriate notices to users of your applications together with a copy of Microsoft’s privacy statement. Our privacy statement is located at <https://go.microsoft.com/fwlink/?LinkID=824704>. You can learn more about data collection and use in the help documentation and our privacy statement. Your use of the software operates as your consent to these practices.
+| Output | Type |
+| :-- | :-- |
+| `vnetSubnetResourceId` | string |

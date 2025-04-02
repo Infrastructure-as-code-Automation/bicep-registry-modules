@@ -13,30 +13,6 @@ param serviceShort string = 'ashcmin'
 @description('Optional. A token to inject into the name of each resource.')
 param namePrefix string = '#_namePrefix_#'
 
-@description('Optional. The password of the LCM deployment user and local administrator accounts.')
-@secure()
-param localAdminAndDeploymentUserPass string = newGuid()
-
-@description('Required. The app ID of the service principal used for the Azure Stack HCI Resource Bridge deployment.')
-@secure()
-#disable-next-line secure-parameter-default
-param arbDeploymentAppId string = ''
-
-@description('Required. The service principal ID of the service principal used for the Azure Stack HCI Resource Bridge deployment.')
-@secure()
-#disable-next-line secure-parameter-default
-param arbDeploymentSPObjectId string = ''
-
-@description('Required. The secret of the service principal used for the Azure Stack HCI Resource Bridge deployment.')
-@secure()
-#disable-next-line secure-parameter-default
-param arbDeploymentServicePrincipalSecret string = ''
-
-@description('Required. The service principal object ID of the Azure Stack HCI Resource Provider in this tenant. Can be fetched via `Get-AzADServicePrincipal -ApplicationId 1412d89f-b8a8-4111-b4fd-e82905cbd85d` after the \'Microsoft.AzureStackHCI\' provider was registered in the subscription.')
-@secure()
-#disable-next-line secure-parameter-default
-param hciResourceProviderObjectId string = ''
-
 #disable-next-line no-hardcoded-location // Due to quotas and capacity challenges, this region must be used in the AVM testing subscription
 var enforcedLocation = 'southeastasia'
 
@@ -45,140 +21,63 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   location: enforcedLocation
 }
 
-module nestedDependencies '../../../../../../../utilities/e2e-template-assets/module-specific/azure-stack-hci/dependencies/defaults-dependencies.bicep' = {
-  name: '${uniqueString(deployment().name, enforcedLocation)}-test-nestedDependencies-${serviceShort}'
-  scope: resourceGroup
-  params: {
-    clusterName: '${namePrefix}${serviceShort}1'
-    clusterWitnessStorageAccountName: 'dep${namePrefix}wst${serviceShort}'
-    keyVaultDiagnosticStorageAccountName: 'dep${namePrefix}st${serviceShort}'
-    keyVaultName: 'dep-${namePrefix}-kv-${serviceShort}'
-    userAssignedIdentityName: 'dep-${namePrefix}-msi-${serviceShort}'
-    maintenanceConfigurationName: 'dep-${namePrefix}-mc-${serviceShort}'
-    maintenanceConfigurationAssignmentName: 'dep-${namePrefix}-mca-${serviceShort}'
-    HCIHostVirtualMachineScaleSetName: 'dep-${namePrefix}-hvmss-${serviceShort}'
-    virtualNetworkName: 'dep-${namePrefix}-vnet-${serviceShort}'
-    networkSecurityGroupName: 'dep-${namePrefix}-nsg-${serviceShort}'
-    networkInterfaceName: 'dep-${namePrefix}-mice-${serviceShort}'
-    diskNamePrefix: 'dep-${namePrefix}-disk-${serviceShort}'
-    virtualMachineName: 'dep-${namePrefix}-vm-${serviceShort}'
-    waitDeploymentScriptPrefixName: 'dep-${namePrefix}-wds-${serviceShort}'
-    arbDeploymentAppId: arbDeploymentAppId
-    arbDeploymentServicePrincipalSecret: arbDeploymentServicePrincipalSecret
-    arbDeploymentSPObjectId: arbDeploymentSPObjectId
-    deploymentUserPassword: localAdminAndDeploymentUserPass
-    hciResourceProviderObjectId: hciResourceProviderObjectId
-    localAdminPassword: localAdminAndDeploymentUserPass
-    location: enforcedLocation
-  }
-}
+@description('Required. The password of the LCM deployment user and local administrator accounts.')
+@secure()
+param localAdminPassword string
 
+@description('Required. The location to deploy the resources into.')
+param location string
+
+@description('Required. The name of the VM-managed user identity to create, used for HCI Arc onboarding.')
+param userAssignedIdentityName string
+
+@description('Required. The name of the maintenance configuration for the Azure Stack HCI Host VM and proxy server.')
+param maintenanceConfigurationName string
+
+@description('Required. The name of the Azure VM scale set for the HCI host.')
+param HCIHostVirtualMachineScaleSetName string
+
+@description('Conditional. The name of the Network Security Group ro create.')
+param networkSecurityGroupName string
+
+@description('Required. The name of the virtual network to create. Used to connect the HCI Azure Host VM to an existing VNET in the same region.')
+param virtualNetworkName string
+
+@description('Required. The name of the Network Interface Card to create.')
+param networkInterfaceName string
+
+@description('Required. The name prefix for the Disks to create.')
+param diskNamePrefix string
+
+@description('Required. The name of the Azure VM to create.')
+param virtualMachineName string
+
+@description('Required. The name of the Maintenance Configuration Assignment for the proxy server.')
+param maintenanceConfigurationAssignmentName string
+
+@description('Required. The name prefix for the \'wait\' deployment scripts to create.')
+param waitDeploymentScriptPrefixName string
+
+var clusterNodeNames = ['hcinode1', 'hcinode2']
 module testDeployment '../../../main.bicep' = {
-  name: '${uniqueString(deployment().name, enforcedLocation)}-test-clustermodule-${serviceShort}'
+  name: '${uniqueString(deployment().name, location)}-test-hcihostdeploy'
   scope: resourceGroup
   params: {
-    name: nestedDependencies.outputs.clusterName
-    deploymentUser: 'deployUser'
-    deploymentUserPassword: localAdminAndDeploymentUserPass
-    localAdminUser: 'admin-hci'
-    localAdminPassword: localAdminAndDeploymentUserPass
-    servicePrincipalId: arbDeploymentAppId
-    servicePrincipalSecret: arbDeploymentServicePrincipalSecret
-    deploymentSettings: {
-      customLocationName: '${namePrefix}${serviceShort}-location'
-      clusterNodeNames: nestedDependencies.outputs.clusterNodeNames
-      clusterWitnessStorageAccountName: nestedDependencies.outputs.clusterWitnessStorageAccountName
-      defaultGateway: '172.20.0.1'
-      deploymentPrefix: 'a${take(uniqueString(namePrefix, serviceShort), 7)}' // ensure deployment prefix starts with a letter to match '^(?=.{1,8}$)([a-zA-Z])(\-?[a-zA-Z\d])*$'
-      dnsServers: ['172.20.0.1']
-      domainFqdn: 'hci.local'
-      domainOUPath: nestedDependencies.outputs.domainOUPath
-      startingIPAddress: '172.20.0.2'
-      endingIPAddress: '172.20.0.7'
-      enableStorageAutoIp: true
-      keyVaultName: nestedDependencies.outputs.keyVaultName
-      networkIntents: [
-        {
-          adapter: ['mgmt']
-          name: 'management'
-          overrideAdapterProperty: true
-          adapterPropertyOverrides: {
-            jumboPacket: '9014'
-            networkDirect: 'Disabled'
-            networkDirectTechnology: 'iWARP'
-          }
-          overrideQosPolicy: false
-          qosPolicyOverrides: {
-            bandwidthPercentageSMB: '50'
-            priorityValue8021ActionCluster: '7'
-            priorityValue8021ActionSMB: '3'
-          }
-          overrideVirtualSwitchConfiguration: false
-          virtualSwitchConfigurationOverrides: {
-            enableIov: 'true'
-            loadBalancingAlgorithm: 'Dynamic'
-          }
-          trafficType: ['Management']
-        }
-        {
-          adapter: ['comp0', 'comp1']
-          name: 'compute'
-          overrideAdapterProperty: true
-          adapterPropertyOverrides: {
-            jumboPacket: '9014'
-            networkDirect: 'Disabled'
-            networkDirectTechnology: 'iWARP'
-          }
-          overrideQosPolicy: false
-          qosPolicyOverrides: {
-            bandwidthPercentageSMB: '50'
-            priorityValue8021ActionCluster: '7'
-            priorityValue8021ActionSMB: '3'
-          }
-          overrideVirtualSwitchConfiguration: false
-          virtualSwitchConfigurationOverrides: {
-            enableIov: 'true'
-            loadBalancingAlgorithm: 'Dynamic'
-          }
-          trafficType: ['Compute']
-        }
-        {
-          adapter: ['smb0', 'smb1']
-          name: 'storage'
-          overrideAdapterProperty: true
-          adapterPropertyOverrides: {
-            jumboPacket: '9014'
-            networkDirect: 'Disabled'
-            networkDirectTechnology: 'iWARP'
-          }
-          overrideQosPolicy: true
-          qosPolicyOverrides: {
-            bandwidthPercentageSMB: '50'
-            priorityValue8021ActionCluster: '7'
-            priorityValue8021ActionSMB: '3'
-          }
-          overrideVirtualSwitchConfiguration: false
-          virtualSwitchConfigurationOverrides: {
-            enableIov: 'true'
-            loadBalancingAlgorithm: 'Dynamic'
-          }
-          trafficType: ['Storage']
-        }
-      ]
-      storageConnectivitySwitchless: false
-      storageNetworks: [
-        {
-          name: 'StorageNetwork0'
-          adapterName: 'smb0'
-          vlan: '711'
-        }
-        {
-          name: 'StorageNetwork1'
-          adapterName: 'smb1'
-          vlan: '712'
-        }
-      ]
-      subnetMask: '255.255.255.0'
-    }
+    hciISODownloadURL: 'https://azurestackreleases.download.prss.microsoft.com/dbazure/AzureStackHCI/OS-Composition/10.2408.0.3061/AZURESTACKHci23H2.25398.469.LCM.10.2408.0.3061.x64.en-us.iso'
+    hciNodeCount: length(clusterNodeNames)
+    hostVMSize: 'Standard_E16bds_v5'
+    localAdminPassword: localAdminPassword
+    location: location
+    switchlessStorageConfig: false
+    diskNamePrefix: diskNamePrefix
+    HCIHostVirtualMachineScaleSetName: HCIHostVirtualMachineScaleSetName
+    maintenanceConfigurationAssignmentName: maintenanceConfigurationAssignmentName
+    maintenanceConfigurationName: maintenanceConfigurationName
+    networkInterfaceName: networkInterfaceName
+    networkSecurityGroupName: networkSecurityGroupName
+    virtualNetworkName: virtualNetworkName
+    userAssignedIdentityName: userAssignedIdentityName
+    virtualMachineName: virtualMachineName
+    waitDeploymentScriptPrefixName: waitDeploymentScriptPrefixName
   }
 }
