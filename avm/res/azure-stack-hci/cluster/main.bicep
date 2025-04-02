@@ -1,7 +1,7 @@
 metadata name = 'Azure Stack HCI Cluster'
 metadata description = 'This module deploys an Azure Stack HCI Cluster on the provided Arc Machines.'
 
-@description('Required. The location for all resource except HCI Arc Nodes and HCI resources.')
+@description('Optional. The location for all resource except HCI Arc Nodes and HCI resources.')
 param location string = resourceGroup().location
 
 @description('Optional. The Azure VM size for the HCI Host VM, which must support nested virtualization and have sufficient capacity for the HCI node VMs.')

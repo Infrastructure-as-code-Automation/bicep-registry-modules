@@ -317,7 +317,6 @@ param switchlessStorageConfig = false
 | [`diskNamePrefix`](#parameter-disknameprefix) | string | The name prefix for the Disks to create. |
 | [`hciHostVirtualMachineScaleSetName`](#parameter-hcihostvirtualmachinescalesetname) | string | The name of the Azure VM scale set for the HCI host. |
 | [`localAdminPassword`](#parameter-localadminpassword) | securestring | The local admin password. |
-| [`location`](#parameter-location) | string | The location for all resource except HCI Arc Nodes and HCI resources. |
 | [`maintenanceConfigurationAssignmentName`](#parameter-maintenanceconfigurationassignmentname) | string | The name of the Maintenance Configuration Assignment for the proxy server. |
 | [`maintenanceConfigurationName`](#parameter-maintenanceconfigurationname) | string | The name of the maintenance configuration for the Azure Stack HCI Host VM and proxy server. |
 | [`networkInterfaceName`](#parameter-networkinterfacename) | string | The name of the Network Interface Card to create. |
@@ -336,6 +335,7 @@ param switchlessStorageConfig = false
 | [`hciNodeCount`](#parameter-hcinodecount) | int | The number of Azure Stack HCI nodes to deploy. |
 | [`hostVMSize`](#parameter-hostvmsize) | string | The Azure VM size for the HCI Host VM, which must support nested virtualization and have sufficient capacity for the HCI node VMs. |
 | [`localAdminUsername`](#parameter-localadminusername) | string | The local admin user name. |
+| [`location`](#parameter-location) | string | The location for all resource except HCI Arc Nodes and HCI resources. |
 | [`switchlessStorageConfig`](#parameter-switchlessstorageconfig) | bool | Enable configuring switchless storage. |
 | [`tags`](#parameter-tags) | object | Tags of the resource. |
 
@@ -359,14 +359,6 @@ The local admin password.
 
 - Required: Yes
 - Type: securestring
-
-### Parameter: `location`
-
-The location for all resource except HCI Arc Nodes and HCI resources.
-
-- Required: No
-- Type: string
-- Default: `[resourceGroup().location]`
 
 ### Parameter: `maintenanceConfigurationAssignmentName`
 
@@ -463,6 +455,14 @@ The local admin user name.
 - Required: No
 - Type: string
 - Default: `'admin-hci'`
+
+### Parameter: `location`
+
+The location for all resource except HCI Arc Nodes and HCI resources.
+
+- Required: No
+- Type: string
+- Default: `[resourceGroup().location]`
 
 ### Parameter: `switchlessStorageConfig`
 
