@@ -18,7 +18,7 @@ var enforcedLocation = 'southeastasia'
 
 @description('Optional. The password of the LCM deployment user and local administrator accounts.')
 @secure()
-param localAdminAndDeploymentUserPass string = newGuid()
+param localAdminAndDeploymentUserPass string = 'bicep-test-password-1234'
 
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   name: resourceGroupName

@@ -15,7 +15,7 @@ param namePrefix string = '#_namePrefix_#'
 
 @description('Optional. The password of the LCM deployment user and local administrator accounts.')
 @secure()
-param localAdminAndDeploymentUserPass string = newGuid()
+param localAdminAndDeploymentUserPass string = 'bicep-test-password-1234'
 
 #disable-next-line no-hardcoded-location // Due to quotas and capacity challenges, this region must be used in the AVM testing subscription
 var enforcedLocation = 'southeastasia'
