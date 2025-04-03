@@ -68,7 +68,7 @@ module cluster 'br/public:avm/res/azure-stack-hci/cluster:<version>' = {
     // Non-required parameters
     hciISODownloadURL: 'https://azurestackreleases.download.prss.microsoft.com/dbazure/AzureStackHCI/OS-Composition/10.2408.0.3061/AZURESTACKHci23H2.25398.469.LCM.10.2408.0.3061.x64.en-us.iso'
     hciNodeCount: '<hciNodeCount>'
-    hostVMSize: 'Standard_E16bds_v5'
+    hostVMSize: 'Standard_E32bds_v5'
     location: '<location>'
     switchlessStorageConfig: false
   }
@@ -129,7 +129,7 @@ module cluster 'br/public:avm/res/azure-stack-hci/cluster:<version>' = {
       "value": "<hciNodeCount>"
     },
     "hostVMSize": {
-      "value": "Standard_E16bds_v5"
+      "value": "Standard_E32bds_v5"
     },
     "location": {
       "value": "<location>"
@@ -166,7 +166,7 @@ param waitDeploymentScriptPrefixName = 'dep-wds-ashcmin'
 // Non-required parameters
 param hciISODownloadURL = 'https://azurestackreleases.download.prss.microsoft.com/dbazure/AzureStackHCI/OS-Composition/10.2408.0.3061/AZURESTACKHci23H2.25398.469.LCM.10.2408.0.3061.x64.en-us.iso'
 param hciNodeCount = '<hciNodeCount>'
-param hostVMSize = 'Standard_E16bds_v5'
+param hostVMSize = 'Standard_E32bds_v5'
 param location = '<location>'
 param switchlessStorageConfig = false
 ```
@@ -202,7 +202,7 @@ module cluster 'br/public:avm/res/azure-stack-hci/cluster:<version>' = {
     // Non-required parameters
     hciISODownloadURL: 'https://azurestackreleases.download.prss.microsoft.com/dbazure/AzureStackHCI/OS-Composition/10.2408.0.3061/AZURESTACKHci23H2.25398.469.LCM.10.2408.0.3061.x64.en-us.iso'
     hciNodeCount: '<hciNodeCount>'
-    hostVMSize: 'Standard_E16bds_v5'
+    hostVMSize: 'Standard_E32bds_v5'
     location: '<location>'
     switchlessStorageConfig: false
   }
@@ -263,7 +263,7 @@ module cluster 'br/public:avm/res/azure-stack-hci/cluster:<version>' = {
       "value": "<hciNodeCount>"
     },
     "hostVMSize": {
-      "value": "Standard_E16bds_v5"
+      "value": "Standard_E32bds_v5"
     },
     "location": {
       "value": "<location>"
@@ -300,7 +300,7 @@ param waitDeploymentScriptPrefixName = 'dep-wds-ashcwaf'
 // Non-required parameters
 param hciISODownloadURL = 'https://azurestackreleases.download.prss.microsoft.com/dbazure/AzureStackHCI/OS-Composition/10.2408.0.3061/AZURESTACKHci23H2.25398.469.LCM.10.2408.0.3061.x64.en-us.iso'
 param hciNodeCount = '<hciNodeCount>'
-param hostVMSize = 'Standard_E16bds_v5'
+param hostVMSize = 'Standard_E32bds_v5'
 param location = '<location>'
 param switchlessStorageConfig = false
 ```
