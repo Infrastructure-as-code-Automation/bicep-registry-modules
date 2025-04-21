@@ -16,7 +16,7 @@ This module deploys an Azure Stack HCI network interface.
 | Resource Type | API Version |
 | :-- | :-- |
 | `Microsoft.Authorization/roleAssignments` | [2022-04-01](https://learn.microsoft.com/en-us/azure/templates/Microsoft.Authorization/2022-04-01/roleAssignments) |
-| `Microsoft.AzureStackHCI/networkInterfaces` | [2024-01-01](https://learn.microsoft.com/en-us/azure/templates/Microsoft.AzureStackHCI/2024-01-01/networkInterfaces) |
+| `Microsoft.AzureStackHCI/networkInterfaces` | [2025-04-01-preview](https://learn.microsoft.com/en-us/azure/templates/Microsoft.AzureStackHCI/2025-04-01-preview/networkInterfaces) |
 
 ## Usage examples
 
@@ -44,16 +44,19 @@ module networkInterface 'br/public:avm/res/azure-stack-hci/network-interface:<ve
   params: {
     // Required parameters
     customLocationResourceId: '<customLocationResourceId>'
-    ipConfigurations: [
-      {
-        properties: {
-          subnet: {
-            id: '<id>'
+    name: 'ashniminnetworkinterface'
+    properties: {
+      ipConfigurations: [
+        {
+          name: 'ipconfig0'
+          properties: {
+            subnet: {
+              id: '<id>'
+            }
           }
         }
-      }
-    ]
-    name: 'ashniminnetworkinterface'
+      ]
+    }
   }
 }
 ```
@@ -74,19 +77,22 @@ module networkInterface 'br/public:avm/res/azure-stack-hci/network-interface:<ve
     "customLocationResourceId": {
       "value": "<customLocationResourceId>"
     },
-    "ipConfigurations": {
-      "value": [
-        {
-          "properties": {
-            "subnet": {
-              "id": "<id>"
-            }
-          }
-        }
-      ]
-    },
     "name": {
       "value": "ashniminnetworkinterface"
+    },
+    "properties": {
+      "value": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig0",
+            "properties": {
+              "subnet": {
+                "id": "<id>"
+              }
+            }
+          }
+        ]
+      }
     }
   }
 }
@@ -104,16 +110,19 @@ using 'br/public:avm/res/azure-stack-hci/network-interface:<version>'
 
 // Required parameters
 param customLocationResourceId = '<customLocationResourceId>'
-param ipConfigurations = [
-  {
-    properties: {
-      subnet: {
-        id: '<id>'
+param name = 'ashniminnetworkinterface'
+param properties = {
+  ipConfigurations: [
+    {
+      name: 'ipconfig0'
+      properties: {
+        subnet: {
+          id: '<id>'
+        }
       }
     }
-  }
-]
-param name = 'ashniminnetworkinterface'
+  ]
+}
 ```
 
 </details>
@@ -134,20 +143,25 @@ module networkInterface 'br/public:avm/res/azure-stack-hci/network-interface:<ve
   params: {
     // Required parameters
     customLocationResourceId: '<customLocationResourceId>'
-    ipConfigurations: [
-      {
-        properties: {
-          subnet: {
-            id: '<id>'
+    name: 'ashniwafnetworkinterface'
+    properties: {
+      dnsSettings: {
+        dnsServers: [
+          '172.20.0.1'
+        ]
+      }
+      ipConfigurations: [
+        {
+          name: 'ipconfig0'
+          properties: {
+            subnet: {
+              id: '<id>'
+            }
           }
         }
-      }
-    ]
-    name: 'ashniwafnetworkinterface'
+      ]
+    }
     // Non-required parameters
-    dnsServers: [
-      '172.20.0.1'
-    ]
     enableTelemetry: true
     location: '<location>'
     tags: {
@@ -175,26 +189,29 @@ module networkInterface 'br/public:avm/res/azure-stack-hci/network-interface:<ve
     "customLocationResourceId": {
       "value": "<customLocationResourceId>"
     },
-    "ipConfigurations": {
-      "value": [
-        {
-          "properties": {
-            "subnet": {
-              "id": "<id>"
-            }
-          }
-        }
-      ]
-    },
     "name": {
       "value": "ashniwafnetworkinterface"
     },
-    // Non-required parameters
-    "dnsServers": {
-      "value": [
-        "172.20.0.1"
-      ]
+    "properties": {
+      "value": {
+        "dnsSettings": {
+          "dnsServers": [
+            "172.20.0.1"
+          ]
+        },
+        "ipConfigurations": [
+          {
+            "name": "ipconfig0",
+            "properties": {
+              "subnet": {
+                "id": "<id>"
+              }
+            }
+          }
+        ]
+      }
     },
+    // Non-required parameters
     "enableTelemetry": {
       "value": true
     },
@@ -224,20 +241,25 @@ using 'br/public:avm/res/azure-stack-hci/network-interface:<version>'
 
 // Required parameters
 param customLocationResourceId = '<customLocationResourceId>'
-param ipConfigurations = [
-  {
-    properties: {
-      subnet: {
-        id: '<id>'
+param name = 'ashniwafnetworkinterface'
+param properties = {
+  dnsSettings: {
+    dnsServers: [
+      '172.20.0.1'
+    ]
+  }
+  ipConfigurations: [
+    {
+      name: 'ipconfig0'
+      properties: {
+        subnet: {
+          id: '<id>'
+        }
       }
     }
-  }
-]
-param name = 'ashniwafnetworkinterface'
+  ]
+}
 // Non-required parameters
-param dnsServers = [
-  '172.20.0.1'
-]
 param enableTelemetry = true
 param location = '<location>'
 param tags = {
@@ -257,14 +279,13 @@ param tags = {
 | Parameter | Type | Description |
 | :-- | :-- | :-- |
 | [`customLocationResourceId`](#parameter-customlocationresourceid) | string | Resource ID of the associated custom location. |
-| [`ipConfigurations`](#parameter-ipconfigurations) | array | A list of IPConfigurations of the network interface. |
 | [`name`](#parameter-name) | string | Name of the resource to create. |
+| [`properties`](#parameter-properties) | object | The properties of the network interface. |
 
 **Optional parameters**
 
 | Parameter | Type | Description |
 | :-- | :-- | :-- |
-| [`dnsServers`](#parameter-dnsservers) | array | DNS servers array for NIC. These are only applied during NIC creation. |
 | [`enableTelemetry`](#parameter-enabletelemetry) | bool | Enable/Disable usage telemetry for module. |
 | [`location`](#parameter-location) | string | Location for all Resources. |
 | [`roleAssignments`](#parameter-roleassignments) | array | Array of role assignments to create. |
@@ -277,78 +298,6 @@ Resource ID of the associated custom location.
 - Required: Yes
 - Type: string
 
-### Parameter: `ipConfigurations`
-
-A list of IPConfigurations of the network interface.
-
-- Required: Yes
-- Type: array
-
-**Required parameters**
-
-| Parameter | Type | Description |
-| :-- | :-- | :-- |
-| [`properties`](#parameter-ipconfigurationsproperties) | object | InterfaceIPConfigurationPropertiesFormat properties of IP configuration. |
-
-**Optional parameters**
-
-| Parameter | Type | Description |
-| :-- | :-- | :-- |
-| [`name`](#parameter-ipconfigurationsname) | string | The name of the resource that is unique within a resource group. This name can be used to access the resource. |
-
-### Parameter: `ipConfigurations.properties`
-
-InterfaceIPConfigurationPropertiesFormat properties of IP configuration.
-
-- Required: Yes
-- Type: object
-
-**Required parameters**
-
-| Parameter | Type | Description |
-| :-- | :-- | :-- |
-| [`subnet`](#parameter-ipconfigurationspropertiessubnet) | object | Name of Subnet bound to the IP configuration. |
-
-**Optional parameters**
-
-| Parameter | Type | Description |
-| :-- | :-- | :-- |
-| [`privateIPAddress`](#parameter-ipconfigurationspropertiesprivateipaddress) | string | Private IP address of the IP configuration. |
-
-### Parameter: `ipConfigurations.properties.subnet`
-
-Name of Subnet bound to the IP configuration.
-
-- Required: Yes
-- Type: object
-
-**Required parameters**
-
-| Parameter | Type | Description |
-| :-- | :-- | :-- |
-| [`id`](#parameter-ipconfigurationspropertiessubnetid) | string | The ARM ID for a Logical Network. |
-
-### Parameter: `ipConfigurations.properties.subnet.id`
-
-The ARM ID for a Logical Network.
-
-- Required: Yes
-- Type: string
-
-### Parameter: `ipConfigurations.properties.privateIPAddress`
-
-Private IP address of the IP configuration.
-
-- Required: No
-- Type: string
-
-### Parameter: `ipConfigurations.name`
-
-The name of the resource that is unique within a resource group. This name can be used to access the resource.
-
-- Required: No
-- Type: string
-
 ### Parameter: `name`
 
 Name of the resource to create.
@@ -356,12 +305,143 @@ Name of the resource to create.
 - Required: Yes
 - Type: string
 
-### Parameter: `dnsServers`
+### Parameter: `properties`
 
-DNS servers array for NIC. These are only applied during NIC creation.
+The properties of the network interface.
+
+- Required: Yes
+- Type: object
+
+**Optional parameters**
+
+| Parameter | Type | Description |
+| :-- | :-- | :-- |
+| [`createFromLocal`](#parameter-propertiescreatefromlocal) | bool | Boolean indicating whether this is a existing local network interface or if one should be created. |
+| [`dnsSettings`](#parameter-propertiesdnssettings) | object | DNS Settings for the interface. |
+| [`ipConfigurations`](#parameter-propertiesipconfigurations) | array | A list of IPConfigurations of the network interface. |
+| [`macAddress`](#parameter-propertiesmacaddress) | string | The MAC address of the network interface. |
+| [`networkSecurityGroup`](#parameter-propertiesnetworksecuritygroup) | object | Network Security Group attached to the network interface. |
+
+### Parameter: `properties.createFromLocal`
+
+Boolean indicating whether this is a existing local network interface or if one should be created.
+
+- Required: No
+- Type: bool
+
+### Parameter: `properties.dnsSettings`
+
+DNS Settings for the interface.
+
+- Required: No
+- Type: object
+
+**Optional parameters**
+
+| Parameter | Type | Description |
+| :-- | :-- | :-- |
+| [`dnsServers`](#parameter-propertiesdnssettingsdnsservers) | array | List of DNS server IP Addresses for the interface. |
+
+### Parameter: `properties.dnsSettings.dnsServers`
+
+List of DNS server IP Addresses for the interface.
 
 - Required: No
 - Type: array
+
+### Parameter: `properties.ipConfigurations`
+
+A list of IPConfigurations of the network interface.
+
+- Required: No
+- Type: array
+
+**Required parameters**
+
+| Parameter | Type | Description |
+| :-- | :-- | :-- |
+| [`name`](#parameter-propertiesipconfigurationsname) | string | The name of the resource that is unique within a resource group. |
+
+**Optional parameters**
+
+| Parameter | Type | Description |
+| :-- | :-- | :-- |
+| [`properties`](#parameter-propertiesipconfigurationsproperties) | object | Properties of IP configuration. |
+
+### Parameter: `properties.ipConfigurations.name`
+
+The name of the resource that is unique within a resource group.
+
+- Required: Yes
+- Type: string
+
+### Parameter: `properties.ipConfigurations.properties`
+
+Properties of IP configuration.
+
+- Required: No
+- Type: object
+
+**Optional parameters**
+
+| Parameter | Type | Description |
+| :-- | :-- | :-- |
+| [`privateIPAddress`](#parameter-propertiesipconfigurationspropertiesprivateipaddress) | string | Private IP address of the IP configuration. |
+| [`subnet`](#parameter-propertiesipconfigurationspropertiessubnet) | object | Name of Subnet bound to the IP configuration. |
+
+### Parameter: `properties.ipConfigurations.properties.privateIPAddress`
+
+Private IP address of the IP configuration.
+
+- Required: No
+- Type: string
+
+### Parameter: `properties.ipConfigurations.properties.subnet`
+
+Name of Subnet bound to the IP configuration.
+
+- Required: No
+- Type: object
+
+**Required parameters**
+
+| Parameter | Type | Description |
+| :-- | :-- | :-- |
+| [`id`](#parameter-propertiesipconfigurationspropertiessubnetid) | string | The ARM ID for a Logical Network. |
+
+### Parameter: `properties.ipConfigurations.properties.subnet.id`
+
+The ARM ID for a Logical Network.
+
+- Required: Yes
+- Type: string
+
+### Parameter: `properties.macAddress`
+
+The MAC address of the network interface.
+
+- Required: No
+- Type: string
+
+### Parameter: `properties.networkSecurityGroup`
+
+Network Security Group attached to the network interface.
+
+- Required: No
+- Type: object
+
+**Required parameters**
+
+| Parameter | Type | Description |
+| :-- | :-- | :-- |
+| [`id`](#parameter-propertiesnetworksecuritygroupid) | string | The ARM ID for a Network Security Group. |
+
+### Parameter: `properties.networkSecurityGroup.id`
+
+The ARM ID for a Network Security Group.
+
+- Required: Yes
+- Type: string
 
 ### Parameter: `enableTelemetry`
 
@@ -389,9 +469,8 @@ Array of role assignments to create.
   - `'Contributor'`
   - `'Owner'`
   - `'Reader'`
-  - `'Azure Stack HCI VM Contributor'`
-  - `'Azure Stack HCI VM Reader'`
-  - `'Azure Stack HCI Administrator'`
+  - `'User Access Administrator'`
+  - `'Role Based Access Control Administrator (Preview)'`
 
 **Required parameters**
 
@@ -494,10 +573,10 @@ Tags of the resource.
 
 | Output | Type | Description |
 | :-- | :-- | :-- |
-| `location` | string | The location the resource was deployed into. |
-| `name` | string | The name of the resource. |
-| `resourceGroupName` | string | The resource group name of the resource. |
-| `resourceId` | string | The resource ID of the resource. |
+| `location` | string | The location of the network interface. |
+| `name` | string | The name of the network interface. |
+| `resourceGroupName` | string | The resource group of the network interface. |
+| `resourceId` | string | The resource ID of the network interface. |
 
 ## Cross-referenced modules
 

@@ -5,56 +5,176 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.33.93.31351",
-      "templateHash": "2855794615987868353"
+      "version": "0.32.4.45862",
+      "templateHash": "18042735123172379156"
     },
     "name": "Azure Stack HCI Network Interface",
     "description": "This module deploys an Azure Stack HCI network interface."
   },
   "definitions": {
-    "ipConfigurationType": {
+    "extendedLocationType": {
       "type": "object",
       "properties": {
         "name": {
           "type": "string",
-          "nullable": true,
           "metadata": {
-            "description": "Optional. The name of the resource that is unique within a resource group. This name can be used to access the resource."
+            "description": "Required. The name of the extended location."
           }
         },
-        "properties": {
-          "type": "object",
-          "properties": {
-            "privateIPAddress": {
-              "type": "string",
-              "nullable": true,
-              "metadata": {
-                "description": "Optional. Private IP address of the IP configuration."
-              }
-            },
-            "subnet": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string",
-                  "metadata": {
-                    "description": "Required. The ARM ID for a Logical Network."
-                  }
-                }
-              },
-              "metadata": {
-                "description": "Required. Name of Subnet bound to the IP configuration."
-              }
-            }
-          },
+        "type": {
+          "type": "string",
+          "allowedValues": [
+            "CustomLocation"
+          ],
           "metadata": {
-            "description": "Required. InterfaceIPConfigurationPropertiesFormat properties of IP configuration."
+            "description": "Required. The type of the extended location."
           }
         }
       },
       "metadata": {
         "__bicep_export!": true,
-        "description": "The type for an IP configuration."
+        "description": "The extended location properties."
+      }
+    },
+    "interfaceDNSSettingsType": {
+      "type": "object",
+      "properties": {
+        "dnsServers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "nullable": true,
+          "metadata": {
+            "description": "Optional. List of DNS server IP Addresses for the interface."
+          }
+        }
+      },
+      "metadata": {
+        "__bicep_export!": true,
+        "description": "The DNS settings for the network interface."
+      }
+    },
+    "ipConfigurationPropertiesType": {
+      "type": "object",
+      "properties": {
+        "privateIPAddress": {
+          "type": "string",
+          "nullable": true,
+          "metadata": {
+            "description": "Optional. Private IP address of the IP configuration."
+          }
+        },
+        "subnet": {
+          "$ref": "#/definitions/logicalNetworkArmReferenceType",
+          "nullable": true,
+          "metadata": {
+            "description": "Optional. Name of Subnet bound to the IP configuration."
+          }
+        }
+      },
+      "metadata": {
+        "__bicep_export!": true,
+        "description": "The IP configuration properties."
+      }
+    },
+    "logicalNetworkArmReferenceType": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "metadata": {
+            "description": "Required. The ARM ID for a Logical Network."
+          }
+        }
+      },
+      "metadata": {
+        "__bicep_export!": true,
+        "description": "The Logical Network ARM reference."
+      }
+    },
+    "ipConfigurationType": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "metadata": {
+            "description": "Required. The name of the resource that is unique within a resource group."
+          }
+        },
+        "properties": {
+          "$ref": "#/definitions/ipConfigurationPropertiesType",
+          "nullable": true,
+          "metadata": {
+            "description": "Optional. Properties of IP configuration."
+          }
+        }
+      },
+      "metadata": {
+        "__bicep_export!": true,
+        "description": "The IP configuration properties format."
+      }
+    },
+    "networkSecurityGroupArmReferenceType": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "metadata": {
+            "description": "Required. The ARM ID for a Network Security Group."
+          }
+        }
+      },
+      "metadata": {
+        "__bicep_export!": true,
+        "description": "The Network Security Group ARM reference."
+      }
+    },
+    "networkInterfacePropertiesType": {
+      "type": "object",
+      "properties": {
+        "createFromLocal": {
+          "type": "bool",
+          "nullable": true,
+          "metadata": {
+            "description": "Optional. Boolean indicating whether this is a existing local network interface or if one should be created."
+          }
+        },
+        "dnsSettings": {
+          "$ref": "#/definitions/interfaceDNSSettingsType",
+          "nullable": true,
+          "metadata": {
+            "description": "Optional. DNS Settings for the interface."
+          }
+        },
+        "ipConfigurations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ipConfigurationType"
+          },
+          "nullable": true,
+          "metadata": {
+            "description": "Optional. A list of IPConfigurations of the network interface."
+          }
+        },
+        "macAddress": {
+          "type": "string",
+          "nullable": true,
+          "metadata": {
+            "description": "Optional. The MAC address of the network interface."
+          }
+        },
+        "networkSecurityGroup": {
+          "$ref": "#/definitions/networkSecurityGroupArmReferenceType",
+          "nullable": true,
+          "metadata": {
+            "description": "Optional. Network Security Group attached to the network interface."
+          }
+        }
+      },
+      "metadata": {
+        "__bicep_export!": true,
+        "description": "The network interface properties."
       }
     },
     "roleAssignmentType": {
@@ -160,30 +280,17 @@
         "description": "Required. Resource ID of the associated custom location."
       }
     },
-    "ipConfigurations": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/ipConfigurationType"
-      },
-      "metadata": {
-        "description": "Required. A list of IPConfigurations of the network interface."
-      }
-    },
-    "dnsServers": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "nullable": true,
-      "metadata": {
-        "description": "Optional. DNS servers array for NIC. These are only applied during NIC creation."
-      }
-    },
     "enableTelemetry": {
       "type": "bool",
       "defaultValue": true,
       "metadata": {
         "description": "Optional. Enable/Disable usage telemetry for module."
+      }
+    },
+    "properties": {
+      "$ref": "#/definitions/networkInterfacePropertiesType",
+      "metadata": {
+        "description": "Required. The properties of the network interface."
       }
     },
     "roleAssignments": {
@@ -209,22 +316,21 @@
       "Contributor": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
       "Owner": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
       "Reader": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
-      "Azure Stack HCI VM Contributor": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '874d1c73-6003-4e60-a13a-cb31ea190a85')]",
-      "Azure Stack HCI VM Reader": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4b3fe76c-f777-4d24-a2d7-b027b0f7b273')]",
-      "Azure Stack HCI Administrator": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'bda0d508-adf1-4af0-9c28-88919fc3ae06')]"
+      "User Access Administrator": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '18d7d88d-d35e-4fb5-a5c3-7773c20a72d9')]",
+      "Role Based Access Control Administrator (Preview)": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'f58310d9-a9f6-439a-9e8d-f62e7b41a168')]"
     }
   },
   "resources": {
     "avmTelemetry": {
       "condition": "[parameters('enableTelemetry')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2023-07-01",
+      "apiVersion": "2024-03-01",
       "name": "[format('46d3xbcp.res.azurestackhci-networkinterface.{0}.{1}', replace('-..--..-', '.', '-'), substring(uniqueString(deployment().name, parameters('location')), 0, 4))]",
       "properties": {
         "mode": "Incremental",
         "template": {
           "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-          "contentVersion": "#_moduleVersion_#.0",
+          "contentVersion": "1.0.0.0",
           "resources": [],
           "outputs": {
             "telemetry": {
@@ -237,22 +343,19 @@
     },
     "networkInterface": {
       "type": "Microsoft.AzureStackHCI/networkInterfaces",
-      "apiVersion": "2024-01-01",
+      "apiVersion": "2025-04-01-preview",
       "name": "[parameters('name')]",
-      "location": "[parameters('location')]",
       "tags": "[parameters('tags')]",
       "extendedLocation": {
         "type": "CustomLocation",
         "name": "[parameters('customLocationResourceId')]"
       },
-      "properties": {
-        "ipConfigurations": "[parameters('ipConfigurations')]",
-        "dnsSettings": "[if(not(empty(parameters('dnsServers'))), createObject('dnsServers', parameters('dnsServers')), null())]"
-      }
+      "location": "[parameters('location')]",
+      "properties": "[parameters('properties')]"
     },
-    "networkinterface_roleAssignments": {
+    "networkInterface_roleAssignments": {
       "copy": {
-        "name": "networkinterface_roleAssignments",
+        "name": "networkInterface_roleAssignments",
         "count": "[length(coalesce(variables('formattedRoleAssignments'), createArray()))]"
       },
       "type": "Microsoft.Authorization/roleAssignments",
@@ -274,33 +377,33 @@
     }
   },
   "outputs": {
-    "resourceId": {
-      "type": "string",
-      "metadata": {
-        "description": "The resource ID of the resource."
-      },
-      "value": "[resourceId('Microsoft.AzureStackHCI/networkInterfaces', parameters('name'))]"
-    },
     "name": {
       "type": "string",
       "metadata": {
-        "description": "The name of the resource."
+        "description": "The name of the network interface."
       },
       "value": "[parameters('name')]"
+    },
+    "resourceId": {
+      "type": "string",
+      "metadata": {
+        "description": "The resource ID of the network interface."
+      },
+      "value": "[resourceId('Microsoft.AzureStackHCI/networkInterfaces', parameters('name'))]"
     },
     "resourceGroupName": {
       "type": "string",
       "metadata": {
-        "description": "The resource group name of the resource."
+        "description": "The resource group of the network interface."
       },
       "value": "[resourceGroup().name]"
     },
     "location": {
       "type": "string",
       "metadata": {
-        "description": "The location the resource was deployed into."
+        "description": "The location of the network interface."
       },
-      "value": "[reference('networkInterface', '2024-01-01', 'full').location]"
+      "value": "[reference('networkInterface', '2025-04-01-preview', 'full').location]"
     }
   }
 }

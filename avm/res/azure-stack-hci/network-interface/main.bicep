@@ -13,35 +13,27 @@ param tags object?
 @description('Required. Resource ID of the associated custom location.')
 param customLocationResourceId string
 
-@description('Required. A list of IPConfigurations of the network interface.')
-param ipConfigurations ipConfigurationType[]
-
-@description('Optional. DNS servers array for NIC. These are only applied during NIC creation.')
-param dnsServers string[]?
-
 @description('Optional. Enable/Disable usage telemetry for module.')
 param enableTelemetry bool = true
+
+@description('Required. The properties of the network interface.')
+param properties networkInterfacePropertiesType
 
 import { roleAssignmentType } from 'br/public:avm/utl/types/avm-common-types:0.5.1'
 @description('Optional. Array of role assignments to create.')
 param roleAssignments roleAssignmentType[]?
 
 var builtInRoleNames = {
-  // Add other relevant built-in roles here for your resource as per BCPNFR5
   Contributor: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')
   Owner: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')
   Reader: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')
-  'Azure Stack HCI VM Contributor': subscriptionResourceId(
+  'User Access Administrator': subscriptionResourceId(
     'Microsoft.Authorization/roleDefinitions',
-    '874d1c73-6003-4e60-a13a-cb31ea190a85'
+    '18d7d88d-d35e-4fb5-a5c3-7773c20a72d9'
   )
-  'Azure Stack HCI VM Reader': subscriptionResourceId(
+  'Role Based Access Control Administrator (Preview)': subscriptionResourceId(
     'Microsoft.Authorization/roleDefinitions',
-    '4b3fe76c-f777-4d24-a2d7-b027b0f7b273'
-  )
-  'Azure Stack HCI Administrator': subscriptionResourceId(
-    'Microsoft.Authorization/roleDefinitions',
-    'bda0d508-adf1-4af0-9c28-88919fc3ae06'
+    'f58310d9-a9f6-439a-9e8d-f62e7b41a168'
   )
 }
 
@@ -61,13 +53,13 @@ var formattedRoleAssignments = [
 // ============== //
 
 #disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2023-07-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
   name: '46d3xbcp.res.azurestackhci-networkinterface.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, location), 0, 4)}'
   properties: {
     mode: 'Incremental'
     template: {
       '$schema': 'https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#'
-      contentVersion: '#_moduleVersion_#.0'
+      contentVersion: '1.0.0.0'
       resources: []
       outputs: {
         telemetry: {
@@ -79,21 +71,18 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2023-07-01' = if (enableT
   }
 }
 
-resource networkInterface 'Microsoft.AzureStackHCI/networkInterfaces@2024-01-01' = {
+resource networkInterface 'Microsoft.AzureStackHCI/networkInterfaces@2025-04-01-preview' = {
   name: name
-  location: location
   tags: tags
   extendedLocation: {
     type: 'CustomLocation'
     name: customLocationResourceId
   }
-  properties: {
-    ipConfigurations: ipConfigurations
-    dnsSettings: (!empty(dnsServers)) ? { dnsServers: dnsServers } : null
-  }
+  location: location
+  properties: properties
 }
 
-resource networkinterface_roleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+resource networkInterface_roleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for (roleAssignment, index) in (formattedRoleAssignments ?? []): {
     name: roleAssignment.?name ?? guid(networkInterface.id, roleAssignment.principalId, roleAssignment.roleDefinitionId)
     properties: {
@@ -102,7 +91,7 @@ resource networkinterface_roleAssignments 'Microsoft.Authorization/roleAssignmen
       description: roleAssignment.?description
       principalType: roleAssignment.?principalType
       condition: roleAssignment.?condition
-      conditionVersion: !empty(roleAssignment.?condition) ? (roleAssignment.?conditionVersion ?? '2.0') : null // Must only be set if condtion is set
+      conditionVersion: !empty(roleAssignment.?condition) ? (roleAssignment.?conditionVersion ?? '2.0') : null
       delegatedManagedIdentityResourceId: roleAssignment.?delegatedManagedIdentityResourceId
     }
     scope: networkInterface
@@ -113,36 +102,88 @@ resource networkinterface_roleAssignments 'Microsoft.Authorization/roleAssignmen
 // Outputs      //
 // ============ //
 
-@description('The resource ID of the resource.')
-output resourceId string = networkInterface.id
-
-@description('The name of the resource.')
+@description('The name of the network interface.')
 output name string = networkInterface.name
 
-@description('The resource group name of the resource.')
+@description('The resource ID of the network interface.')
+output resourceId string = networkInterface.id
+
+@description('The resource group of the network interface.')
 output resourceGroupName string = resourceGroup().name
 
-@description('The location the resource was deployed into.')
+@description('The location of the network interface.')
 output location string = networkInterface.location
 
-// ================ //
-// Definitions      //
-// ================ //
-//
+// ============= //
+// Type Definitions //
+// ============= //
 
 @export()
-@description('The type for an IP configuration.')
+@description('The extended location properties.')
+type extendedLocationType = {
+  @description('Required. The name of the extended location.')
+  name: string
+
+  @description('Required. The type of the extended location.')
+  type: 'CustomLocation'
+}
+
+@export()
+@description('The DNS settings for the network interface.')
+type interfaceDNSSettingsType = {
+  @description('Optional. List of DNS server IP Addresses for the interface.')
+  dnsServers: string[]?
+}
+
+@export()
+@description('The IP configuration properties.')
+type ipConfigurationPropertiesType = {
+  @description('Optional. Private IP address of the IP configuration.')
+  privateIPAddress: string?
+
+  @description('Optional. Name of Subnet bound to the IP configuration.')
+  subnet: logicalNetworkArmReferenceType?
+}
+
+@export()
+@description('The Logical Network ARM reference.')
+type logicalNetworkArmReferenceType = {
+  @description('Required. The ARM ID for a Logical Network.')
+  id: string
+}
+
+@export()
+@description('The IP configuration properties format.')
 type ipConfigurationType = {
-  @description('Optional. The name of the resource that is unique within a resource group. This name can be used to access the resource.')
-  name: string?
-  @description('Required. InterfaceIPConfigurationPropertiesFormat properties of IP configuration.')
-  properties: {
-    @description('Optional. Private IP address of the IP configuration.')
-    privateIPAddress: string?
-    @description('Required. Name of Subnet bound to the IP configuration.')
-    subnet: {
-      @description('Required. The ARM ID for a Logical Network.')
-      id: string
-    }
-  }
+  @description('Required. The name of the resource that is unique within a resource group.')
+  name: string
+
+  @description('Optional. Properties of IP configuration.')
+  properties: ipConfigurationPropertiesType?
+}
+
+@export()
+@description('The Network Security Group ARM reference.')
+type networkSecurityGroupArmReferenceType = {
+  @description('Required. The ARM ID for a Network Security Group.')
+  id: string
+}
+
+@export()
+@description('The network interface properties.')
+type networkInterfacePropertiesType = {
+  @description('Optional. Boolean indicating whether this is a existing local network interface or if one should be created.')
+  createFromLocal: bool?
+
+  @description('Optional. DNS Settings for the interface.')
+  dnsSettings: interfaceDNSSettingsType?
+
+  @description('Optional. A list of IPConfigurations of the network interface.')
+  ipConfigurations: ipConfigurationType[]?
+
+  @description('Optional. The MAC address of the network interface.')
+  macAddress: string?
+
+  @description('Optional. Network Security Group attached to the network interface.')
+  networkSecurityGroup: networkSecurityGroupArmReferenceType?
 }
