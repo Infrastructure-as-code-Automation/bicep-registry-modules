@@ -22,7 +22,7 @@ param deploymentUsername string = 'deployUser'
 param deploymentUserPassword string
 param localAdminUsername string
 @secure()
-param localAdminPassword string
+param localAdminPassword string = 'bicep-test-password-1234'
 @secure()
 param arbDeploymentAppId string
 @secure()

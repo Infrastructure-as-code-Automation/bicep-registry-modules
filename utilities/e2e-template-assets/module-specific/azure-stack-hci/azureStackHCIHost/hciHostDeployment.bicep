@@ -18,7 +18,7 @@ param localAdminUsername string = 'admin-hci'
 
 @description('Required. The local admin password.')
 @secure()
-param localAdminPassword string
+param localAdminPassword string = 'bicep-test-password-1234'
 
 @description('Optional. The domain OU path.')
 param domainOUPath string = 'OU=HCI,DC=HCI,DC=local'
@@ -226,25 +226,6 @@ resource vm 'Microsoft.Compute/virtualMachines@2024-03-01' = {
       imageReference: {
         id: imageReferenceId
       }
-      osDisk: {
-        createOption: 'FromImage'
-        diskSizeGB: 128
-        deleteOption: 'Delete'
-        managedDisk: {
-          storageAccountType: 'Premium_LRS'
-        }
-      }
-      dataDisks: [
-        for diskNum in range(1, hciNodeCount): {
-          lun: diskNum
-          createOption: 'Attach'
-          caching: 'ReadOnly'
-          managedDisk: {
-            id: disks[diskNum - 1].id
-          }
-          deleteOption: 'Delete'
-        }
-      ]
       //diskControllerType: 'NVMe'
     }
     osProfile: {

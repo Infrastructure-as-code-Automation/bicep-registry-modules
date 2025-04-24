@@ -4,7 +4,7 @@ param deploymentUserPassword string
 
 @description('Required. The password of the LCM deployment user and local administrator accounts.')
 @secure()
-param localAdminPassword string
+param localAdminPassword string = 'bicep-test-password-1234'
 
 @description('Required. The app ID of the service principal used for the Azure Stack HCI Resource Bridge deployment. If omitted, the deploying user must have permissions to create service principals and role assignments in Entra ID.')
 @secure()
