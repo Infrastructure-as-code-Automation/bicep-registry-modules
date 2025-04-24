@@ -226,6 +226,12 @@ resource vm 'Microsoft.Compute/virtualMachines@2024-03-01' = {
       imageReference: {
         id: imageReferenceId
       }
+      osDisk: {
+        createOption: 'FromImage'
+        managedDisk: {
+          storageAccountType: 'Premium_LRS'
+        }
+      }
       //diskControllerType: 'NVMe'
     }
     osProfile: {
