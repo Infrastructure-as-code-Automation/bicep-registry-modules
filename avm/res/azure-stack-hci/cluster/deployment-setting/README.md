@@ -32,7 +32,6 @@ This module deploys an Azure Stack HCI Cluster Deployment Settings resource.
 | [`domainOUPath`](#parameter-domainoupath) | string | The ADDS OU path - ex "OU=HCI,DC=contoso,DC=com". |
 | [`endingIPAddress`](#parameter-endingipaddress) | string | The ending IP address for the Infrastructure Network IP pool. There must be at least 6 IPs between startingIPAddress and endingIPAddress and this pool should be not include the node IPs. |
 | [`hciResourceProviderObjectId`](#parameter-hciresourceproviderobjectid) | securestring | The service principal object ID of the Azure Stack HCI Resource Provider in this tenant. Can be fetched via `Get-AzADServicePrincipal -ApplicationId 1412d89f-b8a8-4111-b4fd-e82905cbd85d` after the 'Microsoft.AzureStackHCI' provider was registered in the subscription. |
-| [`keyVaultName`](#parameter-keyvaultname) | string | The name of the key vault to be used for storing secrets for the HCI cluster. |
 | [`networkIntents`](#parameter-networkintents) | array | An array of Network ATC Network Intent objects that define the Compute, Management, and Storage network configuration for the cluster. |
 | [`startingIPAddress`](#parameter-startingipaddress) | string | The starting IP address for the Infrastructure Network IP pool. There must be at least 6 IPs between startingIPAddress and endingIPAddress and this pool should be not include the node IPs. |
 | [`storageConnectivitySwitchless`](#parameter-storageconnectivityswitchless) | bool | Specify whether the Storage Network connectivity is switched or switchless. |
@@ -51,7 +50,6 @@ This module deploys an Azure Stack HCI Cluster Deployment Settings resource.
 | :-- | :-- | :-- |
 | [`bitlockerBootVolume`](#parameter-bitlockerbootvolume) | bool | When set to true, BitLocker XTS_AES 256-bit encryption is enabled for all data-at-rest on the OS volume of your Azure Stack HCI cluster. This setting is TPM-hardware dependent. |
 | [`bitlockerDataVolumes`](#parameter-bitlockerdatavolumes) | bool | When set to true, BitLocker XTS-AES 256-bit encryption is enabled for all data-at-rest on your Azure Stack HCI cluster shared volumes. |
-| [`cloudId`](#parameter-cloudid) | string | If using a shared key vault or non-legacy secret naming, pass the properties.cloudId guid from the pre-created HCI cluster resource. |
 | [`credentialGuardEnforced`](#parameter-credentialguardenforced) | bool | Enables the Credential Guard. |
 | [`driftControlEnforced`](#parameter-driftcontrolenforced) | bool | When set to true, the security baseline is re-applied regularly. |
 | [`drtmProtection`](#parameter-drtmprotection) | bool | The hardware-dependent Secure Boot setting. |
@@ -151,13 +149,6 @@ The service principal object ID of the Azure Stack HCI Resource Provider in this
 - Required: Yes
 - Type: securestring
 
-### Parameter: `keyVaultName`
-
-The name of the key vault to be used for storing secrets for the HCI cluster.
-
-- Required: Yes
-- Type: string
-
 ### Parameter: `networkIntents`
 
 An array of Network ATC Network Intent objects that define the Compute, Management, and Storage network configuration for the cluster.
@@ -215,13 +206,6 @@ When set to true, BitLocker XTS-AES 256-bit encryption is enabled for all data-a
 - Required: No
 - Type: bool
 - Default: `False`
-
-### Parameter: `cloudId`
-
-If using a shared key vault or non-legacy secret naming, pass the properties.cloudId guid from the pre-created HCI cluster resource.
-
-- Required: No
-- Type: string
 
 ### Parameter: `credentialGuardEnforced`
 

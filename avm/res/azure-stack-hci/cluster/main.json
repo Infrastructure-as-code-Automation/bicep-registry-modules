@@ -5,8 +5,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.33.93.31351",
-      "templateHash": "956420421248843753"
+      "version": "0.32.4.45862",
+      "templateHash": "1269139281061182676"
     },
     "name": "Azure Stack HCI Cluster",
     "description": "This module deploys an Azure Stack HCI Cluster on the provided Arc Machines."
@@ -973,8 +973,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.33.93.31351",
-              "templateHash": "13439816736266620515"
+              "version": "0.32.4.45862",
+              "templateHash": "11446817464643913365"
             }
           },
           "parameters": {
@@ -1236,7 +1236,6 @@
         },
         "mode": "Incremental",
         "parameters": {
-          "cloudId": "[if(parameters('useSharedKeyVault'), createObject('value', reference('cluster').cloudId), createObject('value', null()))]",
           "clusterName": {
             "value": "[parameters('name')]"
           },
@@ -1269,9 +1268,6 @@
           },
           "endingIPAddress": {
             "value": "[parameters('deploymentSettings').endingIPAddress]"
-          },
-          "keyVaultName": {
-            "value": "[parameters('deploymentSettings').keyVaultName]"
           },
           "networkIntents": {
             "copy": [
@@ -1350,8 +1346,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.33.93.31351",
-              "templateHash": "12398547587936092834"
+              "version": "0.32.4.45862",
+              "templateHash": "11560525140257503379"
             },
             "name": "Azure Stack HCI Cluster Deployment Settings",
             "description": "This module deploys an Azure Stack HCI Cluster Deployment Settings resource."
@@ -1584,19 +1580,6 @@
                 "description": "Required. The name of the storage account to be used as the witness for the HCI Windows Failover Cluster."
               }
             },
-            "keyVaultName": {
-              "type": "string",
-              "metadata": {
-                "description": "Required. The name of the key vault to be used for storing secrets for the HCI cluster."
-              }
-            },
-            "cloudId": {
-              "type": "string",
-              "nullable": true,
-              "metadata": {
-                "description": "Optional. If using a shared key vault or non-legacy secret naming, pass the properties.cloudId guid from the pre-created HCI cluster resource."
-              }
-            },
             "hciResourceProviderObjectId": {
               "type": "securestring",
               "metadata": {
@@ -1699,15 +1682,6 @@
                               "name": "[reference(variables('arcNodeResourceIds')[copyIndex('physicalNodes')], '2022-12-27', 'Full').properties.displayName]",
                               "ipv4Address": "[filter(reference(format('{0}/providers/microsoft.azurestackhci/edgeDevices/default', variables('arcNodeResourceIds')[copyIndex('physicalNodes')]), '2024-01-01', 'Full').properties.deviceConfiguration.nicDetails, lambda('nic', not(equals(tryGet(lambdaVariables('nic'), 'defaultGateway'), null()))))[0].ip4Address]"
                             }
-                          },
-                          {
-                            "name": "secrets",
-                            "count": "[length(createArray('LocalAdminCredential', 'AzureStackLCMUserCredential', 'DefaultARBApplication', 'WitnessStorageKey'))]",
-                            "input": {
-                              "secretName": "[if(empty(parameters('cloudId')), createArray('LocalAdminCredential', 'AzureStackLCMUserCredential', 'DefaultARBApplication', 'WitnessStorageKey')[copyIndex('secrets')], format('{0}-{1}-{2}', parameters('clusterName'), createArray('LocalAdminCredential', 'AzureStackLCMUserCredential', 'DefaultARBApplication', 'WitnessStorageKey')[copyIndex('secrets')], parameters('cloudId')))]",
-                              "eceSecretName": "[createArray('LocalAdminCredential', 'AzureStackLCMUserCredential', 'DefaultARBApplication', 'WitnessStorageKey')[copyIndex('secrets')]]",
-                              "secretLocation": "[if(empty(parameters('cloudId')), format('https://{0}{1}/secrets/{2}', parameters('keyVaultName'), environment().suffixes.keyvaultDns, createArray('LocalAdminCredential', 'AzureStackLCMUserCredential', 'DefaultARBApplication', 'WitnessStorageKey')[copyIndex('secrets')]), format('https://{0}{1}/secrets/{2}-{3}-{4}', parameters('keyVaultName'), environment().suffixes.keyvaultDns, parameters('clusterName'), createArray('LocalAdminCredential', 'AzureStackLCMUserCredential', 'DefaultARBApplication', 'WitnessStorageKey')[copyIndex('secrets')], parameters('cloudId')))]"
-                            }
                           }
                         ],
                         "securitySettings": {
@@ -1770,7 +1744,6 @@
                           "enableStorageAutoIp": "[parameters('enableStorageAutoIp')]"
                         },
                         "adouPath": "[parameters('domainOUPath')]",
-                        "secretsLocation": "[format('https://{0}{1}', parameters('keyVaultName'), environment().suffixes.keyvaultDns)]",
                         "optionalServices": {
                           "customLocation": "[parameters('customLocationName')]"
                         }

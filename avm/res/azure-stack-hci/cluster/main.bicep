@@ -211,7 +211,7 @@ module deploymentSetting 'deployment-setting/main.bicep' = [
   for deploymentOperation in sortedDeploymentOperations: if (!empty(deploymentOperation) && !empty(deploymentSettings)) {
     name: 'deploymentSettings-${deploymentOperation}'
     params: {
-      cloudId: useSharedKeyVault ? cluster.properties.cloudId : null
+      // cloudId: useSharedKeyVault ? cluster.properties.cloudId : null
       clusterName: cluster.name
       deploymentMode: deploymentOperation
       clusterNodeNames: deploymentSettings!.clusterNodeNames
@@ -223,7 +223,7 @@ module deploymentSetting 'deployment-setting/main.bicep' = [
       domainFqdn: deploymentSettings!.domainFqdn
       domainOUPath: deploymentSettings!.domainOUPath
       endingIPAddress: deploymentSettings!.endingIPAddress
-      keyVaultName: deploymentSettings!.keyVaultName
+      // keyVaultName: deploymentSettings!.keyVaultName
       networkIntents: [
         for intent in deploymentSettings.networkIntents: {
           ...intent

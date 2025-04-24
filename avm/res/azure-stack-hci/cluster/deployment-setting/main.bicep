@@ -117,11 +117,11 @@ param customLocationName string
 @description('Required. The name of the storage account to be used as the witness for the HCI Windows Failover Cluster.')
 param clusterWitnessStorageAccountName string
 
-@description('Required. The name of the key vault to be used for storing secrets for the HCI cluster.')
-param keyVaultName string
+// @description('Required. The name of the key vault to be used for storing secrets for the HCI cluster.')
+// param keyVaultName string
 
-@description('Optional. If using a shared key vault or non-legacy secret naming, pass the properties.cloudId guid from the pre-created HCI cluster resource.')
-param cloudId string?
+// @description('Optional. If using a shared key vault or non-legacy secret naming, pass the properties.cloudId guid from the pre-created HCI cluster resource.')
+// param cloudId string?
 
 @description('Required. The service principal object ID of the Azure Stack HCI Resource Provider in this tenant. Can be fetched via `Get-AzADServicePrincipal -ApplicationId 1412d89f-b8a8-4111-b4fd-e82905cbd85d` after the \'Microsoft.AzureStackHCI\' provider was registered in the subscription.')
 @secure()
@@ -292,24 +292,24 @@ resource deploymentSettings 'Microsoft.AzureStackHCI/clusters/deploymentSettings
               enableStorageAutoIp: enableStorageAutoIp
             }
             adouPath: domainOUPath
-            secretsLocation: 'https://${keyVaultName}${environment().suffixes.keyvaultDns}'
+            // secretsLocation: 'https://${keyVaultName}${environment().suffixes.keyvaultDns}'
             optionalServices: {
               customLocation: customLocationName
             }
-            secrets: [
-              for secretName in [
-                'LocalAdminCredential'
-                'AzureStackLCMUserCredential'
-                'DefaultARBApplication'
-                'WitnessStorageKey'
-              ]: {
-                secretName: empty(cloudId) ? secretName : '${clusterName}-${secretName}-${cloudId}'
-                eceSecretName: secretName
-                secretLocation: empty(cloudId)
-                  ? 'https://${keyVaultName}${environment().suffixes.keyvaultDns}/secrets/${secretName}'
-                  : 'https://${keyVaultName}${environment().suffixes.keyvaultDns}/secrets/${clusterName}-${secretName}-${cloudId}'
-              }
-            ]
+            // secrets: [
+            //   for secretName in [
+            //     'LocalAdminCredential'
+            //     'AzureStackLCMUserCredential'
+            //     'DefaultARBApplication'
+            //     'WitnessStorageKey'
+            //   ]: {
+            //     secretName: empty(cloudId) ? secretName : '${clusterName}-${secretName}-${cloudId}'
+            //     eceSecretName: secretName
+            //     secretLocation: empty(cloudId)
+            //       ? 'https://${keyVaultName}${environment().suffixes.keyvaultDns}/secrets/${secretName}'
+            //       : 'https://${keyVaultName}${environment().suffixes.keyvaultDns}/secrets/${clusterName}-${secretName}-${cloudId}'
+            //   }
+            // ]
           }
         }
       ]
