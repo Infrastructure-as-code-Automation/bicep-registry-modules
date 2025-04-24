@@ -208,9 +208,9 @@ resource vm 'Microsoft.Compute/virtualMachines@2024-03-01' = {
     }
   }
   properties: {
-    virtualMachineScaleSet: {
-      id: hciHostVMSSFlex.id
-    }
+    // virtualMachineScaleSet: {
+    //   id: hciHostVMSSFlex.id
+    // }
     hardwareProfile: {
       vmSize: hostVMSize
     }
