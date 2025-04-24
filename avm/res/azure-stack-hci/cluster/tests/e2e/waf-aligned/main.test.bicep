@@ -15,7 +15,7 @@ param namePrefix string = '#_namePrefix_#'
 
 @description('Optional. The password of the LCM deployment user and local administrator accounts.')
 @secure()
-param localAdminAndDeploymentUserPass string
+param localAdminAndDeploymentUserPass string = 'bicep-test-password-1234'
 
 @description('Required. The app ID of the service principal used for the Azure Stack HCI Resource Bridge deployment.')
 @secure()
