@@ -235,8 +235,8 @@ resource vm 'Microsoft.Compute/virtualMachines@2024-03-01' = {
       //diskControllerType: 'NVMe'
     }
     osProfile: {
-      adminPassword: localAdminPassword
-      adminUsername: localAdminUsername
+      // adminPassword: localAdminPassword
+      // adminUsername: localAdminUsername
       computerName: 'hciHost01'
       windowsConfiguration: {
         provisionVMAgent: true
