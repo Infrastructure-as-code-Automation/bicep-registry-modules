@@ -194,7 +194,7 @@ resource disks 'Microsoft.Compute/disks@2023-10-02' = [
   }
 ]
 
-param imageReferenceId string = '/subscriptions/de3c4d5e-af08-451a-a873-438d86ab6f4b/resourceGroups/IacAutomationImageRG/providers/Microsoft.Compute/galleries/azlocal/images/azlocal/versions/2.0.0'
+param imageReferenceId string = '/subscriptions/de3c4d5e-af08-451a-a873-438d86ab6f4b/resourceGroups/IacAutomationImageRG/providers/Microsoft.Compute/galleries/azlocal/images/vm/versions/1.0.0'
 
 // Azure Stack HCI Host VM -
 resource vm 'Microsoft.Compute/virtualMachines@2024-03-01' = {
