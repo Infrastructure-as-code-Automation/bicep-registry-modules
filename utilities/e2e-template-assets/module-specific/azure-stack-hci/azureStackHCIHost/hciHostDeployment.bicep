@@ -234,21 +234,21 @@ resource vm 'Microsoft.Compute/virtualMachines@2024-03-01' = {
       }
       //diskControllerType: 'NVMe'
     }
-    osProfile: {
-      // adminPassword: localAdminPassword
-      // adminUsername: localAdminUsername
-      computerName: 'hciHost01'
-      windowsConfiguration: {
-        provisionVMAgent: true
-        enableAutomaticUpdates: true
-        patchSettings: {
-          patchMode: 'AutomaticByPlatform'
-          automaticByPlatformSettings: {
-            bypassPlatformSafetyChecksOnUserSchedule: true
-          }
-        }
-      }
-    }
+    // osProfile: {
+    //   adminPassword: localAdminPassword
+    //   adminUsername: localAdminUsername
+    //   computerName: 'hciHost01'
+    //   windowsConfiguration: {
+    //     provisionVMAgent: true
+    //     enableAutomaticUpdates: true
+    //     patchSettings: {
+    //       patchMode: 'AutomaticByPlatform'
+    //       automaticByPlatformSettings: {
+    //         bypassPlatformSafetyChecksOnUserSchedule: true
+    //       }
+    //     }
+    //   }
+    // }
     securityProfile: {
       uefiSettings: {
         secureBootEnabled: true
