@@ -249,15 +249,6 @@ resource vm 'Microsoft.Compute/virtualMachines@2024-03-01' = {
     //     }
     //   }
     // }
-    osProfile: {
-      computerName: 'hciHost01'
-      windowsConfiguration: {
-        provisionVMAgent: true
-        patchSettings: {
-          patchMode: 'AutomaticByPlatform'
-        }
-      }
-    }
     securityProfile: {
       uefiSettings: {
         secureBootEnabled: true
