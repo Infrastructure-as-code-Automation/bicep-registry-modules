@@ -69,6 +69,9 @@ Function log {
 
 $ErrorActionPreference = 'Stop'
 
+# import the ActiveDirectory module
+Import-Module -Name ActiveDirectory -ErrorAction Stop
+
 # export or re-import local administrator credential
 # we do this to support re-run of the template. If deployed, the HCI node password will be set to the password provided in the template, but future re-runs will generate a new password.
 If (!(Test-Path -Path 'C:\temp\hciHostDeployAdminCred.xml')) {
