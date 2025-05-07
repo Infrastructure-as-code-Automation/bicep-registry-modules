@@ -176,23 +176,23 @@ resource nic 'Microsoft.Network/networkInterfaces@2020-11-01' = {
 }
 
 // host VM disks
-resource disks 'Microsoft.Compute/disks@2023-10-02' = [
-  for diskNum in range(1, hciNodeCount): {
-    name: '${diskNamePrefix}${string(diskNum)}'
-    location: location
-    zones: ['1']
-    sku: {
-      name: 'Premium_LRS'
-    }
-    properties: {
-      diskSizeGB: 2048
-      networkAccessPolicy: 'DenyAll'
-      creationData: {
-        createOption: 'Empty'
-      }
-    }
-  }
-]
+// resource disks 'Microsoft.Compute/disks@2023-10-02' = [
+//   for diskNum in range(1, hciNodeCount): {
+//     name: '${diskNamePrefix}${string(diskNum)}'
+//     location: location
+//     zones: ['1']
+//     sku: {
+//       name: 'Premium_LRS'
+//     }
+//     properties: {
+//       diskSizeGB: 2048
+//       networkAccessPolicy: 'DenyAll'
+//       creationData: {
+//         createOption: 'Empty'
+//       }
+//     }
+//   }
+// ]
 
 param imageReferenceId string = '/subscriptions/de3c4d5e-af08-451a-a873-438d86ab6f4b/resourceGroups/IacAutomationImageRG/providers/Microsoft.Compute/galleries/azlocal/images/vm/versions/1.0.0'
 
@@ -208,9 +208,9 @@ resource vm 'Microsoft.Compute/virtualMachines@2024-03-01' = {
     }
   }
   properties: {
-    // virtualMachineScaleSet: {
-    //   id: hciHostVMSSFlex.id
-    // }
+    virtualMachineScaleSet: {
+      id: hciHostVMSSFlex.id
+    }
     hardwareProfile: {
       vmSize: hostVMSize
     }
