@@ -88,7 +88,7 @@ If (!(Test-Path -Path 'C:\temp\hciHostDeployAdminCred.xml')) {
     $adminCred | Export-Clixml -Path 'C:\temp\hciHostDeployAdminCred.xml'
 }
 
-If (!(Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) { Register-PSRepository -Default }
+# If (!(Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) { Register-PSRepository -Default }
 If (!(Get-PackageProvider -Name Nuget -ListAvailable -ErrorAction SilentlyContinue)) { Install-PackageProvider -Name NuGet -Confirm:$false -Force }
 Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 
@@ -230,7 +230,7 @@ if (![string]::IsNullOrEmpty($proxyServerEndpoint) -and ![string]::IsNullOrEmpty
 
         ## install winInetProxy module
         If (!(Get-PackageProvider -Name NuGet -ListAvailable -ErrorAction SilentlyContinue)) { Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force }
-        If (!(Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) { Register-PSRepository -Default }
+        # If (!(Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) { Register-PSRepository -Default }
         Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
         If (!(Get-InstalledModule -Name WinInetProxy -ErrorAction SilentlyContinue)) { Install-Module WinInetProxy -Force }
         Set-PSRepository -Name PSGallery -InstallationPolicy Untrusted
@@ -310,7 +310,7 @@ $arcInitializationJobs = Invoke-Command -VMName (Get-VM).Name -Credential $admin
     }
 
     Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force | Out-Null
-    If (!(Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) { Register-PSRepository -Default }
+    # If (!(Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) { Register-PSRepository -Default }
     Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
     Install-Module Az.Resources
     Install-Module -Name AzsHCI.ARCinstaller # -RequiredVersion '0.2.2690.99' # hardcode for 2408 testing
