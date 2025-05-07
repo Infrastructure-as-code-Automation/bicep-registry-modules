@@ -105,7 +105,7 @@ $t = Get-AzAccessToken -ResourceUrl 'https://management.azure.com' | Select-Obje
 log 'Pre-creating AD objects with deployment username '$deploymentUsername'...'
 $deployUserCred = [pscredential]::new($deploymentUsername, (ConvertTo-SecureString -AsPlainText -Force $adminPw))
 
-Install-Module AsHciADArtifactsPreCreationTool
+Install-Module AsHciADArtifactsPreCreationTool -Repository PSGallery -Force -Confirm:$false -Verbose
 New-HciAdObjectsPreCreation -AzureStackLCMUserCredential $deployUserCred -AsHciOUName $domainOUPath
 
 ## set the LCM deployUser password to the adminPw value - this aligns the password with the KeyVault during re-runs
@@ -346,7 +346,7 @@ $arcInitializationJobs = Invoke-Command -VMName (Get-VM).Name -Credential $admin
             }
         }
 
-        wget -Uri 'https://aka.ms/AzureConnectedMachineAgent' -OutFile "$env:TEMP\AzureConnectedMachineAgent.msi"
+        Invoke-WebRequest -Uri 'https://aka.ms/AzureConnectedMachineAgent' -OutFile "$env:TEMP\AzureConnectedMachineAgent.msi"
         msiexec /i "$env:TEMP\AzureConnectedMachineAgent.msi" /l*v "$env:TEMP\AzureConnectedMachineAgentInstall.log" /qn
 
         Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Confirm:$false
