@@ -194,7 +194,7 @@ resource nic 'Microsoft.Network/networkInterfaces@2020-11-01' = {
 //   }
 // ]
 
-param imageReferenceId string = '/subscriptions/de3c4d5e-af08-451a-a873-438d86ab6f4b/resourceGroups/IacAutomationImageRG/providers/Microsoft.Compute/galleries/azlocal/images/vm/versions/1.0.0'
+param imageReferenceId string = '/subscriptions/b9e38f20-7c9c-4497-a25d-1a0c5eef2108/resourceGroups/IaC-hardware-sim/providers/Microsoft.Compute/galleries/DirectlySharing/images/vhci-Generalized/versions/1.0.22'
 
 // Azure Stack HCI Host VM -
 resource vm 'Microsoft.Compute/virtualMachines@2024-03-01' = {
