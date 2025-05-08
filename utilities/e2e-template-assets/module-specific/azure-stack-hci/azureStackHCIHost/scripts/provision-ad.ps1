@@ -27,12 +27,7 @@ $script:ErrorActionPreference = 'Stop'
 Start-Sleep -Seconds 180 # sleep for 3 minutes
 
 try {
-    $username = "$($DomainFQDN.Split('.')[0])\$AdministratorAccount"
-    $securePassword = ConvertTo-SecureString $AdministratorPassword -AsPlainText -Force
-    $credential = New-Object System.Management.Automation.PSCredential -ArgumentList $username, $securePassword
-    $session = New-PSSession -ComputerName $IP -Port $Port -Authentication $Authentication -Credential $credential
-
-    Invoke-Command -Session $session -ScriptBlock {
+    Invoke-Command -ScriptBlock {
         Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Confirm:$false -Verbose
         Install-Module AsHciADArtifactsPreCreationTool -Repository PSGallery -Force -Confirm:$false -Verbose
         Add-KdsRootKey -EffectiveTime ((Get-Date).addhours(-10)) -Verbose # TODO: is this idempotent?

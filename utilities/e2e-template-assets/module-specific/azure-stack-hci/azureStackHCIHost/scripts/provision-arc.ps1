@@ -28,12 +28,7 @@ param(
 $script:ErrorActionPreference = 'Stop'
 
 try {
-    $username = ".\$LocalAdministratorAccount"
-    $securePassword = ConvertTo-SecureString $LocalAdministratorPassword -AsPlainText -Force
-    $credential = New-Object System.Management.Automation.PSCredential -ArgumentList $username, $securePassword
-    $session = New-PSSession -ComputerName $IP -Port $Port -Authentication $Authentication -Credential $credential
-
-    Invoke-Command -Session $session -ScriptBlock {
+    Invoke-Command -ScriptBlock {
         function Install-ModuleIfMissing {
             param(
                 [Parameter(Mandatory = $true)]
