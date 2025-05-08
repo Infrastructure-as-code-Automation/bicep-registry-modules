@@ -26,6 +26,11 @@ param domainAdminPassword string = '!!123abc!!123abc'
 @secure()
 param localAdminPassword string = 'bicep-test-password-1234'
 
+@secure()
+param arbDeploymentAppId string
+@secure()
+param arbDeploymentServicePrincipalSecret string
+
 @description('Optional. The domain OU path.')
 param domainOUPath string = 'OU=HCI,DC=HCI,DC=local'
 
@@ -322,6 +327,122 @@ resource ad 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
       }
     ]
   }
+}
+
+resource arc1 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
+  parent: vm
+  name: 'arc1'
+  location: location
+  properties: {
+    source: {
+      script: loadTextContent('./scripts/provision-arc.ps1')
+    }
+    parameters: [
+      {
+        name: 'IP'
+        value: '127.0.0.1'
+      }
+      {
+        name: 'Port'
+        value: '15985'
+      }
+      {
+        name: 'Authentication'
+        value: 'CredSSP'
+      }
+      {
+        name: 'LocalAdministratorAccount'
+        value: localAdminUsername
+      }
+      {
+        name: 'LocalAdministratorPassword'
+        value: localAdminPassword
+      }
+      {
+        name: 'ServicePrincipalId'
+        value: arbDeploymentAppId
+      }
+      {
+        name: 'ServicePrincipalSecret'
+        value: arbDeploymentServicePrincipalSecret
+      }
+      {
+        name: 'SubscriptionId'
+        value: subscription().subscriptionId
+      }
+      {
+        name: 'TenantId'
+        value: subscription().tenantId
+      }
+      {
+        name: 'ResourceGroupName'
+        value: resourceGroup().name
+      }
+      {
+        name: 'Region'
+        value: location
+      }
+    ]
+  }
+  dependsOn: [ad]
+}
+
+resource arc2 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
+  parent: vm
+  name: 'arc2'
+  location: location
+  properties: {
+    source: {
+      script: loadTextContent('./scripts/provision-arc.ps1')
+    }
+    parameters: [
+      {
+        name: 'IP'
+        value: '127.0.0.1'
+      }
+      {
+        name: 'Port'
+        value: '25985'
+      }
+      {
+        name: 'Authentication'
+        value: 'CredSSP'
+      }
+      {
+        name: 'LocalAdministratorAccount'
+        value: localAdminUsername
+      }
+      {
+        name: 'LocalAdministratorPassword'
+        value: localAdminPassword
+      }
+      {
+        name: 'ServicePrincipalId'
+        value: arbDeploymentAppId
+      }
+      {
+        name: 'ServicePrincipalSecret'
+        value: arbDeploymentServicePrincipalSecret
+      }
+      {
+        name: 'SubscriptionId'
+        value: subscription().subscriptionId
+      }
+      {
+        name: 'TenantId'
+        value: subscription().tenantId
+      }
+      {
+        name: 'ResourceGroupName'
+        value: resourceGroup().name
+      }
+      {
+        name: 'Region'
+        value: location
+      }
+    ]
+  }
+  dependsOn: [arc1]
 }
 
 // // prepares AD for ASHCI onboarding, initiates Arc onboarding of HCI node VMs
