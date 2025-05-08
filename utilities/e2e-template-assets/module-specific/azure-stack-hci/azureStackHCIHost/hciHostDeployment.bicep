@@ -295,11 +295,15 @@ resource ad 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
     parameters: [
       {
         name: 'IP'
-        value: '127.0.0.1'
+        value: 'hciHost01'
+      }
+      {
+        name: 'Port'
+        value: '6985'
       }
       {
         name: 'Authentication'
-        value: 'CredSSP'
+        value: 'Default'
       }
       {
         name: 'DomainFQDN'
@@ -340,7 +344,7 @@ resource arc1 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
     parameters: [
       {
         name: 'IP'
-        value: '127.0.0.1'
+        value: 'hciHost01'
       }
       {
         name: 'Port'
@@ -348,7 +352,7 @@ resource arc1 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
       }
       {
         name: 'Authentication'
-        value: 'CredSSP'
+        value: 'Default'
       }
       {
         name: 'LocalAdministratorAccount'
@@ -398,7 +402,7 @@ resource arc2 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
     parameters: [
       {
         name: 'IP'
-        value: '127.0.0.1'
+        value: 'hciHost01'
       }
       {
         name: 'Port'
@@ -406,7 +410,7 @@ resource arc2 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
       }
       {
         name: 'Authentication'
-        value: 'CredSSP'
+        value: 'Default'
       }
       {
         name: 'LocalAdministratorAccount'
