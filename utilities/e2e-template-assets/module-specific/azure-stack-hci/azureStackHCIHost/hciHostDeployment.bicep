@@ -163,6 +163,7 @@ resource hciHostVMSSFlex 'Microsoft.Compute/virtualMachineScaleSets@2024-03-01' 
 resource publicIP 'Microsoft.Network/publicIPAddresses@2020-11-01' = {
   name: '${networkInterfaceName}-PublicIP'
   location: location
+  zones: ['1']
   properties: {
     publicIPAllocationMethod: 'Dynamic' // You can use 'Static' if needed
   }
