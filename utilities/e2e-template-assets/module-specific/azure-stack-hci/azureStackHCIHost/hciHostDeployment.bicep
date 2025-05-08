@@ -16,6 +16,12 @@ param hciISODownloadURL string = 'https://azurestackreleases.download.prss.micro
 @description('Optional. The local admin user name.')
 param localAdminUsername string = 'admin-hci'
 
+@description('Optional. The domain admin user name.')
+param domainAdminUsername string = 'Administrator'
+
+@description('Optional. The domain admin user password.')
+param domainAdminPassword string = '!!123abc!!123abc'
+
 @description('Required. The local admin password.')
 @secure()
 param localAdminPassword string = 'bicep-test-password-1234'
@@ -154,6 +160,14 @@ resource hciHostVMSSFlex 'Microsoft.Compute/virtualMachineScaleSets@2024-03-01' 
   }
 }
 
+resource publicIP 'Microsoft.Network/publicIPAddresses@2020-11-01' = {
+  name: '${networkInterfaceName}-PublicIP'
+  location: location
+  properties: {
+    publicIPAllocationMethod: 'Dynamic' // You can use 'Static' if needed
+  }
+}
+
 resource nic 'Microsoft.Network/networkInterfaces@2020-11-01' = {
   location: location
   name: networkInterfaceName
@@ -169,6 +183,9 @@ resource nic 'Microsoft.Network/networkInterfaces@2020-11-01' = {
             id: vnet.properties.subnets[0].id
           }
           privateIPAllocationMethod: 'Dynamic'
+          publicIPAddress: {
+            id: publicIP.id // Reference to the public IP we created
+          }
         }
       }
     ]
@@ -273,105 +290,126 @@ resource maintenanceAssignment_hciHost 'Microsoft.Maintenance/configurationAssig
 // Initialize Arc on HCI Node VMs and AD for HCI  //
 // ==============================================//
 
-// prepares AD for ASHCI onboarding, initiates Arc onboarding of HCI node VMs
-resource runCommand6 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
-  parent: vm
+resource ad 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
+  name: 'ad'
   location: location
-  name: 'runCommand6'
-  properties: {
-    source: {
-      script: loadTextContent('./scripts/hciHostStage6.ps1')
+  kind: 'AzurePowerShell'
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${userAssignedIdentity.id}': {}
     }
-    parameters: [
-      {
-        name: 'location'
-        value: location
-      }
-      {
-        name: 'resourceGroupName'
-        value: resourceGroup().name
-      }
-      {
-        name: 'subscriptionId'
-        value: subscription().subscriptionId
-      }
-      {
-        name: 'tenantId'
-        value: tenant().tenantId
-      }
-      {
-        name: 'accountName'
-        value: userAssignedIdentity.properties.principalId
-      }
-      {
-        name: 'adminUsername'
-        value: localAdminUsername
-      }
-      {
-        name: 'arcGatewayId'
-        value: ''
-      }
-      {
-        name: 'deploymentUsername'
-        value: deploymentUsername
-      }
-      {
-        name: 'domainOUPath'
-        value: domainOUPath
-      }
-      {
-        name: 'proxyBypassString'
-        value: ''
-      }
-      {
-        name: 'proxyServerEndpoint'
-        value: ''
-      }
-      {
-        name: 'userAssignedManagedIdentityClientId'
-        value: userAssignedIdentity.properties.clientId
-      }
-    ]
-    protectedParameters: [
-      {
-        name: 'adminPw'
-        value: localAdminPassword
-      }
-    ]
-    treatFailureAsDeploymentFailure: true
   }
+  properties: {
+    azPowerShellVersion: '8.0'
+    retentionInterval: 'P1D'
+    scriptContent: loadTextContent('./scripts/provision-ad.ps1')
+    arguments: '-IP "${publicIP.properties.ipAddress}" -Port 5985 -Authentication "CredSSP" -DomainFQDN "jumpstart.local" -AdministratorAccount "${domainAdminUsername}" -AdministratorPassword "${domainAdminPassword}" -ADOUPath "${domainOUPath}" -deploymentUserAccount "${deploymentUsername}" -deploymentUserPassword "${domainAdminPassword}"'
+  }
+  dependsOn: [
+    vm
+  ]
 }
 
-// waits for HCI extensions to be in succeeded state
-resource runCommand7 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
-  parent: vm
-  location: location
-  name: 'runCommand7'
-  properties: {
-    source: {
-      script: loadTextContent('./scripts/hciHostStage7.ps1')
-    }
-    parameters: [
-      {
-        name: 'hciNodeCount'
-        value: string(hciNodeCount)
-      }
-      {
-        name: 'resourceGroupName'
-        value: resourceGroup().name
-      }
-      {
-        name: 'subscriptionId'
-        value: subscription().subscriptionId
-      }
-      {
-        name: 'userAssignedManagedIdentityClientId'
-        value: userAssignedIdentity.properties.clientId
-      }
-    ]
-    treatFailureAsDeploymentFailure: true
-  }
-  dependsOn: [runCommand6]
-}
+// // prepares AD for ASHCI onboarding, initiates Arc onboarding of HCI node VMs
+// resource runCommand6 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
+//   parent: vm
+//   location: location
+//   name: 'runCommand6'
+//   properties: {
+//     source: {
+//       script: loadTextContent('./scripts/hciHostStage6.ps1')
+//     }
+//     parameters: [
+//       {
+//         name: 'location'
+//         value: location
+//       }
+//       {
+//         name: 'resourceGroupName'
+//         value: resourceGroup().name
+//       }
+//       {
+//         name: 'subscriptionId'
+//         value: subscription().subscriptionId
+//       }
+//       {
+//         name: 'tenantId'
+//         value: tenant().tenantId
+//       }
+//       {
+//         name: 'accountName'
+//         value: userAssignedIdentity.properties.principalId
+//       }
+//       {
+//         name: 'adminUsername'
+//         value: localAdminUsername
+//       }
+//       {
+//         name: 'arcGatewayId'
+//         value: ''
+//       }
+//       {
+//         name: 'deploymentUsername'
+//         value: deploymentUsername
+//       }
+//       {
+//         name: 'domainOUPath'
+//         value: domainOUPath
+//       }
+//       {
+//         name: 'proxyBypassString'
+//         value: ''
+//       }
+//       {
+//         name: 'proxyServerEndpoint'
+//         value: ''
+//       }
+//       {
+//         name: 'userAssignedManagedIdentityClientId'
+//         value: userAssignedIdentity.properties.clientId
+//       }
+//     ]
+//     protectedParameters: [
+//       {
+//         name: 'adminPw'
+//         value: localAdminPassword
+//       }
+//     ]
+//     treatFailureAsDeploymentFailure: true
+//   }
+// }
+
+// // waits for HCI extensions to be in succeeded state
+// resource runCommand7 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
+//   parent: vm
+//   location: location
+//   name: 'runCommand7'
+//   properties: {
+//     source: {
+//       script: loadTextContent('./scripts/hciHostStage7.ps1')
+//     }
+//     parameters: [
+//       {
+//         name: 'hciNodeCount'
+//         value: string(hciNodeCount)
+//       }
+//       {
+//         name: 'resourceGroupName'
+//         value: resourceGroup().name
+//       }
+//       {
+//         name: 'subscriptionId'
+//         value: subscription().subscriptionId
+//       }
+//       {
+//         name: 'userAssignedManagedIdentityClientId'
+//         value: userAssignedIdentity.properties.clientId
+//       }
+//     ]
+//     treatFailureAsDeploymentFailure: true
+//   }
+//   dependsOn: [runCommand6]
+// }
 
 output vnetSubnetResourceId string = vnet.properties.subnets[0].id
