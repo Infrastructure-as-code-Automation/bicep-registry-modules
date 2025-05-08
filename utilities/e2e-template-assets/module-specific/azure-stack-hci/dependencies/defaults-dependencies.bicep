@@ -67,7 +67,7 @@ param maintenanceConfigurationAssignmentName string
 @description('Required. The name prefix for the \'wait\' deployment scripts to create.')
 param waitDeploymentScriptPrefixName string
 
-var clusterNodeNames = ['hcinode1', 'hcinode2']
+var clusterNodeNames = ['azshost1', 'azshost2']
 var domainOUPath = 'OU=HCI,DC=hci,DC=local'
 module hciHostDeployment '../azureStackHCIHost/hciHostDeployment.bicep' = {
   name: '${uniqueString(deployment().name, location)}-test-hcihostdeploy'
