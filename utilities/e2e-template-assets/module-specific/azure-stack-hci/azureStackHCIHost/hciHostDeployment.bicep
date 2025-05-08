@@ -284,166 +284,166 @@ resource maintenanceAssignment_hciHost 'Microsoft.Maintenance/configurationAssig
 // Initialize Arc on HCI Node VMs and AD for HCI  //
 // ==============================================//
 
-resource ad 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
-  parent: vm
-  name: 'ad'
-  location: location
-  properties: {
-    source: {
-      script: loadTextContent('./scripts/provision-ad.ps1')
-    }
-    parameters: [
-      {
-        name: 'IP'
-        value: '127.0.0.1'
-      }
-      {
-        name: 'Authentication'
-        value: 'CredSSP'
-      }
-      {
-        name: 'DomainFQDN'
-        value: 'jumpstart.local'
-      }
-      {
-        name: 'AdministratorAccount'
-        value: domainAdminUsername
-      }
-      {
-        name: 'AdministratorPassword'
-        value: domainAdminPassword
-      }
-      {
-        name: 'ADOUPath'
-        value: domainOUPath
-      }
-      {
-        name: 'DeploymentUserAccount'
-        value: deploymentUsername
-      }
-      {
-        name: 'DeploymentUserPassword'
-        value: domainAdminPassword
-      }
-    ]
-  }
-}
+// resource ad 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
+//   parent: vm
+//   name: 'ad'
+//   location: location
+//   properties: {
+//     source: {
+//       script: loadTextContent('./scripts/provision-ad.ps1')
+//     }
+//     parameters: [
+//       {
+//         name: 'IP'
+//         value: '127.0.0.1'
+//       }
+//       {
+//         name: 'Authentication'
+//         value: 'CredSSP'
+//       }
+//       {
+//         name: 'DomainFQDN'
+//         value: 'jumpstart.local'
+//       }
+//       {
+//         name: 'AdministratorAccount'
+//         value: domainAdminUsername
+//       }
+//       {
+//         name: 'AdministratorPassword'
+//         value: domainAdminPassword
+//       }
+//       {
+//         name: 'ADOUPath'
+//         value: domainOUPath
+//       }
+//       {
+//         name: 'DeploymentUserAccount'
+//         value: deploymentUsername
+//       }
+//       {
+//         name: 'DeploymentUserPassword'
+//         value: domainAdminPassword
+//       }
+//     ]
+//   }
+// }
 
-resource arc1 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
-  parent: vm
-  name: 'arc1'
-  location: location
-  properties: {
-    source: {
-      script: loadTextContent('./scripts/provision-arc.ps1')
-    }
-    parameters: [
-      {
-        name: 'IP'
-        value: '127.0.0.1'
-      }
-      {
-        name: 'Port'
-        value: '15985'
-      }
-      {
-        name: 'Authentication'
-        value: 'CredSSP'
-      }
-      {
-        name: 'LocalAdministratorAccount'
-        value: localAdminUsername
-      }
-      {
-        name: 'LocalAdministratorPassword'
-        value: localAdminPassword
-      }
-      {
-        name: 'ServicePrincipalId'
-        value: arbDeploymentAppId
-      }
-      {
-        name: 'ServicePrincipalSecret'
-        value: arbDeploymentServicePrincipalSecret
-      }
-      {
-        name: 'SubscriptionId'
-        value: subscription().subscriptionId
-      }
-      {
-        name: 'TenantId'
-        value: subscription().tenantId
-      }
-      {
-        name: 'ResourceGroupName'
-        value: resourceGroup().name
-      }
-      {
-        name: 'Region'
-        value: location
-      }
-    ]
-  }
-  dependsOn: [ad]
-}
+// resource arc1 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
+//   parent: vm
+//   name: 'arc1'
+//   location: location
+//   properties: {
+//     source: {
+//       script: loadTextContent('./scripts/provision-arc.ps1')
+//     }
+//     parameters: [
+//       {
+//         name: 'IP'
+//         value: '127.0.0.1'
+//       }
+//       {
+//         name: 'Port'
+//         value: '15985'
+//       }
+//       {
+//         name: 'Authentication'
+//         value: 'CredSSP'
+//       }
+//       {
+//         name: 'LocalAdministratorAccount'
+//         value: localAdminUsername
+//       }
+//       {
+//         name: 'LocalAdministratorPassword'
+//         value: localAdminPassword
+//       }
+//       {
+//         name: 'ServicePrincipalId'
+//         value: arbDeploymentAppId
+//       }
+//       {
+//         name: 'ServicePrincipalSecret'
+//         value: arbDeploymentServicePrincipalSecret
+//       }
+//       {
+//         name: 'SubscriptionId'
+//         value: subscription().subscriptionId
+//       }
+//       {
+//         name: 'TenantId'
+//         value: subscription().tenantId
+//       }
+//       {
+//         name: 'ResourceGroupName'
+//         value: resourceGroup().name
+//       }
+//       {
+//         name: 'Region'
+//         value: location
+//       }
+//     ]
+//   }
+//   dependsOn: [ad]
+// }
 
-resource arc2 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
-  parent: vm
-  name: 'arc2'
-  location: location
-  properties: {
-    source: {
-      script: loadTextContent('./scripts/provision-arc.ps1')
-    }
-    parameters: [
-      {
-        name: 'IP'
-        value: '127.0.0.1'
-      }
-      {
-        name: 'Port'
-        value: '25985'
-      }
-      {
-        name: 'Authentication'
-        value: 'CredSSP'
-      }
-      {
-        name: 'LocalAdministratorAccount'
-        value: localAdminUsername
-      }
-      {
-        name: 'LocalAdministratorPassword'
-        value: localAdminPassword
-      }
-      {
-        name: 'ServicePrincipalId'
-        value: arbDeploymentAppId
-      }
-      {
-        name: 'ServicePrincipalSecret'
-        value: arbDeploymentServicePrincipalSecret
-      }
-      {
-        name: 'SubscriptionId'
-        value: subscription().subscriptionId
-      }
-      {
-        name: 'TenantId'
-        value: subscription().tenantId
-      }
-      {
-        name: 'ResourceGroupName'
-        value: resourceGroup().name
-      }
-      {
-        name: 'Region'
-        value: location
-      }
-    ]
-  }
-  dependsOn: [arc1]
-}
+// resource arc2 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
+//   parent: vm
+//   name: 'arc2'
+//   location: location
+//   properties: {
+//     source: {
+//       script: loadTextContent('./scripts/provision-arc.ps1')
+//     }
+//     parameters: [
+//       {
+//         name: 'IP'
+//         value: '127.0.0.1'
+//       }
+//       {
+//         name: 'Port'
+//         value: '25985'
+//       }
+//       {
+//         name: 'Authentication'
+//         value: 'CredSSP'
+//       }
+//       {
+//         name: 'LocalAdministratorAccount'
+//         value: localAdminUsername
+//       }
+//       {
+//         name: 'LocalAdministratorPassword'
+//         value: localAdminPassword
+//       }
+//       {
+//         name: 'ServicePrincipalId'
+//         value: arbDeploymentAppId
+//       }
+//       {
+//         name: 'ServicePrincipalSecret'
+//         value: arbDeploymentServicePrincipalSecret
+//       }
+//       {
+//         name: 'SubscriptionId'
+//         value: subscription().subscriptionId
+//       }
+//       {
+//         name: 'TenantId'
+//         value: subscription().tenantId
+//       }
+//       {
+//         name: 'ResourceGroupName'
+//         value: resourceGroup().name
+//       }
+//       {
+//         name: 'Region'
+//         value: location
+//       }
+//     ]
+//   }
+//   dependsOn: [arc1]
+// }
 
 // // prepares AD for ASHCI onboarding, initiates Arc onboarding of HCI node VMs
 // resource runCommand6 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
