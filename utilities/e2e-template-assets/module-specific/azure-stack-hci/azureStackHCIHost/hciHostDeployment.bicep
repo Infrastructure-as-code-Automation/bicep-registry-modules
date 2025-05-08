@@ -160,15 +160,6 @@ resource hciHostVMSSFlex 'Microsoft.Compute/virtualMachineScaleSets@2024-03-01' 
   }
 }
 
-resource publicIP 'Microsoft.Network/publicIPAddresses@2020-11-01' = {
-  name: '${networkInterfaceName}-PublicIP'
-  location: location
-  zones: ['1']
-  properties: {
-    publicIPAllocationMethod: 'Dynamic' // You can use 'Static' if needed
-  }
-}
-
 resource nic 'Microsoft.Network/networkInterfaces@2020-11-01' = {
   location: location
   name: networkInterfaceName
@@ -184,9 +175,6 @@ resource nic 'Microsoft.Network/networkInterfaces@2020-11-01' = {
             id: vnet.properties.subnets[0].id
           }
           privateIPAllocationMethod: 'Dynamic'
-          publicIPAddress: {
-            id: publicIP.id // Reference to the public IP we created
-          }
         }
       }
     ]
@@ -291,25 +279,49 @@ resource maintenanceAssignment_hciHost 'Microsoft.Maintenance/configurationAssig
 // Initialize Arc on HCI Node VMs and AD for HCI  //
 // ==============================================//
 
-resource ad 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
+resource ad 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
+  parent: vm
   name: 'ad'
   location: location
-  kind: 'AzurePowerShell'
-  identity: {
-    type: 'UserAssigned'
-    userAssignedIdentities: {
-      '${userAssignedIdentity.id}': {}
-    }
-  }
   properties: {
-    azPowerShellVersion: '8.0'
-    retentionInterval: 'P1D'
-    scriptContent: loadTextContent('./scripts/provision-ad.ps1')
-    arguments: '-IP "${publicIP.properties.ipAddress}" -Port 5985 -Authentication "CredSSP" -DomainFQDN "jumpstart.local" -AdministratorAccount "${domainAdminUsername}" -AdministratorPassword "${domainAdminPassword}" -ADOUPath "${domainOUPath}" -deploymentUserAccount "${deploymentUsername}" -deploymentUserPassword "${domainAdminPassword}"'
+    source: {
+      script: loadTextContent('./scripts/provision-ad.ps1')
+    }
+    parameters: [
+      {
+        name: 'IP'
+        value: '127.0.0.1'
+      }
+      {
+        name: 'Authentication'
+        value: 'CredSSP'
+      }
+      {
+        name: 'DomainFQDN'
+        value: 'jumpstart.local'
+      }
+      {
+        name: 'AdministratorAccount'
+        value: domainAdminUsername
+      }
+      {
+        name: 'AdministratorPassword'
+        value: domainAdminPassword
+      }
+      {
+        name: 'ADOUPath'
+        value: domainOUPath
+      }
+      {
+        name: 'DeploymentUserAccount'
+        value: deploymentUsername
+      }
+      {
+        name: 'DeploymentUserPassword'
+        value: domainAdminPassword
+      }
+    ]
   }
-  dependsOn: [
-    vm
-  ]
 }
 
 // // prepares AD for ASHCI onboarding, initiates Arc onboarding of HCI node VMs
