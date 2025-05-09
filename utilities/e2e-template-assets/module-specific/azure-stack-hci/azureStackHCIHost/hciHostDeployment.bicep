@@ -20,6 +20,7 @@ param localAdminUsername string = 'admin-hci'
 param domainAdminUsername string = 'Administrator'
 
 @description('Optional. The domain admin user password.')
+@secure()
 param domainAdminPassword string = '!!123abc!!123abc'
 
 @description('Required. The local admin password.')
@@ -446,7 +447,7 @@ resource arc2 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
       }
     ]
   }
-  dependsOn: [arc1]
+  dependsOn: [ad]
 }
 
 // // prepares AD for ASHCI onboarding, initiates Arc onboarding of HCI node VMs

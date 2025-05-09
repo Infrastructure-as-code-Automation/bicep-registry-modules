@@ -88,19 +88,22 @@ module testDeployment '../../../main.bicep' = {
       customLocationName: '${namePrefix}${serviceShort}-location'
       clusterNodeNames: nestedDependencies.outputs.clusterNodeNames
       clusterWitnessStorageAccountName: nestedDependencies.outputs.clusterWitnessStorageAccountName
-      defaultGateway: '172.20.0.1'
+      defaultGateway: '192.168.1.1'
       deploymentPrefix: 'a${take(uniqueString(namePrefix, serviceShort), 7)}' // ensure deployment prefix starts with a letter to match '^(?=.{1,8}$)([a-zA-Z])(\-?[a-zA-Z\d])*$'
-      dnsServers: ['172.20.0.1']
-      domainFqdn: 'hci.local'
+      dnsServers: ['192.168.1.254']
+      domainFqdn: 'jumpstart.local'
       domainOUPath: nestedDependencies.outputs.domainOUPath
-      startingIPAddress: '172.20.0.2'
-      endingIPAddress: '172.20.0.7'
+      startingIPAddress: '192.168.1.55'
+      endingIPAddress: '192.168.1.65'
       enableStorageAutoIp: true
       keyVaultName: nestedDependencies.outputs.keyVaultName
       networkIntents: [
         {
-          adapter: ['mgmt']
-          name: 'management'
+          adapter: [
+            'FABRIC'
+            'FABRIC2'
+          ]
+          name: 'ManagementCompute'
           overrideAdapterProperty: true
           adapterPropertyOverrides: {
             jumboPacket: '9014'
@@ -118,33 +121,17 @@ module testDeployment '../../../main.bicep' = {
             enableIov: 'true'
             loadBalancingAlgorithm: 'Dynamic'
           }
-          trafficType: ['Management']
+          trafficType: [
+            'Management'
+            'Compute'
+          ]
         }
         {
-          adapter: ['comp0', 'comp1']
-          name: 'compute'
-          overrideAdapterProperty: true
-          adapterPropertyOverrides: {
-            jumboPacket: '9014'
-            networkDirect: 'Disabled'
-            networkDirectTechnology: 'iWARP'
-          }
-          overrideQosPolicy: false
-          qosPolicyOverrides: {
-            bandwidthPercentageSMB: '50'
-            priorityValue8021ActionCluster: '7'
-            priorityValue8021ActionSMB: '3'
-          }
-          overrideVirtualSwitchConfiguration: false
-          virtualSwitchConfigurationOverrides: {
-            enableIov: 'true'
-            loadBalancingAlgorithm: 'Dynamic'
-          }
-          trafficType: ['Compute']
-        }
-        {
-          adapter: ['smb0', 'smb1']
-          name: 'storage'
+          adapter: [
+            'StorageA'
+            'StorageB'
+          ]
+          name: 'Storage'
           overrideAdapterProperty: true
           adapterPropertyOverrides: {
             jumboPacket: '9014'
@@ -168,13 +155,13 @@ module testDeployment '../../../main.bicep' = {
       storageConnectivitySwitchless: false
       storageNetworks: [
         {
-          name: 'StorageNetwork0'
-          adapterName: 'smb0'
+          name: 'Storage1Network'
+          adapterName: 'StorageA'
           vlan: '711'
         }
         {
-          name: 'StorageNetwork1'
-          adapterName: 'smb1'
+          name: 'Storage2Network'
+          adapterName: 'StorageB'
           vlan: '712'
         }
       ]
