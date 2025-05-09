@@ -2,7 +2,7 @@
 param location string
 
 @description('Optional. The Azure VM size for the HCI Host VM, which must support nested virtualization and have sufficient capacity for the HCI node VMs!')
-param hostVMSize string = 'Standard_E32bds_v5'
+param hostVMSize string = 'Standard_E32s_v5'
 
 @description('Optional. The number of Azure Stack HCI nodes to deploy.')
 param hciNodeCount int = 2
@@ -32,7 +32,7 @@ param arbDeploymentAppId string
 param arbDeploymentServicePrincipalSecret string
 
 @description('Optional. The domain OU path.')
-param domainOUPath string = 'OU=HCI,DC=HCI,DC=local'
+param domainOUPath string = 'OU=HCI,DC=jumpstart,DC=local'
 
 @description('Optional. The deployment username.')
 param deploymentUsername string = 'deployUser'
@@ -356,11 +356,11 @@ resource arc1 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
       }
       {
         name: 'LocalAdministratorAccount'
-        value: localAdminUsername
+        value: domainAdminUsername
       }
       {
         name: 'LocalAdministratorPassword'
-        value: localAdminPassword
+        value: domainAdminPassword
       }
       {
         name: 'ServicePrincipalId'
@@ -414,11 +414,11 @@ resource arc2 'Microsoft.Compute/virtualMachines/runCommands@2024-03-01' = {
       }
       {
         name: 'LocalAdministratorAccount'
-        value: localAdminUsername
+        value: domainAdminUsername
       }
       {
         name: 'LocalAdministratorPassword'
-        value: localAdminPassword
+        value: domainAdminPassword
       }
       {
         name: 'ServicePrincipalId'
