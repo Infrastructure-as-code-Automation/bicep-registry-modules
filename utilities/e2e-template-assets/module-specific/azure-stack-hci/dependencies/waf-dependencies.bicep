@@ -4,7 +4,7 @@ param deploymentUserPassword string
 
 @description('Required. The password of the LCM deployment user and local administrator accounts.')
 @secure()
-param localAdminPassword string = 'bicep-test-password-1234'
+param localAdminPassword string = '!!123abc!!123abc'
 
 @description('Required. The app ID of the service principal used for the Azure Stack HCI Resource Bridge deployment. If omitted, the deploying user must have permissions to create service principals and role assignments in Entra ID.')
 @secure()
@@ -113,7 +113,7 @@ module hciClusterPreqs '../azureStackHCIClusterPreqs/ashciPrereqs.bicep' = {
     deploymentUserPassword: deploymentUserPassword
     keyVaultName: keyVaultName
     localAdminPassword: localAdminPassword
-    localAdminUsername: 'admin-hci'
+    localAdminUsername: 'Administrator'
     logsRetentionInDays: 30
     softDeleteRetentionDays: 30
     tenantId: subscription().tenantId

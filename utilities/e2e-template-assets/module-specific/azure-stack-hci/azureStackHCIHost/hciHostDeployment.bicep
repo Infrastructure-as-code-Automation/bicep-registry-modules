@@ -25,7 +25,7 @@ param domainAdminPassword string = '!!123abc!!123abc'
 
 @description('Required. The local admin password.')
 @secure()
-param localAdminPassword string = 'bicep-test-password-1234'
+param localAdminPassword string = '!!123abc!!123abc'
 
 @secure()
 param arbDeploymentAppId string
