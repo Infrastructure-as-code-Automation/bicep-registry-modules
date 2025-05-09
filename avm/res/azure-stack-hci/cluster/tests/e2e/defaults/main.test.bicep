@@ -80,7 +80,7 @@ module testDeployment '../../../main.bicep' = {
     name: nestedDependencies.outputs.clusterName
     deploymentUser: 'deployUser'
     deploymentUserPassword: localAdminAndDeploymentUserPass
-    localAdminUser: 'admin-hci'
+    localAdminUser: 'Administrator'
     localAdminPassword: localAdminAndDeploymentUserPass
     servicePrincipalId: arbDeploymentAppId
     servicePrincipalSecret: arbDeploymentServicePrincipalSecret

@@ -137,7 +137,7 @@ module cluster 'br/public:avm/res/azure-stack-hci/cluster:<version>' = {
     deploymentUser: 'deployUser'
     deploymentUserPassword: '<deploymentUserPassword>'
     localAdminPassword: '<localAdminPassword>'
-    localAdminUser: 'admin-hci'
+    localAdminUser: 'Administrator'
     servicePrincipalId: '<servicePrincipalId>'
     servicePrincipalSecret: '<servicePrincipalSecret>'
   }
@@ -263,7 +263,7 @@ module cluster 'br/public:avm/res/azure-stack-hci/cluster:<version>' = {
       "value": "<localAdminPassword>"
     },
     "localAdminUser": {
-      "value": "admin-hci"
+      "value": "Administrator"
     },
     "servicePrincipalId": {
       "value": "<servicePrincipalId>"
@@ -379,7 +379,7 @@ param name = '<name>'
 param deploymentUser = 'deployUser'
 param deploymentUserPassword = '<deploymentUserPassword>'
 param localAdminPassword = '<localAdminPassword>'
-param localAdminUser = 'admin-hci'
+param localAdminUser = 'Administrator'
 param servicePrincipalId = '<servicePrincipalId>'
 param servicePrincipalSecret = '<servicePrincipalSecret>'
 ```
@@ -500,7 +500,7 @@ module cluster 'br/public:avm/res/azure-stack-hci/cluster:<version>' = {
     deploymentUser: 'deployUser'
     deploymentUserPassword: '<deploymentUserPassword>'
     localAdminPassword: '<localAdminPassword>'
-    localAdminUser: 'admin-hci'
+    localAdminUser: 'Administrator'
     servicePrincipalId: '<servicePrincipalId>'
     servicePrincipalSecret: '<servicePrincipalSecret>'
     tags: {
@@ -637,7 +637,7 @@ module cluster 'br/public:avm/res/azure-stack-hci/cluster:<version>' = {
       "value": "<localAdminPassword>"
     },
     "localAdminUser": {
-      "value": "admin-hci"
+      "value": "Administrator"
     },
     "servicePrincipalId": {
       "value": "<servicePrincipalId>"
@@ -766,7 +766,7 @@ param name = '<name>'
 param deploymentUser = 'deployUser'
 param deploymentUserPassword = '<deploymentUserPassword>'
 param localAdminPassword = '<localAdminPassword>'
-param localAdminUser = 'admin-hci'
+param localAdminUser = 'Administrator'
 param servicePrincipalId = '<servicePrincipalId>'
 param servicePrincipalSecret = '<servicePrincipalSecret>'
 param tags = {
