@@ -170,7 +170,7 @@ module testDeployment '../../../main.bicep' = {
 }
 
 module testDeployment2 '../../../main.bicep' = {
-  name: '${uniqueString(deployment().name, enforcedLocation)}-test-clustermodule-${serviceShort}'
+  name: '${uniqueString(deployment().name, enforcedLocation)}-test-clustermodule-${serviceShort}2'
   scope: resourceGroup
   dependsOn: [
     testDeployment
