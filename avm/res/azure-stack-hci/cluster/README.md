@@ -810,6 +810,7 @@ param tags = {
 | [`defaultARBApplicationTags`](#parameter-defaultarbapplicationtags) | object | Tags of the default ARB application. |
 | [`deploymentOperations`](#parameter-deploymentoperations) | array | The cluster deployment operations to execute. Defaults to "[Validate, Deploy]". |
 | [`enableTelemetry`](#parameter-enabletelemetry) | bool | Enable/Disable usage telemetry for module. |
+| [`existDeploymentSettings`](#parameter-existdeploymentsettings) | bool | The deployment-settings for the cluster is existing or not . Defaults to false. |
 | [`keyvaultResourceGroup`](#parameter-keyvaultresourcegroup) | string | Key vault resource group, which is used for for storing secrets for the HCI cluster. |
 | [`keyvaultSubscriptionId`](#parameter-keyvaultsubscriptionid) | string | Key vault subscription ID, which is used for for storing secrets for the HCI cluster. |
 | [`localAdminCredentialContentType`](#parameter-localadmincredentialcontenttype) | string | Content type of the local admin credential. |
@@ -1466,6 +1467,14 @@ Enable/Disable usage telemetry for module.
 - Required: No
 - Type: bool
 - Default: `True`
+
+### Parameter: `existDeploymentSettings`
+
+The deployment-settings for the cluster is existing or not . Defaults to false.
+
+- Required: No
+- Type: bool
+- Default: `False`
 
 ### Parameter: `keyvaultResourceGroup`
 

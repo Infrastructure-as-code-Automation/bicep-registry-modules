@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.35.1.17967",
-      "templateHash": "16978206902562336432"
+      "templateHash": "9179254094087731649"
     },
     "name": "Azure Stack HCI Cluster",
     "description": "This module deploys an Azure Stack HCI Cluster on the provided Arc Machines."
@@ -613,6 +613,13 @@
       ],
       "metadata": {
         "description": "Optional. The cluster deployment operations to execute. Defaults to \"[Validate, Deploy]\"."
+      }
+    },
+    "existDeploymentSettings": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Optional. The deployment-settings for the cluster is existing or not . Defaults to false."
       }
     },
     "enableTelemetry": {
@@ -1308,6 +1315,9 @@
           },
           "hciResourceProviderObjectId": {
             "value": "[parameters('hciResourceProviderObjectId')]"
+          },
+          "existDeploymentSettings": {
+            "value": "[parameters('existDeploymentSettings')]"
           }
         },
         "template": {
@@ -1318,7 +1328,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.35.1.17967",
-              "templateHash": "15018461677267759264"
+              "templateHash": "13730120421850335188"
             },
             "name": "Azure Stack HCI Cluster Deployment Settings",
             "description": "This module deploys an Azure Stack HCI Cluster Deployment Settings resource."
@@ -1569,6 +1579,13 @@
               "metadata": {
                 "description": "Required. The service principal object ID of the Azure Stack HCI Resource Provider in this tenant. Can be fetched via `Get-AzADServicePrincipal -ApplicationId 1412d89f-b8a8-4111-b4fd-e82905cbd85d` after the 'Microsoft.AzureStackHCI' provider was registered in the subscription."
               }
+            },
+            "existDeploymentSettings": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Optional. The deployment-settings for the cluster is existing or not . Defaults to false."
+              }
             }
           },
           "variables": {
@@ -1646,7 +1663,15 @@
               "apiVersion": "2024-04-01",
               "name": "[parameters('clusterName')]"
             },
+            "existingDeploymentSettings": {
+              "condition": "[parameters('existDeploymentSettings')]",
+              "existing": true,
+              "type": "Microsoft.AzureStackHCI/clusters/deploymentSettings",
+              "apiVersion": "2024-04-01",
+              "name": "[format('{0}/{1}', parameters('clusterName'), parameters('name'))]"
+            },
             "deploymentSettings": {
+              "condition": "[not(parameters('existDeploymentSettings'))]",
               "type": "Microsoft.AzureStackHCI/clusters/deploymentSettings",
               "apiVersion": "2024-04-01",
               "name": "[format('{0}/{1}', parameters('clusterName'), parameters('name'))]",
@@ -1754,14 +1779,14 @@
               "metadata": {
                 "description": "The name of the cluster deployment settings."
               },
-              "value": "[parameters('name')]"
+              "value": "[if(parameters('existDeploymentSettings'), parameters('name'), parameters('name'))]"
             },
             "resourceId": {
               "type": "string",
               "metadata": {
                 "description": "The ID of the cluster deployment settings."
               },
-              "value": "[resourceId('Microsoft.AzureStackHCI/clusters/deploymentSettings', parameters('clusterName'), parameters('name'))]"
+              "value": "[if(parameters('existDeploymentSettings'), resourceId('Microsoft.AzureStackHCI/clusters/deploymentSettings', parameters('clusterName'), parameters('name')), resourceId('Microsoft.AzureStackHCI/clusters/deploymentSettings', parameters('clusterName'), parameters('name')))]"
             },
             "resourceGroupName": {
               "type": "string",

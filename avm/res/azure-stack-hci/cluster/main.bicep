@@ -23,6 +23,9 @@ param tags object?
 ])
 param deploymentOperations string[] = ['Validate', 'Deploy']
 
+@description('Optional. The deployment-settings for the cluster is existing or not . Defaults to false.')
+param existDeploymentSettings bool = false
+
 @description('Optional. Enable/Disable usage telemetry for module.')
 param enableTelemetry bool = true
 
@@ -254,6 +257,7 @@ module deploymentSetting 'deployment-setting/main.bicep' = [
       streamingDataClient: deploymentSettings!.?streamingDataClient
       wdacEnforced: deploymentSettings!.?wdacEnforced
       hciResourceProviderObjectId: hciResourceProviderObjectId
+      existDeploymentSettings: existDeploymentSettings
     }
   }
 ]

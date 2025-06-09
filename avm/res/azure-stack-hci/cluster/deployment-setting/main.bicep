@@ -127,6 +127,9 @@ param cloudId string?
 @secure()
 param hciResourceProviderObjectId string
 
+@description('Optional. The deployment-settings for the cluster is existing or not . Defaults to false.')
+param existDeploymentSettings bool = false
+
 var arcNodeResourceIds = [
   for (nodeName, index) in clusterNodeNames: resourceId('Microsoft.HybridCompute/machines', nodeName)
 ]
@@ -212,7 +215,12 @@ resource cluster 'Microsoft.AzureStackHCI/clusters@2024-04-01' existing = {
   name: clusterName
 }
 
-resource deploymentSettings 'Microsoft.AzureStackHCI/clusters/deploymentSettings@2024-04-01' = {
+resource existingDeploymentSettings 'Microsoft.AzureStackHCI/clusters/deploymentSettings@2024-04-01' existing = if (existDeploymentSettings) {
+  parent: cluster
+  name: name
+}
+
+resource deploymentSettings 'Microsoft.AzureStackHCI/clusters/deploymentSettings@2024-04-01' = if (!existDeploymentSettings) {
   name: name
   parent: cluster
   properties: {
@@ -318,10 +326,10 @@ resource deploymentSettings 'Microsoft.AzureStackHCI/clusters/deploymentSettings
 }
 
 @description('The name of the cluster deployment settings.')
-output name string = deploymentSettings.name
+output name string = existDeploymentSettings ? existingDeploymentSettings.name : deploymentSettings.name
 
 @description('The ID of the cluster deployment settings.')
-output resourceId string = deploymentSettings.id
+output resourceId string = existDeploymentSettings ? existingDeploymentSettings.id : deploymentSettings.id
 
 @description('The resource group of the cluster deployment settings.')
 output resourceGroupName string = resourceGroup().name

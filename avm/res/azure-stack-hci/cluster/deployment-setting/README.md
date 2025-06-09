@@ -57,6 +57,7 @@ This module deploys an Azure Stack HCI Cluster Deployment Settings resource.
 | [`drtmProtection`](#parameter-drtmprotection) | bool | The hardware-dependent Secure Boot setting. |
 | [`enableStorageAutoIp`](#parameter-enablestorageautoip) | bool | Enable storage auto IP assignment. This should be true for most deployments except when deploying a three-node switchless cluster, in which case storage IPs should be configured before deployment and this value set to false. |
 | [`episodicDataUpload`](#parameter-episodicdataupload) | bool | The diagnostic data for deploying a HCI cluster. |
+| [`existDeploymentSettings`](#parameter-existdeploymentsettings) | bool | The deployment-settings for the cluster is existing or not . Defaults to false. |
 | [`hvciProtection`](#parameter-hvciprotection) | bool | The Hypervisor-protected Code Integrity setting. |
 | [`isEuropeanUnionLocation`](#parameter-iseuropeanunionlocation) | bool | The location data for deploying a HCI cluster. |
 | [`name`](#parameter-name) | string | The name of the deployment settings. |
@@ -262,6 +263,14 @@ The diagnostic data for deploying a HCI cluster.
 - Required: No
 - Type: bool
 - Default: `True`
+
+### Parameter: `existDeploymentSettings`
+
+The deployment-settings for the cluster is existing or not . Defaults to false.
+
+- Required: No
+- Type: bool
+- Default: `False`
 
 ### Parameter: `hvciProtection`
 
