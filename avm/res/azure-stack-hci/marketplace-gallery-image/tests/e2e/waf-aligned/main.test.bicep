@@ -1,7 +1,7 @@
 targetScope = 'subscription'
 
 metadata name = 'WAF-aligned'
-metadata description = 'This instance deploys the module in alignment with the best-practices of the Azure Well-Architected Framework.'
+metadata description = 'This instance deploys the module with WAF-aligned parameters.'
 
 @description('Optional. The name of the resource group to deploy for testing purposes.')
 @maxLength(90)
@@ -37,13 +37,10 @@ param arbDeploymentServicePrincipalSecret string = ''
 #disable-next-line secure-parameter-default
 param hciResourceProviderObjectId string = ''
 
-@description('Required. The object ID of a user that will be granted necessary permissions for the environment.')
-param userObjectId string = ''
-
 #disable-next-line no-hardcoded-location // Due to quotas and capacity challenges, this region must be used in the AVM testing subscription
 var enforcedLocation = 'southeastasia'
 
-resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
+resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: resourceGroupName
   location: enforcedLocation
 }
@@ -74,7 +71,7 @@ module nestedDependencies '../../../../../../../utilities/e2e-template-assets/mo
   }
 }
 
-module azlocal 'br/public:avm/res/azure-stack-hci/cluster:0.1.8' = {
+module azlocal 'br/public:avm/res/azure-stack-hci/cluster:0.1.6' = {
   name: '${uniqueString(deployment().name, enforcedLocation)}-test-clustermodule-${serviceShort}'
   scope: resourceGroup
   params: {
@@ -128,51 +125,14 @@ module azlocal 'br/public:avm/res/azure-stack-hci/cluster:0.1.8' = {
             'Compute'
           ]
         }
-        {
-          adapter: [
-            'StorageA'
-            'StorageB'
-          ]
-          name: 'Storage'
-          overrideAdapterProperty: true
-          adapterPropertyOverrides: {
-            jumboPacket: '9014'
-            networkDirect: 'Disabled'
-            networkDirectTechnology: 'iWARP'
-          }
-          overrideQosPolicy: true
-          qosPolicyOverrides: {
-            bandwidthPercentageSMB: '50'
-            priorityValue8021ActionCluster: '7'
-            priorityValue8021ActionSMB: '3'
-          }
-          overrideVirtualSwitchConfiguration: false
-          virtualSwitchConfigurationOverrides: {
-            enableIov: 'true'
-            loadBalancingAlgorithm: 'Dynamic'
-          }
-          trafficType: ['Storage']
-        }
       ]
       storageConnectivitySwitchless: false
-      storageNetworks: [
-        {
-          name: 'Storage1Network'
-          adapterName: 'StorageA'
-          vlan: '711'
-        }
-        {
-          name: 'Storage2Network'
-          adapterName: 'StorageB'
-          vlan: '712'
-        }
-      ]
       subnetMask: '255.255.255.0'
     }
   }
 }
 
-resource customLocation 'Microsoft.ExtendedLocation/customLocations@2021-08-15' existing = {
+resource customLocation 'Microsoft.ExtendedLocation/customLocations@2021-08-31-preview' existing = {
   scope: resourceGroup
   name: '${namePrefix}${serviceShort}-location'
   dependsOn: [
@@ -180,31 +140,44 @@ resource customLocation 'Microsoft.ExtendedLocation/customLocations@2021-08-15' 
   ]
 }
 
+// Get the built-in Reader role definition
+resource readerRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  scope: subscription()
+  name: 'acdd72a7-3385-48ef-bd42-f606fba81ae7' // Reader
+}
+
 module testDeployment '../../../main.bicep' = {
   name: '${uniqueString(deployment().name, enforcedLocation)}-marketplaceGalleryImage-${serviceShort}'
   scope: resourceGroup
   params: {
-    name: '${namePrefix}${serviceShort}marketplaceimage'
-    extendedLocation: {
-      name: customLocation.id
-      type: 'CustomLocation'
-    }
+    name: '${namePrefix}${serviceShort}marketplacegalleryimage'
+    customLocationResourceId: customLocation.id
     identifier: {
       offer: 'WindowsServer'
       publisher: 'MicrosoftWindowsServer'
-      sku: '2022-datacenter-azure-edition'
+      sku: '2022-Datacenter'
     }
     osType: 'Windows'
-    cloudInitDataSource: 'Azure'
-    containerId: null
     hyperVGeneration: 'V2'
-    tags: {
-      Environment: 'Test'
-      'hidden-title': 'This is visible in the resource name'
-      Purpose: 'MarketplaceGalleryImage'
-    }
+    cloudInitDataSource: 'NoCloud'
     version: {
-      name: '20348.2461.240510'
+      name: '1.0.0'
+      properties: {
+        storageProfile: {
+          osDiskImage: {}
+        }
+      }
     }
+    tags: {
+      Environment: 'Non-Prod'
+      Role: 'DeploymentValidation'
+    }
+    roleAssignments: [
+      {
+        roleDefinitionIdOrName: readerRoleDefinition.name
+        principalId: nestedDependencies.outputs.managedIdentityPrincipalId
+        principalType: 'ServicePrincipal'
+      }
+    ]
   }
 }

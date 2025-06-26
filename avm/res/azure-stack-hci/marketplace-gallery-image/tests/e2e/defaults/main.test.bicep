@@ -40,7 +40,7 @@ param hciResourceProviderObjectId string = ''
 #disable-next-line no-hardcoded-location // Due to quotas and capacity challenges, this region must be used in the AVM testing subscription
 var enforcedLocation = 'southeastasia'
 
-resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
+resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: resourceGroupName
   location: enforcedLocation
 }
@@ -71,7 +71,7 @@ module nestedDependencies '../../../../../../../utilities/e2e-template-assets/mo
   }
 }
 
-module azlocal 'br/public:avm/res/azure-stack-hci/cluster:0.1.8' = {
+module azlocal 'br/public:avm/res/azure-stack-hci/cluster:0.1.6' = {
   name: '${uniqueString(deployment().name, enforcedLocation)}-test-clustermodule-${serviceShort}'
   scope: resourceGroup
   params: {
@@ -125,51 +125,14 @@ module azlocal 'br/public:avm/res/azure-stack-hci/cluster:0.1.8' = {
             'Compute'
           ]
         }
-        {
-          adapter: [
-            'StorageA'
-            'StorageB'
-          ]
-          name: 'Storage'
-          overrideAdapterProperty: true
-          adapterPropertyOverrides: {
-            jumboPacket: '9014'
-            networkDirect: 'Disabled'
-            networkDirectTechnology: 'iWARP'
-          }
-          overrideQosPolicy: true
-          qosPolicyOverrides: {
-            bandwidthPercentageSMB: '50'
-            priorityValue8021ActionCluster: '7'
-            priorityValue8021ActionSMB: '3'
-          }
-          overrideVirtualSwitchConfiguration: false
-          virtualSwitchConfigurationOverrides: {
-            enableIov: 'true'
-            loadBalancingAlgorithm: 'Dynamic'
-          }
-          trafficType: ['Storage']
-        }
       ]
       storageConnectivitySwitchless: false
-      storageNetworks: [
-        {
-          name: 'Storage1Network'
-          adapterName: 'StorageA'
-          vlan: '711'
-        }
-        {
-          name: 'Storage2Network'
-          adapterName: 'StorageB'
-          vlan: '712'
-        }
-      ]
       subnetMask: '255.255.255.0'
     }
   }
 }
 
-resource customLocation 'Microsoft.ExtendedLocation/customLocations@2021-08-15' existing = {
+resource customLocation 'Microsoft.ExtendedLocation/customLocations@2021-08-31-preview' existing = {
   scope: resourceGroup
   name: '${namePrefix}${serviceShort}-location'
   dependsOn: [
@@ -181,19 +144,12 @@ module testDeployment '../../../main.bicep' = {
   name: '${uniqueString(deployment().name, enforcedLocation)}-marketplaceGalleryImage-${serviceShort}'
   scope: resourceGroup
   params: {
-    name: '${namePrefix}${serviceShort}marketplaceimage'
-    extendedLocation: {
-      name: customLocation.id
-      type: 'CustomLocation'
-    }
+    name: '${namePrefix}${serviceShort}marketplacegalleryimage'
+    customLocationResourceId: customLocation.id
     identifier: {
       offer: 'WindowsServer'
       publisher: 'MicrosoftWindowsServer'
-      sku: '2022-datacenter-azure-edition'
-    }
-    osType: 'Windows'
-    version: {
-      name: '20348.2461.240510'
+      sku: '2022-Datacenter'
     }
   }
 }
