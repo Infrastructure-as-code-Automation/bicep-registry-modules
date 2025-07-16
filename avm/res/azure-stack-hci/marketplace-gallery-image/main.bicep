@@ -17,38 +17,34 @@ param enableTelemetry bool = true
 @description('Required. The custom location ID.')
 param customLocationResourceId string
 
-@description('Required. Operating system type that the gallery image uses.')
-@allowed([
-  'Windows'
-  'Linux'
-])
-param osType string
+@description('Optional. The cloud init data source.')
+param cloudInitDataSource resourceInput<'Microsoft.AzureStackHCI/marketplaceGalleryImages@2025-04-01-preview'>.properties.cloudInitDataSource?
 
-@description('Required. The gallery image identifier configuration containing publisher, offer, and SKU.')
-param identifier resourceInput<'Microsoft.AzureStackHCI/marketplaceGalleryImages@2025-04-01-preview'>.properties.identifier
+@description('Optional. The container ID.')
+param containerId resourceInput<'Microsoft.AzureStackHCI/marketplaceGalleryImages@2025-04-01-preview'>.properties.containerId?
 
-@description('Optional. The hypervisor generation of the Virtual Machine.')
+@description('Optional. The Hyper-V generation.')
 @allowed([
   'V1'
   'V2'
 ])
-param hyperVGeneration string = 'V2'
+param hyperVGeneration resourceInput<'Microsoft.AzureStackHCI/marketplaceGalleryImages@2025-04-01-preview'>.properties.hyperVGeneration?
 
-@description('Optional. Datasource for the gallery image when provisioning with cloud-init.')
+@description('Required. The image identifier.')
+param identifier resourceInput<'Microsoft.AzureStackHCI/marketplaceGalleryImages@2025-04-01-preview'>.properties.identifier
+
+@description('Required. The OS type.')
 @allowed([
-  'NoCloud'
-  'Azure'
+  'Windows'
+  'Linux'
 ])
-param cloudInitDataSource string?
+param osType resourceInput<'Microsoft.AzureStackHCI/marketplaceGalleryImages@2025-04-01-preview'>.properties.osType
 
-@description('Optional. Storage Container resourceId of the storage container to be used for marketplace gallery image.')
-param containerResourceId string?
-
-@description('Required. Gallery image version configuration.')
+@description('Required. The version information.')
 param version resourceInput<'Microsoft.AzureStackHCI/marketplaceGalleryImages@2025-04-01-preview'>.properties.version
 
 @description('Optional. Tags for the marketplace gallery image.')
-param tags resourceInput<'Microsoft.AzureStackHCI/marketplaceGalleryImages@2025-04-01-preview'>.tags?
+param tags object?
 
 import { roleAssignmentType } from 'br/public:avm/utl/types/avm-common-types:0.5.1'
 @description('Optional. Array of role assignments to create.')
@@ -87,7 +83,7 @@ var formattedRoleAssignments = [
 #disable-next-line no-deployments-resources
 resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
   name: take(
-    '46d3xbcp.res.azurestackhci-markplgalleryimg.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, location), 0, 4)}',
+    '46d3xbcp.res.azurestackhci-marketplacegalleryimage.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, location), 0, 4)}',
     64
   )
   properties: {
@@ -116,13 +112,9 @@ resource marketplaceGalleryImage 'Microsoft.AzureStackHCI/marketplaceGalleryImag
   }
   properties: {
     cloudInitDataSource: cloudInitDataSource
-    containerId: containerResourceId
+    containerId: containerId
     hyperVGeneration: hyperVGeneration
-    identifier: {
-      offer: identifier.offer
-      publisher: identifier.publisher
-      sku: identifier.sku
-    }
+    identifier: identifier
     osType: osType
     version: version
   }
@@ -153,6 +145,18 @@ output name string = marketplaceGalleryImage.name
 
 @description('The resource ID of the marketplace gallery image.')
 output resourceId string = marketplaceGalleryImage.id
+
+@description('The resource group of the marketplace gallery image.')
+output resourceGroupName string = resourceGroup().name
+
+@description('The location of the marketplace gallery image.')
+output location string = marketplaceGalleryImage.location
+
+@description('The OS type of the marketplace gallery image.')
+output osType string = marketplaceGalleryImage.properties.osType
+
+@description('The Hyper-V generation of the marketplace gallery image.')
+output hyperVGeneration string = marketplaceGalleryImage.properties.hyperVGeneration
 
 @description('The resource group of the marketplace gallery image.')
 output resourceGroupName string = resourceGroup().name
