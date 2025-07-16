@@ -131,6 +131,12 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
   }
 }
 
+resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30' = {
+  name: '${name}-mi'
+  location: location
+  tags: tags
+}
+
 module secrets './secrets.bicep' = if (empty(linuxProfile) && !empty(keyVaultName)) {
   name: '${uniqueString(deployment().name, location)}-secrets'
   scope: resourceGroup(
@@ -143,6 +149,9 @@ module secrets './secrets.bicep' = if (empty(linuxProfile) && !empty(keyVaultNam
     location: location
     sshPrivateKeyPemSecretName: sshPrivateKeyPemSecretName
     sshPublicKeySecretName: sshPublicKeySecretName
+    managedIdentityName: managedIdentity.name
+    managedIdentityId: managedIdentity.id
+    managedIdentityPrincipalId: managedIdentity.properties.principalId
     tags: tags
   }
 }

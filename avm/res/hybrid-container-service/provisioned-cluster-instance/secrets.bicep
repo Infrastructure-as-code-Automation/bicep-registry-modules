@@ -13,6 +13,10 @@ param sshPrivateKeyPemSecretName string = 'AksArcAgentSshPrivateKeyPem'
 @description('Optional. The name of the secret in the key vault that contains the SSH public key.')
 param sshPublicKeySecretName string = 'AksArcAgentSshPublicKey'
 
+param managedIdentityName string
+param managedIdentityId string
+param managedIdentityPrincipalId string
+
 @description('Optional. Tags of the resource.')
 param tags object?
 
@@ -20,17 +24,11 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
   name: keyVaultName
 }
 
-resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30' = {
-  name: 'temp-${name}'
-  location: location
-  tags: tags
-}
-
 resource CRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid('msi-${managedIdentity.name}-C-RoleAssignment')
+  name: guid('msi-${managedIdentityName}-C-RoleAssignment')
   scope: resourceGroup()
   properties: {
-    principalId: managedIdentity.properties.principalId
+    principalId: managedIdentityPrincipalId
     roleDefinitionId: subscriptionResourceId(
       'Microsoft.Authorization/roleDefinitions',
       'b24988ac-6180-42a0-ab88-20f7382dd24c'
@@ -40,10 +38,10 @@ resource CRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
 }
 
 resource KVSORole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid('msi-${managedIdentity.name}-KVA-RoleAssignment')
+  name: guid('msi-${managedIdentityName}-KVA-RoleAssignment')
   scope: keyVault
   properties: {
-    principalId: managedIdentity.properties.principalId
+    principalId: managedIdentityPrincipalId
     roleDefinitionId: subscriptionResourceId(
       'Microsoft.Authorization/roleDefinitions',
       'b86a8fe4-44ce-4948-aee5-eccb2c155cd7'
@@ -78,7 +76,7 @@ resource newSshKey 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-      '${managedIdentity.id}': {}
+      '${managedIdentityId}': {}
     }
   }
   properties: {
