@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.36.1.42791",
-      "templateHash": "6215579184073469701"
+      "templateHash": "14855979014413407240"
     },
     "name": "Hybrid Container Service Provisioned Cluster Instance",
     "description": "Deploy a provisioned cluster instance."
@@ -144,6 +144,7 @@
         },
         "vmSize": {
           "type": "string",
+          "nullable": true,
           "metadata": {
             "description": "Required. The VM size for control plane nodes."
           }

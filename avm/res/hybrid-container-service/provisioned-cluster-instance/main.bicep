@@ -273,7 +273,7 @@ type controlPlaneType = {
   @description('Required. The number of control plane nodes.')
   count: int
   @description('Required. The VM size for control plane nodes.')
-  vmSize: string
+  vmSize: string?
 }
 
 @export()
