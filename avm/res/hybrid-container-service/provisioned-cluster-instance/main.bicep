@@ -37,6 +37,9 @@ param linuxProfile linuxProfileType?
 @description('Optional. The Kubernetes version for the cluster.')
 param kubernetesVersion string?
 
+@description('Optional. The Kubernetes distribution for the cluster.')
+param kubernetesDistribution string = 'K8s'
+
 @description('Optional. The agent pool properties for the provisioned cluster.')
 param agentPoolProfiles agentPoolProfileType[] = [
   {
@@ -59,6 +62,9 @@ param storageProfile storageProfileType = {
   }
   smbCsiDriver: {
     enabled: true
+  }
+  localPathProvisionerDriver: {
+    enabled: false
   }
 }
 
@@ -167,7 +173,7 @@ resource existingCluster 'Microsoft.Kubernetes/connectedClusters@2024-07-15-prev
   name: name
 }
 
-resource provisionedCluster 'Microsoft.HybridContainerService/provisionedClusterInstances@2024-01-01' = {
+resource provisionedCluster 'Microsoft.HybridContainerService/provisionedClusterInstances@2024-09-01-preview' = {
   scope: existingCluster
   name: 'default'
   dependsOn: [
@@ -183,6 +189,7 @@ resource provisionedCluster 'Microsoft.HybridContainerService/provisionedCluster
     clusterVMAccessProfile: {}
     controlPlane: controlPlane
     kubernetesVersion: kubernetesVersion ?? ''
+    kubernetesDistribution: kubernetesDistribution
     licenseProfile: licenseProfile
     linuxProfile: linuxProfile ?? {
       ssh: {
@@ -295,15 +302,15 @@ type linuxProfileType = {
 @export()
 @description('The type for network profile configuration.')
 type networkProfileType = {
-  @description('Required. Load balancer profile configuration.')
+  @description('Optional. Load balancer profile configuration.')
   loadBalancerProfile: {
     @description('Required. The number of load balancers. Must be 0 as for now.')
     count: int
-  }
+  }?
   @description('Required. The network policy to use.')
   networkPolicy: string
-  @description('Required. The CIDR range for the pods in the kubernetes cluster.')
-  podCidr: string
+  @description('Optional. The CIDR range for the pods in the kubernetes cluster.')
+  podCidr: string?
 }
 
 @export()
@@ -319,4 +326,9 @@ type storageProfileType = {
     @description('Required. Whether the SMB CSI driver is enabled.')
     enabled: bool
   }
+  @description('Optional. Local path provisioner driver configuration.')
+  localPathProvisionerDriver: {
+    @description('Required. Whether the local path provisioner driver is enabled.')
+    enabled: bool
+  }?
 }
