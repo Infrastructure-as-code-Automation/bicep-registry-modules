@@ -106,26 +106,109 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
   }
 }
 
-resource marketplaceGalleryImage 'Microsoft.AzureStackHCI/marketplaceGalleryImages@2025-04-01-preview' = {
-  name: name
+resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30' = {
+  name: 'temp-${name}'
   location: location
   tags: tags
-  extendedLocation: {
-    name: customLocationResourceId
-    type: 'CustomLocation'
+}
+
+// Contributor
+resource roleAssignmentContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(managedIdentity.id, builtInRoleNames.Contributor, resourceGroup().id)
+  scope: resourceGroup()
+  properties: {
+    roleDefinitionId: builtInRoleNames.Contributor
+    principalId: managedIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Use deployment script to run the shell script
+resource deploymentScript 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
+  name: 'hci-deployment-script-${uniqueString(resourceGroup().id)}'
+  location: resourceGroup().location
+  kind: 'AzureCLI'
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${managedIdentity.id}': {}
+    }
   }
   properties: {
-    cloudInitDataSource: cloudInitDataSource
-    containerId: containerResourceId
-    hyperVGeneration: hyperVGeneration
-    identifier: {
-      offer: identifier.offer
-      publisher: identifier.publisher
-      sku: identifier.sku
-    }
-    osType: osType
-    version: version
+    azCliVersion: '2.50.0'
+    timeout: 'PT5H'
+    retentionInterval: 'P1D'
+    cleanupPreference: 'OnSuccess'
+    environmentVariables: [
+      {
+        name: 'RESOURCE_GROUP_NAME'
+        value: resourceGroup().name
+      }
+      {
+        name: 'SUBSCRIPTION_ID'
+        value: subscription().subscriptionId
+      }
+      {
+        name: 'IMAGE_NAME'
+        value: name
+      }
+      {
+        name: 'IMAGE_LOCATION'
+        value: location
+      }
+      {
+        name: 'CUSTOM_LOCATION_RESOURCE_ID'
+        value: customLocationResourceId
+      }
+      {
+        name: 'IMAGE_OS_TYPE'
+        value: osType
+      }
+      {
+        name: 'IMAGE_PUBLISHER'
+        value: identifier.publisher
+      }
+      {
+        name: 'IMAGE_OFFER'
+        value: identifier.offer
+      }
+      {
+        name: 'IMAGE_SKU'
+        value: identifier.sku
+      }
+      {
+        name: 'IMAGE_HYPER_V_GENERATION'
+        value: hyperVGeneration
+      }
+      {
+        name: 'IMAGE_CLOUD_INIT_DATA_SOURCE'
+        value: cloudInitDataSource
+      }
+      {
+        name: 'IMAGE_CONTAINER_RESOURCE_ID'
+        value: containerResourceId
+      }
+      {
+        name: 'IMAGE_VERSION_NAME'
+        value: version.name
+      }
+      {
+        name: 'MARKETPLACE_GALLERY_IMAGE_BICEP_BASE64'
+        value: base64(loadTextContent('./nested/marketplace-gallery-image.bicep'))
+      }
+    ]
+    scriptContent: loadTextContent('./deploy.sh')
   }
+  dependsOn: [
+    roleAssignmentContributor
+  ]
+}
+
+resource marketplaceGalleryImage 'Microsoft.AzureStackHCI/marketplaceGalleryImages@2025-04-01-preview' existing = {
+  name: name
+  dependsOn: [
+    deploymentScript
+  ]
 }
 
 resource marketplaceGalleryImage_roleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [

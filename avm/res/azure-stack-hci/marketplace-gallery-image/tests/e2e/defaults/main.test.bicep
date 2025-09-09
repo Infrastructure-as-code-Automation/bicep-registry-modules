@@ -177,20 +177,22 @@ resource customLocation 'Microsoft.ExtendedLocation/customLocations@2021-08-15' 
   ]
 }
 
-module testDeployment '../../../main.bicep' = {
-  name: '${uniqueString(deployment().name, enforcedLocation)}-marketplaceGalleryImage-${serviceShort}'
-  scope: resourceGroup
-  params: {
-    name: '${namePrefix}${serviceShort}marketplaceimage'
-    customLocationResourceId: customLocation.id
-    identifier: {
-      offer: 'WindowsServer'
-      publisher: 'MicrosoftWindowsServer'
-      sku: '2022-datacenter-azure-edition'
-    }
-    osType: 'Windows'
-    version: {
-      name: '20348.2461.240510'
+module testDeployment '../../../main.bicep' = [
+  for iteration in ['init', 'idem']: {
+    name: '${uniqueString(deployment().name, enforcedLocation)}-marketplaceGalleryImage-${serviceShort}-${iteration}'
+    scope: resourceGroup
+    params: {
+      name: '${namePrefix}${serviceShort}marketplaceimage'
+      customLocationResourceId: customLocation.id
+      identifier: {
+        offer: 'WindowsServer'
+        publisher: 'MicrosoftWindowsServer'
+        sku: '2022-datacenter-azure-edition'
+      }
+      osType: 'Windows'
+      version: {
+        name: '20348.4052.250808'
+      }
     }
   }
-}
+]
