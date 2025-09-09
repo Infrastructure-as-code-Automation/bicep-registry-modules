@@ -8,6 +8,10 @@ The latest version of the changelog can be found [here](https://github.com/Azure
 
 - Avoid re-application failure
 
+### Breaking Changes
+
+- None
+
 ## 0.1.0
 
 ### Changes
