@@ -12,17 +12,6 @@ if [ -z "$RESOURCE_GROUP_NAME" ] || [ -z "$SUBSCRIPTION_ID" ] || [ -z "$IMAGE_NA
     exit 1
 fi
 
-# Reset null values
-if [ "$IMAGE_HYPER_V_GENERATION" = "<null>" ]; then
-    IMAGE_HYPER_V_GENERATION=""
-fi
-if [ "$IMAGE_CLOUD_INIT_DATA_SOURCE" = "<null>" ]; then
-    IMAGE_CLOUD_INIT_DATA_SOURCE=""
-fi
-if [ "$IMAGE_CONTAINER_RESOURCE_ID" = "<null>" ]; then
-    IMAGE_CONTAINER_RESOURCE_ID=""
-fi
-
 # Set subscription context
 echo "Setting subscription context to: $SUBSCRIPTION_ID"
 az account set --subscription "$SUBSCRIPTION_ID"
@@ -55,47 +44,39 @@ PARAM_FILE="deployment-params.json"
 
 # Create a proper parameter file with JSON object
 echo "Creating parameter file..."
-cat > "$PARAM_FILE" << EOF
-{
-  "\$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-  "contentVersion": "1.0.0.0",
-  "parameters": {
-    "name": {
-      "value": $IMAGE_NAME
-    },
-    "location": {
-      "value": $IMAGE_LOCATION
-    },
-    "customLocationResourceId": {
-      "value": $CUSTOM_LOCATION_RESOURCE_ID
-    },
-    "osType": {
-      "value": "$IMAGE_OS_TYPE"
-    },
-    "publisher": {
-      "value": "$IMAGE_PUBLISHER"
-    },
-    "offer": {
-      "value": "$IMAGE_OFFER"
-    },
-    "sku": {
-      "value": "$IMAGE_SKU"
-    },
-    "hyperVGeneration": {
-      "value": $IMAGE_HYPER_V_GENERATION
-    },
-    "cloudInitDataSource": {
-      "value": $IMAGE_CLOUD_INIT_DATA_SOURCE
-    },
-    "containerResourceId": {
-      "value": $IMAGE_CONTAINER_RESOURCE_ID
-    },
-    "versionName": {
-      "value": $IMAGE_VERSION_NAME
+jq -n \
+  --arg name "$IMAGE_NAME" \
+  --arg location "$IMAGE_LOCATION" \
+  --arg customLocationResourceId "$CUSTOM_LOCATION_RESOURCE_ID" \
+  --arg osType "$IMAGE_OS_TYPE" \
+  --arg publisher "$IMAGE_PUBLISHER" \
+  --arg offer "$IMAGE_OFFER" \
+  --arg sku "$IMAGE_SKU" \
+  --arg versionName "$IMAGE_VERSION_NAME" \
+  --arg hyperVGeneration "$IMAGE_HYPER_V_GENERATION" \
+  --arg cloudInitDataSource "$IMAGE_CLOUD_INIT_DATA_SOURCE" \
+  --arg containerResourceId "$IMAGE_CONTAINER_RESOURCE_ID" \
+  '{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    contentVersion: "1.0.0.0",
+    parameters: {
+      name: { value: $name },
+      location: { value: $location },
+      customLocationResourceId: { value: $customLocationResourceId },
+      osType: { value: $osType },
+      publisher: { value: $publisher },
+      offer: { value: $offer },
+      sku: { value: $sku },
+      versionName: { value: $versionName }
     }
   }
-}
-EOF
+  |
+  (if ($hyperVGeneration != "" and $hyperVGeneration != "<null>") then .parameters.hyperVGeneration = { value: $hyperVGeneration } else . end)
+  |
+  (if ($cloudInitDataSource != "" and $cloudInitDataSource != "<null>") then .parameters.cloudInitDataSource = { value: $cloudInitDataSource } else . end)
+  |
+  (if ($containerResourceId != "" and $containerResourceId != "<null>") then .parameters.containerResourceId = { value: $containerResourceId } else . end)
+  ' > "$PARAM_FILE"
 
 # Validate the parameter file
 echo "Validating parameter file..."
@@ -142,7 +123,7 @@ if az resource show --ids "$MARKETPLACE_GALLERY_IMAGE_RESOURCE_ID" >/dev/null 2>
 
         # Show resource details for debugging
         echo "Resource details:"
-        az resource show --ids "$DEPLOYMENT_SETTINGS_RESOURCE_ID" --query "{name: name, provisioningState: properties.provisioningState, deploymentMode: properties.deploymentMode}" --output table 2>/dev/null || echo "Could not retrieve resource details"
+        az resource show --ids "$MARKETPLACE_GALLERY_IMAGE_RESOURCE_ID" --query "{name: name, provisioningState: properties.provisioningState, deploymentMode: properties.deploymentMode}" --output table 2>/dev/null || echo "Could not retrieve resource details"
 
         exit 1
     fi
