@@ -125,7 +125,7 @@ resource roleAssignmentContributor 'Microsoft.Authorization/roleAssignments@2022
 
 // Use deployment script to run the shell script
 resource deploymentScript 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
-  name: 'hci-deployment-script-${uniqueString(resourceGroup().id)}'
+  name: 'img-deployment-script-${uniqueString(resourceGroup().id)}'
   location: resourceGroup().location
   kind: 'AzureCLI'
   identity: {
