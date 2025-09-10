@@ -2,7 +2,7 @@
 
 set -e  # Exit on any error
 
-exec >/dev/null 2>&1 # Redirect log to avoid ACI issue
+# exec >/dev/null 2>&1 # Redirect log to avoid ACI issue
 
 echo "Starting Marketplace Gallery Image deployment script..."
 
@@ -10,6 +10,17 @@ echo "Starting Marketplace Gallery Image deployment script..."
 if [ -z "$RESOURCE_GROUP_NAME" ] || [ -z "$SUBSCRIPTION_ID" ] || [ -z "$IMAGE_NAME" ] || [ -z "$IMAGE_LOCATION" ] || [ -z "$CUSTOM_LOCATION_RESOURCE_ID" ] || [ -z "$IMAGE_OS_TYPE" ] || [ -z "$IMAGE_PUBLISHER" ] || [ -z "$IMAGE_OFFER" ] || [ -z "$IMAGE_SKU" ] || [ -z "$IMAGE_HYPER_V_GENERATION" ] || [ -z "$IMAGE_CLOUD_INIT_DATA_SOURCE" ] || [ -z "$IMAGE_CONTAINER_RESOURCE_ID" ] || [ -z "$IMAGE_VERSION_NAME" ] || [ -z "$MARKETPLACE_GALLERY_IMAGE_BICEP_BASE64" ]; then
     echo "Error: Required environment variables are missing"
     exit 1
+fi
+
+# Reset null values
+if [ "$IMAGE_HYPER_V_GENERATION" = "<null>" ]; then
+    IMAGE_HYPER_V_GENERATION=""
+fi
+if [ "$IMAGE_CLOUD_INIT_DATA_SOURCE" = "<null>" ]; then
+    IMAGE_CLOUD_INIT_DATA_SOURCE=""
+fi
+if [ "$IMAGE_CONTAINER_RESOURCE_ID" = "<null>" ]; then
+    IMAGE_CONTAINER_RESOURCE_ID=""
 fi
 
 # Set subscription context

@@ -154,7 +154,7 @@ resource deploymentScript 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
       }
       {
         name: 'IMAGE_LOCATION'
-        value: location
+        value: location ?? resourceGroup().location
       }
       {
         name: 'CUSTOM_LOCATION_RESOURCE_ID'
@@ -178,15 +178,15 @@ resource deploymentScript 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
       }
       {
         name: 'IMAGE_HYPER_V_GENERATION'
-        value: hyperVGeneration
+        value: hyperVGeneration ?? '<null>'
       }
       {
         name: 'IMAGE_CLOUD_INIT_DATA_SOURCE'
-        value: cloudInitDataSource
+        value: cloudInitDataSource ?? '<null>'
       }
       {
         name: 'IMAGE_CONTAINER_RESOURCE_ID'
-        value: containerResourceId
+        value: containerResourceId ?? '<null>'
       }
       {
         name: 'IMAGE_VERSION_NAME'
