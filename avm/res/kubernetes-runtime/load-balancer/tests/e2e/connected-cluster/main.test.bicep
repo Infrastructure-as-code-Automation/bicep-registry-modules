@@ -26,7 +26,6 @@ module nestedDependencies 'dependencies.bicep' = {
   name: '${uniqueString(deployment().name, resourceLocation)}-nestedDependencies'
   params: {
     clusterName: '${namePrefix}${serviceShort}01'
-    clusterExtensionName: '${namePrefix}${serviceShort}001'
   }
 }
 

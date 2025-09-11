@@ -24,11 +24,14 @@ The following section provides usage examples for the module, which were used to
 
 >**Note**: To reference the module, please use the following syntax `br/public:avm/res/kubernetes-runtime/load-balancer:<version>`.
 
-- [Connected-Cluster](#example-1-connected-cluster)
+- [Using only defaults](#example-1-using-only-defaults)
 - [Using only defaults](#example-2-using-only-defaults)
 - [WAF-aligned](#example-3-waf-aligned)
 
-### Example 1: _Connected-Cluster_
+### Example 1: _Using only defaults_
+
+This instance deploys the module with connected cluster.
+
 
 <details>
 
