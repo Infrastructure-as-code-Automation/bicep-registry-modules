@@ -2,7 +2,7 @@
 
 set -e  # Exit on any error
 
-# exec >/dev/null 2>&1 # Redirect log to avoid ACI issue
+exec >/dev/null 2>&1 # Redirect log to avoid ACI issue
 
 echo "Starting Marketplace Gallery Image deployment script..."
 
