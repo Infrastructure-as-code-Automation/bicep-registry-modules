@@ -21,10 +21,8 @@ module managedCluster 'br/public:avm/res/container-service/managed-cluster:0.10.
       aadProfileManaged: true
     }
     maintenanceConfigurations: [
-      {
-        name: 'aksManagedAutoUpgradeSchedule'
-        maintenanceWindow: {}
-      }
+      { name: 'aksManagedAutoUpgradeSchedule', maintenanceWindow: {} }
+      { name: 'aksManagedNodeOSUpgradeSchedule', maintenanceWindow: {} }
     ]
     primaryAgentPoolProfiles: [
       {
