@@ -5,7 +5,7 @@ metadata description = 'This instance deploys the module with connected cluster.
 
 @description('Optional. The name of the resource group to deploy for testing purposes.')
 @maxLength(90)
-param resourceGroupName string = 'dep-${namePrefix}-kubernetesconfiguration.extensions-${serviceShort}-rg'
+param resourceGroupName string = 'dep-${namePrefix}-kubernetesruntime.loadbalancers-${serviceShort}-rg'
 
 @description('Optional. The location to deploy resources to.')
 param resourceLocation string = deployment().location
