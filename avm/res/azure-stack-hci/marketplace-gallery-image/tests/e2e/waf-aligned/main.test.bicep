@@ -180,6 +180,7 @@ resource customLocation 'Microsoft.ExtendedLocation/customLocations@2021-08-15' 
   ]
 }
 
+@batchSize(1)
 module testDeployment '../../../main.bicep' = [
   for iteration in ['init', 'idem']: {
     name: '${uniqueString(deployment().name, enforcedLocation)}-marketplaceGalleryImage-${serviceShort}-${iteration}'
