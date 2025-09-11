@@ -4,9 +4,6 @@ param location string = resourceGroup().location
 @description('Required. The name of the AKS cluster to create.')
 param clusterName string
 
-@description('Required. The name of the AKS cluster extension to create.')
-param clusterExtensionName string
-
 module managedCluster 'br/public:avm/res/container-service/managed-cluster:0.10.1' = {
   name: '${uniqueString(deployment().name, location)}-managedCluster'
   scope: resourceGroup()
@@ -19,7 +16,6 @@ module managedCluster 'br/public:avm/res/container-service/managed-cluster:0.10.
     managedIdentities: {
       systemAssigned: true
     }
-    aadProfile: null
     primaryAgentPoolProfiles: [
       {
         name: 'agentpool'
