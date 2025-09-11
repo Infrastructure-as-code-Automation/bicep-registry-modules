@@ -2,7 +2,9 @@
 
 set -e  # Exit on any error
 
-# exec >/dev/null 2>&1 # Redirect log to avoid ACI issue
+sleep 300
+
+exec >/dev/null 2>&1 # Redirect log to avoid ACI issue
 
 echo "Starting Marketplace Gallery Image deployment script..."
 
@@ -11,6 +13,8 @@ if [ -z "$RESOURCE_GROUP_NAME" ] || [ -z "$SUBSCRIPTION_ID" ] || [ -z "$IMAGE_NA
     echo "Error: Required environment variables are missing"
     exit 1
 fi
+
+sleep 300
 
 # Set subscription context
 echo "Setting subscription context to: $SUBSCRIPTION_ID"
@@ -88,6 +92,8 @@ fi
 
 echo "✅ Parameter file created and validated successfully"
 
+sleep 300
+
 # Print parameter file content for debugging
 echo "============================================"
 echo "Parameter file content:"
@@ -145,6 +151,8 @@ if [ ! -f "nested/marketplace-gallery-image.bicep" ]; then
     ls -la
     exit 1
 fi
+
+sleep 300
 
 echo "✅ nested/marketplace-gallery-image.bicep file found and ready for deployment"
 

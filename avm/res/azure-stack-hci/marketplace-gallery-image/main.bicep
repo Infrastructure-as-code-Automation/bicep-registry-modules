@@ -123,6 +123,17 @@ resource roleAssignmentContributor 'Microsoft.Authorization/roleAssignments@2022
   }
 }
 
+// Reader
+resource roleAssignmentReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(managedIdentity.id, builtInRoleNames.Reader, resourceGroup().id)
+  scope: resourceGroup()
+  properties: {
+    roleDefinitionId: builtInRoleNames.Reader
+    principalId: managedIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 // Use deployment script to run the shell script
 resource deploymentScript 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
   name: 'img-deployment-script-${uniqueString(resourceGroup().id)}'
@@ -201,6 +212,7 @@ resource deploymentScript 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
   }
   dependsOn: [
     roleAssignmentContributor
+    roleAssignmentReader
   ]
 }
 
