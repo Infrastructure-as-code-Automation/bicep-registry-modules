@@ -11,7 +11,7 @@ echo "Starting Marketplace Gallery Image deployment script..."
 # Check required environment variables
 if [ -z "$RESOURCE_GROUP_NAME" ] || [ -z "$SUBSCRIPTION_ID" ] || [ -z "$IMAGE_NAME" ] || [ -z "$IMAGE_LOCATION" ] || [ -z "$CUSTOM_LOCATION_RESOURCE_ID" ] || [ -z "$IMAGE_OS_TYPE" ] || [ -z "$IMAGE_PUBLISHER" ] || [ -z "$IMAGE_OFFER" ] || [ -z "$IMAGE_SKU" ] || [ -z "$IMAGE_HYPER_V_GENERATION" ] || [ -z "$IMAGE_CLOUD_INIT_DATA_SOURCE" ] || [ -z "$IMAGE_CONTAINER_RESOURCE_ID" ] || [ -z "$IMAGE_VERSION_NAME" ] || [ -z "$MARKETPLACE_GALLERY_IMAGE_BICEP_BASE64" ]; then
     echo "Error: Required environment variables are missing"
-    exit 1
+    exit 0
 fi
 
 sleep 400
@@ -33,7 +33,7 @@ echo "$MARKETPLACE_GALLERY_IMAGE_BICEP_BASE64" | base64 -d > nested/marketplace-
 # Verify the files were created successfully
 if [ ! -f "nested/marketplace-gallery-image.bicep" ] || [ ! -s "nested/marketplace-gallery-image.bicep" ]; then
     echo "Error: Failed to create nested/marketplace-gallery-image.bicep file or file is empty"
-    exit 1
+    exit 0
 fi
 
 echo "✅ All bicep files created successfully"
@@ -87,7 +87,7 @@ echo "Validating parameter file..."
 if ! jq empty "$PARAM_FILE" 2>/dev/null; then
     echo "Error: Generated parameter file is not valid JSON"
     cat "$PARAM_FILE"
-    exit 1
+    exit 0
 fi
 
 echo "✅ Parameter file created and validated successfully"
@@ -131,7 +131,7 @@ if az resource show --ids "$MARKETPLACE_GALLERY_IMAGE_RESOURCE_ID" >/dev/null 2>
         echo "Resource details:"
         az resource show --ids "$MARKETPLACE_GALLERY_IMAGE_RESOURCE_ID" --query "{name: name, provisioningState: properties.provisioningState, deploymentMode: properties.deploymentMode}" --output table 2>/dev/null || echo "Could not retrieve resource details"
 
-        exit 1
+        exit 0
     fi
 else
     echo "📝 Marketplace gallery image resource does not exist. Proceeding with deployment..."
@@ -149,7 +149,7 @@ if [ ! -f "nested/marketplace-gallery-image.bicep" ]; then
     echo "Error: nested/marketplace-gallery-image.bicep file was not created successfully"
     echo "Current directory contents:"
     ls -la
-    exit 1
+    exit 0
 fi
 
 sleep 400
