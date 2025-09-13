@@ -2,9 +2,9 @@
 
 set -e  # Exit on any error
 
-sleep 300
+sleep 400
 
-exec >/dev/null 2>&1 # Redirect log to avoid ACI issue
+# exec >/dev/null 2>&1 # Redirect log to avoid ACI issue
 
 echo "Starting Marketplace Gallery Image deployment script..."
 
@@ -14,7 +14,7 @@ if [ -z "$RESOURCE_GROUP_NAME" ] || [ -z "$SUBSCRIPTION_ID" ] || [ -z "$IMAGE_NA
     exit 1
 fi
 
-sleep 300
+sleep 400
 
 # Set subscription context
 echo "Setting subscription context to: $SUBSCRIPTION_ID"
@@ -92,7 +92,7 @@ fi
 
 echo "✅ Parameter file created and validated successfully"
 
-sleep 300
+sleep 400
 
 # Print parameter file content for debugging
 echo "============================================"
@@ -152,7 +152,7 @@ if [ ! -f "nested/marketplace-gallery-image.bicep" ]; then
     exit 1
 fi
 
-sleep 300
+sleep 400
 
 echo "✅ nested/marketplace-gallery-image.bicep file found and ready for deployment"
 
