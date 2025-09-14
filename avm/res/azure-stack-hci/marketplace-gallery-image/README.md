@@ -55,6 +55,9 @@ module marketplaceGalleryImage 'br/public:avm/res/azure-stack-hci/marketplace-ga
     version: {
       name: '20348.4052.250808'
     }
+    // Non-required parameters
+    cloudInitDataSource: 'Azure'
+    hyperVGeneration: 'V2'
   }
 }
 ```
@@ -92,6 +95,13 @@ module marketplaceGalleryImage 'br/public:avm/res/azure-stack-hci/marketplace-ga
       "value": {
         "name": "20348.4052.250808"
       }
+    },
+    // Non-required parameters
+    "cloudInitDataSource": {
+      "value": "Azure"
+    },
+    "hyperVGeneration": {
+      "value": "V2"
     }
   }
 }
@@ -119,6 +129,9 @@ param osType = 'Windows'
 param version = {
   name: '20348.4052.250808'
 }
+// Non-required parameters
+param cloudInitDataSource = 'Azure'
+param hyperVGeneration = 'V2'
 ```
 
 </details>
