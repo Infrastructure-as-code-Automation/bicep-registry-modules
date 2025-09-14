@@ -394,8 +394,7 @@ Array of role assignments to create.
   - `'Contributor'`
   - `'Owner'`
   - `'Reader'`
-  - `'User Access Administrator'`
-  - `'Role Based Access Control Administrator'`
+  - `'AzureStackHCIVMContributor'`
 
 **Required parameters**
 
