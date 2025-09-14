@@ -191,6 +191,8 @@ module testDeployment '../../../main.bicep' = [
         sku: '2022-datacenter-azure-edition'
       }
       osType: 'Windows'
+      cloudInitDataSource: 'Azure'
+      hyperVGeneration: 'V2'
       version: {
         name: '20348.4052.250808'
       }
