@@ -59,9 +59,21 @@ var builtInRoleNames = {
   Contributor: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')
   Owner: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')
   Reader: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')
-  AzureStackHCIVMContributor: subscriptionResourceId(
+  'Role Based Access Control Administrator': subscriptionResourceId(
     'Microsoft.Authorization/roleDefinitions',
-    '874d1c73-6003-4e60-a13a-cb31ea190a85'
+    'f58310d9-a9f6-439a-9e8d-f62e7b41a168'
+  )
+  'User Access Administrator': subscriptionResourceId(
+    'Microsoft.Authorization/roleDefinitions',
+    '18d7d88d-d35e-4fb5-a5c3-7773c20a72d9'
+  )
+  'Azure Stack HCI Administrator': subscriptionResourceId(
+    'Microsoft.Authorization/roleDefinitions',
+    'bda0d508-adf1-4af0-9c28-88919fc3ae06'
+  )
+  'Windows Admin Center Administrator Login': subscriptionResourceId(
+    'Microsoft.Authorization/roleDefinitions',
+    'a6333a3e-0164-44c3-b281-7a577aff287f'
   )
 }
 
@@ -130,12 +142,12 @@ resource roleAssignmentReader 'Microsoft.Authorization/roleAssignments@2022-04-0
   }
 }
 
-// AzureStackHCIVMContributor
-resource roleAssignmentAzureStackHCIVMContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(managedIdentity.id, builtInRoleNames.AzureStackHCIVMContributor, resourceGroup().id)
+// Role Based Access Control Administrator
+resource roleAssignmentRBACAdmin 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(managedIdentity.id, builtInRoleNames['Role Based Access Control Administrator'], resourceGroup().id)
   scope: resourceGroup()
   properties: {
-    roleDefinitionId: builtInRoleNames.AzureStackHCIVMContributor
+    roleDefinitionId: builtInRoleNames['Role Based Access Control Administrator']
     principalId: managedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
@@ -196,15 +208,15 @@ resource deploymentScript 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
       }
       {
         name: 'IMAGE_HYPER_V_GENERATION'
-        value: hyperVGeneration ?? '<null>'
+        value: hyperVGeneration ?? '_null_'
       }
       {
         name: 'IMAGE_CLOUD_INIT_DATA_SOURCE'
-        value: cloudInitDataSource ?? '<null>'
+        value: cloudInitDataSource ?? '_null_'
       }
       {
         name: 'IMAGE_CONTAINER_RESOURCE_ID'
-        value: containerResourceId ?? '<null>'
+        value: containerResourceId ?? '_null_'
       }
       {
         name: 'IMAGE_VERSION_NAME'
@@ -220,7 +232,7 @@ resource deploymentScript 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
   dependsOn: [
     roleAssignmentContributor
     roleAssignmentReader
-    roleAssignmentAzureStackHCIVMContributor
+    roleAssignmentRBACAdmin
   ]
 }
 

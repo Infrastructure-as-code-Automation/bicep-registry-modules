@@ -75,11 +75,11 @@ jq -n \
     }
   }
   |
-  (if ($hyperVGeneration != "" and $hyperVGeneration != "<null>") then .parameters.hyperVGeneration = { value: $hyperVGeneration } else . end)
+  (if ($hyperVGeneration != "" and $hyperVGeneration != "_null_") then .parameters.hyperVGeneration = { value: $hyperVGeneration } else . end)
   |
-  (if ($cloudInitDataSource != "" and $cloudInitDataSource != "<null>") then .parameters.cloudInitDataSource = { value: $cloudInitDataSource } else . end)
+  (if ($cloudInitDataSource != "" and $cloudInitDataSource != "_null_") then .parameters.cloudInitDataSource = { value: $cloudInitDataSource } else . end)
   |
-  (if ($containerResourceId != "" and $containerResourceId != "<null>") then .parameters.containerResourceId = { value: $containerResourceId } else . end)
+  (if ($containerResourceId != "" and $containerResourceId != "_null_") then .parameters.containerResourceId = { value: $containerResourceId } else . end)
   ' > "$PARAM_FILE"
 
 # Validate the parameter file
