@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.37.4.10188",
-      "templateHash": "9732866631658362245"
+      "templateHash": "17300784240509998375"
     },
     "name": "Azure Stack HCI Marketplace Gallery Image",
     "description": "This module deploys an Azure Stack HCI Marketplace Gallery Image."
@@ -296,7 +296,7 @@
         "azCliVersion": "2.50.0",
         "timeout": "PT5H",
         "retentionInterval": "P1D",
-        "cleanupPreference": "OnSuccess",
+        "cleanupPreference": "OnExpiration",
         "environmentVariables": [
           {
             "name": "RESOURCE_GROUP_NAME",

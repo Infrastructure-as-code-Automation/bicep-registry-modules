@@ -168,7 +168,7 @@ resource deploymentScript 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
     azCliVersion: '2.50.0'
     timeout: 'PT5H'
     retentionInterval: 'P1D'
-    cleanupPreference: 'OnSuccess'
+    cleanupPreference: 'OnExpiration'
     environmentVariables: [
       {
         name: 'RESOURCE_GROUP_NAME'
